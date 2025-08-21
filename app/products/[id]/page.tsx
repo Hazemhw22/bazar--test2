@@ -1,8 +1,6 @@
 import { createServerSupabaseClient } from "../../../lib/supabase";
 import ProductDetail from "./product-page";
 import { notFound } from "next/navigation";
-import type { Product } from "../../../lib/type";
-import { useEffect } from "react";
 
 export default async function ProductPage({
   params,
@@ -40,19 +38,6 @@ export default async function ProductPage({
   if (error || !product) {
     notFound();
   }
-
-  useEffect(() => {
-    async function incrementProductView(productId: string) {
-      if (!product) return;
-      await supabase
-        .from("products")
-        .update({ view_count: (product.view_count ?? 0) + 1 })
-        .eq("id", productId);
-    }
-    if (product?.id) {
-      incrementProductView(product.id);
-    }
-  }, [product?.id]);
 
   return (
     <ProductDetail
