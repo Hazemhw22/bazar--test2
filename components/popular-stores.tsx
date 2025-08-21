@@ -52,8 +52,8 @@ export function PopularStores() {
   });
 
   return (
-    <section className="py-8 px-4 sm:px-6 md:px-8">
-      <div className="mx-auto max-w-screen-sm sm:max-w-2xl md:max-w-4xl lg:max-w-6xl">
+    <section className="py-8 px-2 md:px-4">
+  <div className="mx-auto max-w-8xl">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
             Popular Shopes

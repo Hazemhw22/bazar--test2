@@ -76,7 +76,7 @@ export function HeroSection() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className={`mx-auto max-w-sm sm:max-w-2xl md:max-w-4xl lg:max-w-6xl 
+          className={`mx-auto max-w-sm sm:max-w-2xl md:max-w-4xl lg:max-w-screen-2xl 2xl:max-w-[1600px]
                       px-2 sm:px-6 md:px-8 rounded-xl shadow-lg border transition-all duration-500 
                       ${bgColor} border-gray-300 dark:border-gray-600`}
         >

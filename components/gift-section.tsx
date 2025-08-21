@@ -5,10 +5,10 @@ import Image from "next/image"
 
 export function GiftSection() {
   return (
-    <section className="py-6 px-4 sm:px-6 md:px-8">
+<section className="py-8 px-2 md:px-4">
       <div
         className="
-          mx-auto max-w-screen-sm sm:max-w-2xl md:max-w-4xl lg:max-w-6xl
+          mx-auto max-w-8xl
           px-8 sm:px-6 md:px-8
           rounded-xl shadow-md border border-gray-300 dark:border-gray-600
           bg-pink-100 dark:bg-pink-900

@@ -19,7 +19,7 @@ const SiteFooter: React.FC = () => {
 
   return (
     <footer className="relative bg-blue-50 dark:bg-gray-900 pt-10 text-gray-700 dark:text-gray-300">
-      <div className="container mx-auto px-4 max-w-[1280px]">
+      <div className="container mx-auto px-4 max-w-[1680px]">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-20">
           {/* First column: Logo and newsletter */}
           <div className="flex flex-col space-y-4 items-center sm:items-start text-center sm:text-left">

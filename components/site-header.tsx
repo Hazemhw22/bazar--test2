@@ -53,26 +53,48 @@ export function SiteHeader() {
     <>
       {/* Desktop Header */}
       <header className="w-full border-b bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-40">
-        {/* Top bar - Only visible on desktop */}
-        <div className="bg-gray-100 dark:bg-gray-800 text-sm py-2 border-b border-gray-200 dark:border-gray-700 hidden md:block">
-          <div className="container mx-auto px-4 flex justify-between items-center">
-            <span className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
+        {/* Upper header (search + account + cart) - desktop */}
+        <div className="bg-gray-100 dark:bg-gray-800 text-sm py-1 border-b border-gray-200 dark:border-gray-700 hidden md:block">
+          <div className="mx-auto px-4 flex items-center gap-4 max-w-[1440px]">
+            <span className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
               <span className="text-blue-600 dark:text-blue-400">📍</span>
               Arad, Israel
             </span>
-
-            <div className="flex items-center gap-3">
-              {/* Desktop Theme Toggle */}
-              {mounted && <ThemeToggle />}
-
-              {/* Language Selector */}
-              <LanguageSelector />
+           <div className="flex-1 max-w-4xl mx-auto">
+              <div className="relative">
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Search products..."
+                  className="w-full rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 py-2 pr-10 pl-3 text-sm shadow-sm focus:border-blue-600 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-600 dark:focus:ring-blue-400 text-gray-900 dark:text-gray-100"
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                />
+                <Search size={18} className="absolute right-3 top-2.5 text-gray-500 dark:text-gray-400" />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 ml-auto">
+              <Link href="/account" className="p-2 rounded-full hover:bg-gray-200/60 dark:hover:bg-gray-700 transition-colors" aria-label="الحساب">
+                <User size={20} />
+              </Link>
+              <button
+                className="p-2 rounded-full hover:bg-gray-200/60 dark:hover:bg-gray-700 transition-colors relative"
+                onClick={handleCartToggle}
+                aria-label="السلة"
+              >
+                <BagIcon size={20} />
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white font-medium">
+                    {totalItems}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
         </div>
 
         {/* Main header */}
-        <div className="container mx-auto px-4 py-2 flex justify-between items-center">
+        <div className="mx-auto px-6 py-2 md:py-1 flex justify-between items-center max-w-[1600px]">
           {/* فقط للموبايل */}
           <div className="w-full flex md:hidden items-center justify-between gap-2">
             {/* الموقع - يسار */}
@@ -81,7 +103,7 @@ export function SiteHeader() {
               Arad, Israel
             </span>
             {/* حقل البحث - وسط */}
-            <div className="flex-1 mx-2">
+            <div className="flex-2 mx-2 ">
               <div className="relative">
                 <input
                   type="text"
@@ -102,19 +124,20 @@ export function SiteHeader() {
             </div>
           </div>
 
-          {/* باقي الهيدر للديسكتوب */}
-          <div className="hidden md:flex items-center gap-8 w-full">
+          {/* باقي الهيدر للديسكتوب */
+          }
+          <div className="hidden md:flex items-center gap-6 w-full">
             <div className="flex items-center gap-3">
               {/* قلل حجم الشعار */}
               <VristoLogo size={60} className="hidden md:block" />
 
               {/* Navigation - Desktop only */}
-              <nav className="hidden md:flex gap-6 text-sm font-medium">
+              <nav className="hidden md:flex gap-4 text-sm font-medium">
                 <Link
                   href="/"
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors relative group flex items-center gap-1"
                 >
-                  <Home size={18} />
+                  <Home size={16} />
                   Home
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
                 </Link>
@@ -122,7 +145,7 @@ export function SiteHeader() {
                   href="/categories"
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors relative group flex items-center gap-1"
                 >
-                  <List size={18} />
+                  <List size={16} />
                   Categories
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
                 </Link>
@@ -130,7 +153,7 @@ export function SiteHeader() {
                   href="/favourite"
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors relative group flex items-center gap-1"
                 >
-                  <Heart size={18} />
+                  <Heart size={16} />
                   Favourite
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
                 </Link>
@@ -138,7 +161,7 @@ export function SiteHeader() {
                   href="/shops"
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors relative group flex items-center gap-1"
                 >
-                  <Store size={18} />
+                  <Store size={16} />
                   Shops
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
                 </Link>
@@ -146,7 +169,7 @@ export function SiteHeader() {
                   href="/products"
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors relative group flex items-center gap-1"
                 >
-                  <BagIcon size={18} />
+                  <BagIcon size={16} />
                   Products
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
                 </Link>
@@ -154,87 +177,33 @@ export function SiteHeader() {
                   href="/contact"
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors relative group flex items-center gap-1"
                 >
-                  <Phone size={18} />
+                  <Phone size={16} />
                   Contact
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
                 </Link>
               </nav>
             </div>
 
-            {/* Right: Icons (Desktop only) */}
-            <div className="flex items-center gap-3 md:ml-auto">
-              {/* Desktop Search with side dropdown */}
-              <div
-                ref={searchRef}
-                className="relative hidden md:flex items-center transition-all duration-300"
-                style={{ width: searchOpen ? 240 : 40 }}
-              >
-                <button
-                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  onClick={() => setSearchOpen((v) => !v)}
-                  aria-label="بحث"
-                  type="button"
-                  tabIndex={0}
-                  style={{ pointerEvents: searchOpen ? "none" : "auto" }} // يمنع تكرار الفتح عند الفتح
-                >
-                  <Search className="w-5 h-5" />
-                </button>
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Search products..."
-                  className={`
-                    pl-10 pr-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 text-sm outline-none w-full
-                    transition-opacity duration-300
-                    ${
-                      searchOpen
-                        ? "opacity-100 pointer-events-auto"
-                        : "opacity-0 pointer-events-none"
-                    }
-                    text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400
-                  `}
-                  style={{ transition: "opacity 0.3s" }}
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                  onBlur={() => setSearchOpen(false)}
-                  autoFocus={searchOpen}
-                />
-              </div>
-
-              {/* User */}
-              <Link
-                href="/account"
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                aria-label="الحساب"
-              >
-                <User size={20} />
+            {/* Right: Toggles + quick icons (Desktop only) */}
+            <div className="flex items-center gap-2 md:ml-auto">
+              {mounted && <ThemeToggle />}
+              {/* Quick icons from fixed buttons */}
+              <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Install App">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M5 20h14v-2H5v2zm7-18l-5 5h3v6h4V7h3l-5-5z"/></svg>
+              </button>
+              <Link href="/orders" className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="My Orders">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2zM7.17 4l.84 2h8.17l1.84-2H22v2h-2l-3.6 7.59L15.25 16H8v-2h6.31l3.58-7H7.17z"/></svg>
               </Link>
-
-              {/* Notifications */}
-              <button
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
-                aria-label="الإشعارات"
-              >
+              <LanguageSelector />
+              <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative" aria-label="الإشعارات">
                 <Bell size={20} />
                 <span className="absolute -top-1 -right-1 flex h-2 w-2 rounded-full bg-red-500"></span>
-              </button>
-
-              {/* Cart */}
-              <button
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative"
-                onClick={handleCartToggle}
-                aria-label="السلة"
-              >
-                <BagIcon size={20} />
-                {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white font-medium">
-                    {totalItems}
-                  </span>
-                )}
               </button>
             </div>
           </div>
         </div>
+
+        {/* Removed FixedButtons bar */}
       </header>
 
       {/* Padding below content so MobileNav doesn't cover it */}

@@ -2,11 +2,10 @@ import type React from "react";
 import "./globals.css";
 import AppProviders from "../components/AppProviders";
 import BreadcrumbsNav from "../components/BreadcrumbsNav";
-import FixedButtons from "../components/fixed-buttons"; // تأكد من الاستيراد
 
 export const metadata = {
   title: "Vristo",
-  description: "Next.js + Tailwind UI Store",
+  description: "Vristo is a platform for buying and selling products",
 };
 
 export default function RootLayout({
@@ -18,9 +17,8 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="bg-background text-foreground transition-colors duration-300">
         <AppProviders>
-          <FixedButtons /> {/* ✅ هنا فوق الـ BreadcrumbsNav */}
           <BreadcrumbsNav />
-          <main className=" max-w-7xl mx-auto">{children}</main>
+          <main className="mx-auto max-w-screen-2xl 2xl:max-w-[1680px] px-2 md:px-4">{children}</main>
         </AppProviders>
       </body>
     </html>
