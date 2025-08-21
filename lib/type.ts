@@ -24,6 +24,8 @@ export interface Product {
   active: boolean;
   rating?: number;
   reviews?: number;
+  view_count?: number; // عدد مشاهدات المنتج
+  cart_count?: number; // عدد مرات إضافة المنتج للسلة
 }
 
 export interface Shop {
@@ -47,6 +49,7 @@ export interface Shop {
   phone_numbers?: string[];
   gallery?: string[];
   statusDropdownOpen?: boolean;
+  visit_count?: number; // عدد زيارات المتجر
   // ...other properties
 }
 

@@ -172,6 +172,15 @@ export default function ShopDetailPage() {
       return 0;
     });
 
+  useEffect(() => {
+    async function incrementShopVisit(shopId: string) {
+      await supabase.rpc("increment_shop_visit_count", { shop_id: shopId });
+    }
+    if (shop?.id) {
+      incrementShopVisit(shop.id);
+    }
+  }, [shop?.id]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[40vh] text-lg">

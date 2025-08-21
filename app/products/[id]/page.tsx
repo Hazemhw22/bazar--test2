@@ -2,6 +2,7 @@ import { createServerSupabaseClient } from "../../../lib/supabase";
 import ProductDetail from "./product-page";
 import { notFound } from "next/navigation";
 import type { Product } from "../../../lib/type";
+import { useEffect } from "react";
 
 export default async function ProductPage({
   params,
@@ -28,6 +29,7 @@ export default async function ProductPage({
       discount_start,
       discount_end,
       active,
+      view_count,
       shops ( shop_name ),
       categories:category ( id, desc, title, created_at )
     `
@@ -38,6 +40,19 @@ export default async function ProductPage({
   if (error || !product) {
     notFound();
   }
+
+  useEffect(() => {
+    async function incrementProductView(productId: string) {
+      if (!product) return;
+      await supabase
+        .from("products")
+        .update({ view_count: (product.view_count ?? 0) + 1 })
+        .eq("id", productId);
+    }
+    if (product?.id) {
+      incrementProductView(product.id);
+    }
+  }, [product?.id]);
 
   return (
     <ProductDetail

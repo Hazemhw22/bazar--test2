@@ -8,6 +8,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Heart, Plus, Star, ShoppingBag, Eye } from "lucide-react";
 import { useCart } from "./cart-provider";
 import { useFavorites } from "./favourite-items";
+import { supabase } from "@/lib/supabase";
 
 interface Category {
   id: number;
@@ -54,7 +55,7 @@ export function ProductCard({ product }: ProductCardProps) {
       ? Math.round(((product.price - product.sale_price) / product.price) * 100)
       : 0;
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     addItem({
       id: product.id,
       name: product.title,
@@ -63,6 +64,7 @@ export function ProductCard({ product }: ProductCardProps) {
       quantity,
     });
     setQuantity(1);
+    await incrementProductCartCount(product.id.toString()); // زيادة عدد مرات الإضافة للسلة في قاعدة البيانات
   };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
@@ -363,3 +365,25 @@ export function ProductCard({ product }: ProductCardProps) {
     </>
   );
 }
+
+// Supabase function to increment product cart count
+async function incrementProductCartCount(productId: string) {
+  // First, fetch the current cart_count
+  const { data, error } = await supabase
+    .from("products")
+    .select("cart_count")
+    .eq("id", productId)
+    .single();
+
+  if (error || !data) return;
+
+  const newCount = (data.cart_count ?? 0) + 1;
+
+  await supabase
+    .from("products")
+    .update({ cart_count: newCount })
+    .eq("id", productId);
+}
+
+// عند إضافة المنتج للسلة:
+// await incrementProductCartCount(product.id);
