@@ -20,6 +20,7 @@ import {
 import SuggestedProduct from "../../../components/SuggestedProductsCarousel";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../lib/supabase";
+import { ProductViewCounter } from "@/components/ProductViewCounter";
 
 type ProductDetailProps = {
   params: { id: string };
@@ -375,6 +376,9 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           />
         </div>
       )}
+
+      {/* عداد المشاهدات - ضعها في النهاية حتى لا تؤثر على التخطيط */}
+      <ProductViewCounter productId={product.id} currentCount={product.view_count} />
     </div>
   );
 }
