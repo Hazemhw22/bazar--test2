@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState , useRef  } from "react";
 import {
   ArrowLeft,
   Search,
@@ -171,13 +171,19 @@ export default function ShopDetailPage() {
       }
       return 0;
     });
+  const hasIncremented = useRef(false);
 
-  useEffect(() => {
+   useEffect(() => {
     async function incrementShopVisit(shopId: string) {
-      await supabase.rpc("increment_shop_visit_count", { shop_id: shopId });
+      const { error } = await supabase.rpc("increment_shop_visit_count", { shop_id: shopId });
+      if (error) {
+        console.error("Error incrementing visit count:", error);
+      }
     }
-    if (shop?.id) {
+
+    if (shop?.id && !hasIncremented.current) {
       incrementShopVisit(shop.id);
+      hasIncremented.current = true; // يمنع تكرار الزيادة
     }
   }, [shop?.id]);
 
