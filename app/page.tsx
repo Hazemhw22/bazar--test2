@@ -1,8 +1,6 @@
 import { HeroSection } from "../components/hero-section";
-import BrandList from "../components/BrandList";
 import { GiftSection } from "../components/gift-section";
 import { PopularStores } from "../components/popular-stores";
-import CategoryMenu from "../components/CategoryMenu";
 import MainProductSection from "../components/MainProductSection";
 import HomeCategories from "../components/HomeCategories";
 import AdBanner from "../components/AdBanner";
@@ -20,6 +18,7 @@ export default function Home() {
   const offers: Product[] = [];
   const bestSellers: Product[] = [];
   const selected: Product[] = [];
+
 
   return (
     <main className="flex flex-col gap-6 sm:p-2 bg-gray-50 dark:bg-gray-950 min-h-screen transition-colors duration-300">
