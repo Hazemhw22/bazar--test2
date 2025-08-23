@@ -23,7 +23,7 @@ export default function AppProviders({
           <FavoritesProvider>
             <div className="min-h-screen flex flex-col page-background">
               <SiteHeader />
-              <main className="mx-auto max-w-screen-2xl 2xl:max-w-[1680px] px-2 md:px-4">{children}</main>
+              <main className="mx-auto max-w-8xl px-2 md:px-4 mb-8">{children}</main>
               <SiteFooter />
             </div>
           </FavoritesProvider>
