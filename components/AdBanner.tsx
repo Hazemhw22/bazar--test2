@@ -17,13 +17,13 @@ export default function AdBanner({ imageSrc, href = "/products", title, subtitle
         href={href}
         className="block w-full overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow hover:shadow-lg transition-shadow"
       >
-        <div className="relative h-28 sm:h-36 md:h-44 lg:h-48">
+       <div className="relative w-full h-48 sm:h-64 md:h-80 lg:h-96">
           <Image
             src={imageSrc}
             alt={title || "Advertisement"}
             fill
             sizes="(max-width: 768px) 100vw, 1200px"
-            className="object-cover"
+            className="object-cover w-full h-full"
           />
           {(title || subtitle) && (
             <div className="absolute inset-0 bg-black/20 flex items-center">
