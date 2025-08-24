@@ -99,7 +99,7 @@ export default function Products() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 md:px-8 lg:px-12 py-6">
+    <div className="mx-auto w-full max-w-full px-4 sm:px-6 md:px-8 lg:px-12 py-6">
       {/* Hero */}
       <div className="relative w-full h-64 md:h-80 lg:h-96 rounded-2xl overflow-hidden mb-8">
         <Image

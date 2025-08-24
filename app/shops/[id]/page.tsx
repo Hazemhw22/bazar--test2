@@ -158,7 +158,7 @@ export default function ShopDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-2 md:px-4 bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header with Cover Image */}
       <div className="relative h-80 overflow-hidden">
         <Image
@@ -323,7 +323,7 @@ export default function ShopDetailPage() {
       </div>
 
       {/* Content Tabs */}
-      <div className="container mx-auto px-4 py-6">
+<div className="w-full max-w-7xl mx-auto px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="flex items-center gap-0 mb-6">
             {/* Categories Tab with Icon */}
@@ -370,7 +370,7 @@ export default function ShopDetailPage() {
             </div>
 
             {/* المنتجات حسب التصنيف المختار */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
               {(selectedCategory ? products.filter((p: any) => p.category === selectedCategory) : products).length ===
               0 ? (
                 <div className="col-span-full text-center text-gray-400">لا توجد منتجات لهذا التصنيف</div>

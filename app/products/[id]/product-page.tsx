@@ -22,6 +22,18 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../../lib/supabase";
 import { ProductViewCounter } from "@/components/ProductViewCounter";
 
+// دالة زيادة عدد مرات الإضافة للسلة
+// Supabase function to increment product cart count
+async function incrementProductCartCount(productId: string) {
+  const { data, error } = await supabase.from("products").select("cart_count").eq("id", productId).single()
+
+  if (error || !data) return
+
+  const newCount = (data.cart_count ?? 0) + 1
+
+  await supabase.from("products").update({ cart_count: newCount }).eq("id", productId)
+}
+
 type ProductDetailProps = {
   params: { id: string };
   product: Product;
@@ -81,7 +93,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     return <div className="p-6 text-red-500">المنتج غير موجود أو حدث خطأ.</div>;
 
   return (
-    <div className="container mx-auto py-10 px-4">
+    <div className=" mx-auto py-10 px-4">
       {/* صور المنتج والتفاصيل */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-14">
         {/* صور المنتج */}
@@ -264,22 +276,22 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             </div>
           </div>
 
-          {/* أزرار الكمية + السلة + المفضلة في صف واحد دائماً */}
-          <div className="flex gap-2 w-full justify-center sm:justify-start mt-4">
+          {/* أزرار الكمية + السلة + المفضلة في صف واحد دائماً وبنفس تصميم الكارت */}
+          <div className="flex gap-3 w-full justify-center sm:justify-start mt-4 items-center">
             {/* الكمية */}
-            <div className="flex border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden w-max">
+            <div className="flex border border-gray-300 dark:border-gray-600 rounded-full overflow-hidden w-max bg-gray-50 dark:bg-gray-800">
               <button
-                className="h-12 w-16 flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                className="h-12 w-12 flex items-center justify-center text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 aria-label="إنقاص الكمية"
               >
                 <Minus size={20} />
               </button>
-              <div className="h-12 w-16 flex items-center justify-center font-semibold text-base select-none">
+              <div className="h-12 w-16 flex items-center justify-center font-semibold text-lg select-none bg-transparent">
                 {quantity}
               </div>
               <button
-                className="h-12 w-16 flex items-center justify-center bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition"
+                className="h-12 w-12 flex items-center justify-center text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition"
                 onClick={() => setQuantity(quantity + 1)}
                 aria-label="زيادة الكمية"
               >
@@ -288,28 +300,30 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             </div>
 
             {/* زر السلة */}
-            <Button
-              onClick={() =>
+            <button
+              onClick={async () => {
                 addToCart({
                   id: Number(product.id),
                   name: product.title,
                   price: Number(product.sale_price ?? product.price),
                   image: product.images?.[0] || "",
                   quantity,
-                })
-              }
-              className="h-12 w-16 sm:w-auto bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                });
+                await incrementProductCartCount((product.id));
+              }}
+              className="h-12 w-12 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-all duration-200"
               aria-label="أضف إلى السلة"
             >
               <ShoppingCart className="h-6 w-6" />
-              <span className="hidden sm:inline ml-2 text-base">
-                أضف إلى السلة
-              </span>
-            </Button>
+            </button>
 
             {/* زر المفضلة */}
             <button
-              className="h-12 w-16 sm:w-auto border border-gray-300 dark:border-gray-600 rounded-md flex items-center justify-center gap-2 px-0 sm:px-4"
+              className={`h-12 w-12 flex items-center justify-center rounded-full border transition-all duration-200 ${
+                isFavorite?.(Number(product.id))
+                  ? "bg-red-500 text-white border-red-500"
+                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600"
+              }`}
               onClick={() =>
                 toggleFavorite?.({
                   id: Number(product.id),
@@ -330,18 +344,11 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             >
               <Heart
                 size={20}
+                fill={isFavorite?.(Number(product.id)) ? "currentColor" : "none"}
                 className={
-                  isFavorite?.(Number(product.id)) ? "text-red-500" : ""
-                }
-                fill={
-                  isFavorite?.(Number(product.id)) ? "currentColor" : "none"
+                  isFavorite?.(Number(product.id)) ? "text-white" : "text-red-500"
                 }
               />
-              <span className="hidden sm:inline ml-2 text-base">
-                {isFavorite?.(Number(product.id))
-                  ? "إزالة من المفضلة"
-                  : "إضافة إلى المفضلة"}
-              </span>
             </button>
           </div>
         </div>

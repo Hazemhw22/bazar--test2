@@ -109,7 +109,7 @@ export default function FavouritePage() {
 
   return (
     <div className="page-background">
-      <div className="container mx-auto px-4 py-8  rounded-lg">
+      <div className="container mx-auto px-4 py-8 ">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">

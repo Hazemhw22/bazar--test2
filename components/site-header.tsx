@@ -103,7 +103,7 @@ export function SiteHeader() {
               Arad, Israel
             </span>
             {/* حقل البحث - وسط */}
-            <div className="flex-2 mx-2 ">
+            <div className="flex-2 mx-2 w-full max-w-[180px]">
               <div className="relative">
                 <input
                   type="text"
@@ -118,7 +118,7 @@ export function SiteHeader() {
             </div>
 
             {/* الأيقونات - يمين */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center ">
               {mounted && <ThemeToggle />}
               <LanguageSelector />
             </div>
