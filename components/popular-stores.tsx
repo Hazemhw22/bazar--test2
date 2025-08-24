@@ -54,17 +54,24 @@ export function PopularStores() {
   return (
     <section className="py-8 px-2 md:px-4">
   <div className="mx-auto max-w-8xl">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-            Popular Shopes
-          </h2>
-          <Link
-            href="/shops"
-            className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
-          >
-            See All
-          </Link>
-        </div>
+   <div className="flex justify-between items-center mb-6">
+  {/* العنوان مع الخط */}
+  <div className="flex items-center gap-2">
+    <div className="w-1.5 h-6 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
+    <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+      Popular Shops
+    </h2>
+  </div>
+
+  {/* اللينك على أقصى اليمين */}
+  <Link
+    href="/shops"
+    className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
+  >
+    See All
+  </Link>
+</div>
+
 
         <div className="relative" {...swipeHandlers}>
           {/* Navigation Arrows */}
