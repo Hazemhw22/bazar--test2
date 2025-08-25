@@ -58,7 +58,7 @@ export default function InformationalPages() {
     switch (activeTab) {
       case "about":
         return (
-          <div className="space-y-8 w-full ">
+          <div className="space-y-8 w-full py-3">
             <div>
               <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-6">About Vristo</h2>
               <div className="prose prose-lg dark:prose-invert max-w-none">
@@ -579,12 +579,12 @@ export default function InformationalPages() {
     <div className="page-background">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-blue-800">
-        <div className="max-w-sm mx-auto px-2 py-4 sm:px-4 sm:py-8">
+        <div className="w-full max-w-screen-2xl mx-auto px-2 sm:px-6 py-4 sm:py-8">
           <div className="text-center">
-            <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-200 mb-2">
+            <h1 className="text-lg sm:text-2xl md:text-4xl font-bold text-gray-900 dark:text-gray-200 mb-2">
               Vristo Information Center
             </h1>
-            <p className="text-xs sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+            <p className="text-xs sm:text-base md:text-lg text-gray-700 dark:text-gray-300 leading-relaxed">
               Your comprehensive guide to everything you need to know about Vristo.
             </p>
           </div>
@@ -593,15 +593,15 @@ export default function InformationalPages() {
 
       {/* Navigation Tabs */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-blue-800 sticky top-0 z-10">
-        <div className="max-w-sm mx-auto px-0 sm:px-4">
-          <div className="flex overflow-x-auto no-scrollbar">
+        <div className="w-full max-w-screen-2xl mx-auto px-0 sm:px-6">
+          <div className="flex overflow-x-auto sm:overflow-x-visible no-scrollbar">
             {tabs.map((tab) => {
               const Icon = tab.icon
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-3 sm:px-6 py-2 sm:py-3 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
+                  className={`flex items-center gap-2 px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === tab.id
                       ? "border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400"
                       : "border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600"
@@ -617,9 +617,9 @@ export default function InformationalPages() {
       </div>
 
       {/* Content */}
-      <div className="max-w-sm mx-auto px-2 py-4 sm:px-4 sm:py-8">
+      <main className="w-full max-w-screen-2xl mx-auto px-2 md:px-4 py-4 sm:py-8">
         <div className="w-full">{renderContent()}</div>
-      </div>
+      </main>
     </div>
   )
 }

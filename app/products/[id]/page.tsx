@@ -32,7 +32,7 @@ export default async function ProductPage({
       categories:category ( id, desc, title, created_at )
     `
     )
-    .eq("id", Number(params.id)) // غيّر إلى params.id إذا كان id نص
+    .eq("id", Number(params.id)) 
     .single();
 
   if (error || !product) {

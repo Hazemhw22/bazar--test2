@@ -191,14 +191,14 @@ export default function ShopDetailPage() {
 
   if (!shop) {
     return (
-      <div className="flex justify-center items-center min-h-[40vh] text-lg text-red-500">
+      <div className="flex justify-center items-center min-h-[40vh] text-lg text-red-500 ">
         لم يتم العثور على المتجر
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full">
       {/* Header with Cover Image */}
       <div className="relative h-80 overflow-hidden">
         <Image
@@ -556,7 +556,7 @@ export default function ShopDetailPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {productsLoading ? (
                 <div className="text-center text-gray-400 col-span-full">
                   جاري تحميل المنتجات...

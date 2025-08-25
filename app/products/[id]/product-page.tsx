@@ -93,58 +93,14 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     return <div className="p-6 text-red-500">المنتج غير موجود أو حدث خطأ.</div>;
 
   return (
-    <div className=" mx-auto py-10 px-4">
-      {/* صور المنتج والتفاصيل */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-14">
+    <div className="w-full max-w-3xl mx-auto py-6 px-2 md:px-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
         {/* صور المنتج */}
         <div>
           <div
             className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden mb-6 h-96 flex items-center justify-center relative cursor-pointer group"
             onClick={() => setLightboxOpen(true)}
           >
-            {/* أزرار المشاركة أعلى الصورة */}
-            <div className="absolute top-3 left-3 z-10 flex gap-2">
-              <button
-                title="طباعة"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleShare("print");
-                }}
-                className="bg-white/80 dark:bg-gray-900/60 rounded-full p-2 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition"
-              >
-                <Printer size={18} />
-              </button>
-              <button
-                title="واتساب"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleShare("whatsapp");
-                }}
-                className="bg-white/80 dark:bg-gray-900/60 rounded-full p-2 hover:bg-green-100 dark:hover:bg-green-900/40 transition"
-              >
-                <MessageCircle size={18} />
-              </button>
-              <button
-                title="نسخ الرابط"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleShare("copy");
-                }}
-                className="bg-white/80 dark:bg-gray-900/60 rounded-full p-2 hover:bg-gray-200 dark:hover:bg-gray-800/40 transition"
-              >
-                <Copy size={18} />
-              </button>
-              <button
-                title="مشاركة"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleShare("share");
-                }}
-                className="bg-white/80 dark:bg-gray-900/60 rounded-full p-2 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition"
-              >
-                <Share2 size={18} />
-              </button>
-            </div>
             <ImageLightbox
               images={product.images}
               currentIndex={activeImage}
@@ -161,6 +117,49 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             <span className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition">
               اضغط لتكبير الصورة
             </span>
+          </div>
+          {/* أزرار المشاركة أسفل الصورة في كل الشاشات */}
+          <div className="flex gap-2 justify-center mb-4">
+            <button
+              title="طباعة"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleShare("print");
+              }}
+              className="bg-white/80 dark:bg-gray-900/60 rounded-full p-2 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition"
+            >
+              <Printer size={18} />
+            </button>
+            <button
+              title="واتساب"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleShare("whatsapp");
+              }}
+              className="bg-white/80 dark:bg-gray-900/60 rounded-full p-2 hover:bg-green-100 dark:hover:bg-green-900/40 transition"
+            >
+              <MessageCircle size={18} />
+            </button>
+            <button
+              title="نسخ الرابط"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleShare("copy");
+              }}
+              className="bg-white/80 dark:bg-gray-900/60 rounded-full p-2 hover:bg-gray-200 dark:hover:bg-gray-800/40 transition"
+            >
+              <Copy size={18} />
+            </button>
+            <button
+              title="مشاركة"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleShare("share");
+              }}
+              className="bg-white/80 dark:bg-gray-900/60 rounded-full p-2 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition"
+            >
+              <Share2 size={18} />
+            </button>
           </div>
           <div className="flex gap-2 justify-center">
             {product.images.map((image, index) => (
