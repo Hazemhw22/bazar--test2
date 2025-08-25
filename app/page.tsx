@@ -33,8 +33,8 @@ export default function Home() {
         </section>
 
 
-      {/* Under Categories */}
-      <HomeCategories />
+      {/* Under Categories
+      <HomeCategories /> */}
 
       {/* Offer sections with a banner after every 3 sections */}
       <MainProductSection title="Todays Best Deals For You!" products={offers} linkToAll="/products?filter=offers" />
