@@ -96,7 +96,7 @@ export function SiteHeader() {
         {/* Main header */}
         <div className="mx-auto px-6 py-2 md:py-1 flex justify-between items-center max-w-[1600px]">
           {/* فقط للموبايل */}
-          <div className="w-full flex md:hidden items-center justify-between gap-2">
+          <div className="w-full flex md:hidden items-center justify-between gap-1">
             {/* الموقع - يسار */}
             <span className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
               <span className="text-blue-600 dark:text-blue-400">📍</span>
@@ -118,7 +118,7 @@ export function SiteHeader() {
             </div>
 
             {/* الأيقونات - يمين */}
-            <div className="flex items-center ">
+            <div className="flex items-center whitespace-nowrap gap-2">
               {mounted && <ThemeToggle />}
               <LanguageSelector />
             </div>

@@ -5,13 +5,25 @@ type Theme = "light" | "dark" | "system";
 interface ThemeState {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  resolvedTheme: Theme;
-  setResolvedTheme: (theme: Theme) => void;
 }
 
+// قراءة الثيم من localStorage أو "system" كقيمة افتراضية
+const getInitialTheme = (): Theme => {
+  if (typeof window !== "undefined") {
+    const stored = window.localStorage.getItem("theme");
+    if (stored === "light" || stored === "dark" || stored === "system") {
+      return stored;
+    }
+  }
+  return "system";
+};
+
 export const useThemeStore = create<ThemeState>((set) => ({
-  theme: "system",
-  resolvedTheme: "light",
-  setTheme: (theme) => set({ theme }),
-  setResolvedTheme: (theme) => set({ resolvedTheme: theme }),
+  theme: getInitialTheme(),
+  setTheme: (theme) => {
+    set({ theme });
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("theme", theme);
+    }
+  },
 }));
