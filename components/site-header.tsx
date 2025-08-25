@@ -202,8 +202,6 @@ export function SiteHeader() {
             </div>
           </div>
         </div>
-
-        {/* Removed FixedButtons bar */}
       </header>
 
       {/* Padding below content so MobileNav doesn't cover it */}
@@ -270,12 +268,12 @@ export function SiteHeader() {
         </div>
 
         {/* الشعار والنص */}
-        <div className="flex flex-col items-center text-center flex-1 -translate-x-3">
+        <div className="flex flex-col items-center text-center flex-1 -translate-x-4">
           {/* شعار بحجم أكبر */}
           <VristoLogo size={130} className="mb-0" />
 
           {/* نص أصغر وتباعد أكبر */}
-          <span className="text-base font-semibold text-gray-800 dark:text-gray-200 ">
+          <span className="text-base font-semibold text-gray-800 dark:text-gray-200 mb-3">
             تسوق الآن مع عالمنا الواسع
           </span>
         </div>

@@ -1,49 +1,134 @@
 "use client"
 
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { supabase } from "@/lib/supabase"
 
-interface CategoryItem {
+interface Category {
+  id: number
   title: string
-  image: string
-  href: string
+  icon?: string
 }
 
-const DEFAULTS: CategoryItem[] = [
-  { title: "Health & Beauty", image: "/pngtree-portrait-of-pretty-girl-holding-gift-box-in-hands-png-image_13968885.png", href: "/categories" },
-  { title: "Groceries", image: "/pazar.png", href: "/categories" },
-  { title: "Sneakers", image: "/pngimg.com - sony_playstation_PNG17546.png", href: "/categories" },
-  { title: "Phone", image: "/pngimg.com - iphone16_PNG35.png", href: "/categories" },
-  { title: "Sports", image: "/Huawei-Logo.jpg", href: "/categories" },
-  { title: "School & Office", image: "/logo.svg", href: "/categories" },
-  { title: "Shoe", image: "/KFC_logo.svg.png", href: "/categories" },
-]
+export default function HomeCategories() {
+  const [categories, setCategories] = useState<Category[]>([])
+  const trackRef = useRef<HTMLDivElement | null>(null)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-export default function HomeCategories({ items = DEFAULTS }: { items?: CategoryItem[] }) {
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data } = await supabase.from("categories").select("*")
+      setCategories(data ?? [])
+    }
+    fetchCategories()
+  }, [])
+
+  // ⏩ Auto scroll desktop
+  useEffect(() => {
+    if (!categories.length) return
+    startAuto()
+    return stopAuto
+  }, [categories])
+
+  const startAuto = () => {
+    stopAuto()
+    intervalRef.current = setInterval(() => {
+      scrollByOne("right")
+    }, 4000)
+  }
+  const stopAuto = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current)
+  }
+
+  const scrollByOne = (dir: "left" | "right") => {
+    const el = trackRef.current
+    if (!el) return
+    const step = el.clientWidth / 4 // عرض ٤ عناصر في الهاتف
+    if (dir === "left") {
+      el.scrollBy({ left: -step, behavior: "smooth" })
+    } else {
+      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 2
+      if (atEnd) {
+        el.scrollTo({ left: 0, behavior: "smooth" })
+      } else {
+        el.scrollBy({ left: step, behavior: "smooth" })
+      }
+    }
+  }
+
   return (
     <section className="px-2">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-xl sm:text-2xl font-bold">Explore Popular Categories</h2>
         <Link href="/categories" className="text-blue-600 hover:underline text-sm">View All</Link>
       </div>
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-3">
-        {items.map((cat) => (
+
+      {/* 🟢 الهاتف: سحب يعرض ٤ عناصر */}
+      <div className="flex gap-0.5 overflow-x-auto snap-x snap-mandatory sm:hidden">
+        {categories.map((cat) => (
           <Link
-            key={cat.title}
-            href={cat.href}
-            className="group rounded-xl bg-white dark:bg-gray-800  p-3 flex flex-col items-center gap-2 hover:shadow-md transition-shadow"
+            key={cat.id}
+            href={`/categories/${cat.id}`}
+            className="flex-[0_0_25%] snap-start rounded-xl bg-white dark:bg-gray-800 flex flex-col items-center"
           >
-            <div className="relative w-20 h-20 rounded-full bg-gray-50 dark:bg-gray-700 overflow-hidden">
-              <Image src={cat.image} alt={cat.title} fill sizes="80px" className="object-contain" />
+            <div className="relative w-14 h-14 rounded-full bg-gray-50 dark:bg-gray-700 overflow-hidden">
+              {cat.icon ? (
+                <Image src={cat.icon} alt={cat.title} fill sizes="56px" className="object-contain" />
+              ) : (
+                <span className="text-gray-400 text-[10px] grid place-items-center w-full h-full">
+                  No Image
+                </span>
+              )}
             </div>
-            <div className="text-center text-xs sm:text-sm font-medium text-gray-800 dark:text-gray-100">
+            <div className="text-center text-xs font-medium text-gray-800 dark:text-gray-100 mt-1">
               {cat.title}
             </div>
           </Link>
         ))}
       </div>
+
+      {/* 🖥️ الديسكتوب: أسطر + أسهم + حركة */}
+      <div className="hidden sm:relative sm:flex items-center">
+        <button
+          onClick={() => scrollByOne("left")}
+          className="absolute -left-3 z-10 p-2 bg-white dark:bg-gray-700 rounded-full shadow"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <div
+          ref={trackRef}
+          className="flex gap-3 overflow-x-auto no-scrollbar py-2"
+        >
+          {categories.map((cat) => (
+            <Link
+              key={cat.id}
+              href={`/categories/${cat.id}`}
+              className="min-w-[160px] rounded-xl bg-white dark:bg-gray-800 p-3 flex flex-col items-center"
+            >
+              <div className="relative w-20 h-20 rounded-full bg-gray-50 dark:bg-gray-700 overflow-hidden">
+                {cat.icon ? (
+                  <Image src={cat.icon} alt={cat.title} fill sizes="80px" className="object-contain" />
+                ) : (
+                  <span className="text-gray-400 text-sm grid place-items-center w-full h-full">
+                    No Image
+                  </span>
+                )}
+              </div>
+              <div className="text-center text-sm font-medium text-gray-800 dark:text-gray-100 mt-1">
+                {cat.title}
+              </div>
+            </Link>
+          ))}
+        </div>
+        <button
+          onClick={() => scrollByOne("right")}
+          className="absolute -right-3 z-10 p-2 bg-white dark:bg-gray-700 rounded-full shadow"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      </div>
     </section>
   )
 }
-
-
