@@ -258,3 +258,12 @@ body {
     display: none;
   }
 }
+
+/* يمكنك إضافته في ملف globals.css أو tailwind.config */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

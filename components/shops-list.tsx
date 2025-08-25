@@ -29,7 +29,6 @@ import { Category, Shop as ShopBase, WorkHours } from "@/lib/type";
 // Extend Shop type to include categoryTitle and shop_desc
 type Shop = ShopBase & { categoryTitle: string; shop_desc: string };
 import { supabase } from "@/lib/supabase";
-import { incrementShopVisitCount } from "@/lib/tracking";
 
 type SortOption = "rating" | "products" | "alphabetical" | "newest";
 
@@ -362,25 +361,13 @@ export default function ShopsPage() {
                     </div>
 
                     {/* Visit Button */}
-                  <div className="flex justify-end">
-                    <Link
-                      href={`/shops/${shop.id}`}
-                      onClick={async (e) => {
-                        e.preventDefault(); // منع التنقل الفوري
-                        try {
-                          await incrementShopVisitCount(shop.id.toString());
-                        } catch (err) {
-                          console.error("Failed to increment visits:", err);
-                        }
-                        // بعد التحديث، انتقل إلى صفحة المتجر
-                        window.location.href = `/shops/${shop.id}`;
-                      }}
-                    >
-                      <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm">
-                        زيارة المتجر
-                      </Button>
-                    </Link>
-                  </div>
+                    <div className="flex justify-end">
+                      <Link href={`/shops/${shop.id}`}>
+                        <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm">
+                          زيارة المتجر
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

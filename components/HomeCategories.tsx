@@ -11,7 +11,7 @@ interface Category {
   title: string
   icon?: string
 }
-
+ 
 export default function HomeCategories() {
   const [categories, setCategories] = useState<Category[]>([])
   const trackRef = useRef<HTMLDivElement | null>(null)
@@ -59,34 +59,26 @@ export default function HomeCategories() {
   }
 
   return (
-    <section className="px-2">
-      <div className="flex items-center justify-between mb-3">
+    <section className="w-full bg-transparent">
+      <div className="flex items-center justify-between mb-3 px-4">
         <h2 className="text-xl sm:text-2xl font-bold">Explore Popular Categories</h2>
         <Link href="/categories" className="text-blue-600 hover:underline text-sm">View All</Link>
       </div>
 
-      {/* 🟢 الهاتف: سحب يعرض ٤ عناصر */}
-      <div className="flex gap-0.5 overflow-x-auto snap-x snap-mandatory sm:hidden">
-        {categories.map((cat) => (
-          <Link
-            key={cat.id}
-            href={`/categories/${cat.id}`}
-            className="flex-[0_0_25%] snap-start rounded-xl bg-white dark:bg-gray-800 flex flex-col items-center"
-          >
-            <div className="relative w-14 h-14 rounded-full bg-gray-50 dark:bg-gray-700 overflow-hidden">
-              {cat.icon ? (
-                <Image src={cat.icon} alt={cat.title} fill sizes="56px" className="object-contain" />
-              ) : (
-                <span className="text-gray-400 text-[10px] grid place-items-center w-full h-full">
-                  No Image
-                </span>
-              )}
+      {/* 🟢 الهاتف: سحب أفقي فقط على الشريط */}
+      <div className="w-full flex justify-center sm:hidden">
+        <div className="max-w-sm w-full flex gap-2 overflow-x-auto snap-x snap-mandatory px-2 pb-2 scrollbar-hide">
+          {categories.map((cat) => (
+            <div key={cat.id} className="flex-[0_0_25%] snap-start rounded-xl flex flex-col items-center py-2">
+              <div className="relative w-14 h-14 rounded-full bg-gray-700 overflow-hidden flex items-center justify-center">
+                <span className="text-gray-400 text-[10px]">No Image</span>
+              </div>
+              <div className="text-center text-xs font-medium text-gray-100 mt-1">
+                {cat.title}
+              </div>
             </div>
-            <div className="text-center text-xs font-medium text-gray-800 dark:text-gray-100 mt-1">
-              {cat.title}
-            </div>
-          </Link>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* 🖥️ الديسكتوب: أسطر + أسهم + حركة */}

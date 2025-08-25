@@ -58,17 +58,21 @@ export const fetchShops = async () => {
   const supabase = createServerSupabaseClient();
   const { data: shops, error } = await supabase
     .from("shops")
-    .select(`
+    .select(
+      `
       *,
       profiles:profiles(full_name)
-    `)
+    `
+    )
     .order("created_at", { ascending: false });
 
   if (error) throw new Error(error.message);
 
   // جلب أوقات العمل لكل متجر وتطبيعها فقط إذا كانت غير موجودة في shops.work_hours
   for (const shop of shops) {
-    const hasInlineWorkHours = Array.isArray((shop as any).work_hours) && (shop as any).work_hours.length > 0;
+    const hasInlineWorkHours =
+      Array.isArray((shop as any).work_hours) &&
+      (shop as any).work_hours.length > 0;
     if (hasInlineWorkHours) continue;
 
     const { data: work_hours } = await supabase
@@ -78,7 +82,12 @@ export const fetchShops = async () => {
 
     const normalized = (work_hours ?? []).map((wh: any) => {
       const day =
-        wh?.day ?? wh?.Day ?? wh?.day_of_week ?? wh?.weekday ?? wh?.week_day ?? "";
+        wh?.day ??
+        wh?.Day ??
+        wh?.day_of_week ??
+        wh?.weekday ??
+        wh?.week_day ??
+        "";
       const open =
         (typeof wh?.open === "boolean" ? wh.open : undefined) ??
         (typeof wh?.is_open === "boolean" ? wh.is_open : undefined) ??
@@ -94,6 +103,37 @@ export const fetchShops = async () => {
   }
 
   return shops as Shop[];
+};
+
+// Helper function to increment shop visit count (client-side version)
+export const incrementShopVisitCountClient = async (shopId: string) => {
+  const supabase = getSupabaseBrowserClient();
+
+  // First get the current visit_count
+  const { data: currentShop, error: fetchError } = await supabase
+    .from("shops")
+    .select("visit_count")
+    .eq("id", shopId)
+    .single();
+
+  if (fetchError) {
+    console.error("Error fetching shop:", fetchError);
+    return;
+  }
+
+  // Increment the visit_count (handle null/undefined case)
+  const currentCount = (currentShop?.visit_count as number) || 0;
+  const newVisitCount = currentCount + 1;
+
+  // Update the visit_count
+  const { error: updateError } = await supabase
+    .from("shops")
+    .update({ visit_count: newVisitCount })
+    .eq("id", shopId);
+
+  if (updateError) {
+    console.error("Error updating visit count:", updateError);
+  }
 };
 
 export const supabase = createClient(
