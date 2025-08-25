@@ -20,7 +20,7 @@ export function HeroSection() {
     },
     {
       id: 2,
-      title: "Premium Smartphones",
+      title: "Premium phones",
       subtitle: "Explore the latest technology",
       image: "/pngimg.com - iphone16_PNG35.png",
       bgColor: "bg-green-100 dark:bg-green-900/30",
@@ -63,7 +63,7 @@ export function HeroSection() {
   const { title, subtitle, image, bgColor } = slides[activeSlide]
 
   return (
-    <section className=" ">
+    <section>
       <AnimatePresence mode="wait">
         <motion.div
           key={activeSlide}
@@ -81,7 +81,14 @@ export function HeroSection() {
                       ${bgColor} border-gray-300 dark:border-gray-600`}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-center py-4 sm:py-10">
-            <div className="flex flex-col items-start text-gray-900 dark:text-gray-100">
+            
+            {/* النص */}
+            <motion.div
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.6 }}
+              className="flex flex-col items-center md:items-start text-center md:text-left text-gray-900 dark:text-gray-100 order-2 md:order-1"
+            >
               <motion.h1
                 key={title}
                 initial={{ opacity: 0 }}
@@ -116,10 +123,14 @@ export function HeroSection() {
                   Buy Now
                 </Link>
               </motion.div>
-            </div>
+            </motion.div>
 
+            {/* الصورة */}
             <motion.div
-              className="flex justify-center md:justify-end"
+              initial={{ x: 50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.6 }}
+              className="flex justify-center md:justify-end order-1 md:order-2"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -135,6 +146,7 @@ export function HeroSection() {
             </motion.div>
           </div>
 
+          {/* النقاط */}
           <div className="flex justify-center mt-3 sm:mt-4 pb-3 sm:pb-4 gap-2">
             {slides.map((_, index) => (
               <motion.button

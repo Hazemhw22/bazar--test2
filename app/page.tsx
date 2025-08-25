@@ -23,10 +23,15 @@ export default function Home() {
   return (
     <main className="flex flex-col gap-6 sm:p-2 bg-gray-50 dark:bg-gray-950 min-h-screen transition-colors duration-300">
       {/* 2 Heroes */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2"><HeroSection /></div>
-        <div className="hidden lg:block"><HeroSection /></div>
-      </section>
+        <section className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="col-span-1 lg:col-span-2">
+            <HeroSection />
+          </div>
+          <div className="col-span-1">
+            <HeroSection />
+          </div>
+        </section>
+
 
       {/* Under Categories */}
       <HomeCategories />
