@@ -31,22 +31,29 @@ export default function SuggestedProductsCarousel({
   const [isTransitioning, setIsTransitioning] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-  // Calculate how many products are visible at once
+  // Swipe handlers
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => goToNext(),
+    onSwipedRight: () => goToPrev(),
+    trackMouse: true,
+    preventScrollOnSwipe: true,
+    delta: 10,
+  })
+
+  // Responsive visible count
   const getVisibleCount = () => {
     if (typeof window === "undefined") return 4
     const width = window.innerWidth
-    if (width < 640) return 2 // Mobile: 2 products
-    if (width < 1024) return 3 // Tablet: 3 products
-    return 4 // Desktop: 4 products
+    if (width < 400) return 1 // Very small phones
+    if (width < 640) return 2 // Mobile
+    if (width < 1024) return 3 // Tablet
+    return 4 // Desktop
   }
 
   const [visibleCount, setVisibleCount] = useState(getVisibleCount())
 
   useEffect(() => {
-    const handleResize = () => {
-      setVisibleCount(getVisibleCount())
-    }
-
+    const handleResize = () => setVisibleCount(getVisibleCount())
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
   }, [])
@@ -79,128 +86,79 @@ export default function SuggestedProductsCarousel({
     }
   }
 
-  // Swipe handlers
-  const swipeHandlers = useSwipeable({
-    onSwipedLeft: goToNext,
-    onSwipedRight: goToPrev,
-    trackMouse: true,
-    preventScrollOnSwipe: true,
-    delta: 10,
-  })
-
-  // Auto-scroll functionality (optional)
-  const [isAutoScrolling, setIsAutoScrolling] = useState(false)
-
-  useEffect(() => {
-    if (!isAutoScrolling) return
-
-    const interval = setInterval(() => {
-      if (currentIndex >= maxIndex) {
-        setCurrentIndex(0)
-      } else {
-        goToNext()
-      }
-    }, 4000)
-
-    return () => clearInterval(interval)
-  }, [currentIndex, maxIndex, isAutoScrolling])
-
-  const cardWidth = 192 + 16 // 192px card width + 16px gap
-  const translateX = -currentIndex * cardWidth
-
-  // Don't render if no products
-  if (!products || products.length === 0) {
-    return null
-  }
+  if (!products || products.length === 0) return null
 
   return (
     <div className="mb-8">
-      {/* Header with title and controls */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{title}</h2>
-
-        {/* Desktop Navigation Arrows */}
-        <div className="hidden md:flex items-center gap-2">
+        {/* Desktop Arrows */}
+        <div className="hidden md:flex gap-2">
           <button
             onClick={goToPrev}
             disabled={!canGoPrev || isTransitioning}
-            className={`p-2 rounded-full border transition-all duration-200 ${
-              canGoPrev && !isTransitioning
+            className={`p-2 rounded-full border transition ${
+              canGoPrev
                 ? "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
                 : "bg-gray-100 dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
             }`}
-            aria-label="Previous products"
           >
             <ChevronLeft size={20} />
           </button>
-
           <button
             onClick={goToNext}
             disabled={!canGoNext || isTransitioning}
-            className={`p-2 rounded-full border transition-all duration-200 ${
-              canGoNext && !isTransitioning
+            className={`p-2 rounded-full border transition ${
+              canGoNext
                 ? "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
                 : "bg-gray-100 dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
             }`}
-            aria-label="Next products"
           >
             <ChevronRight size={20} />
-          </button>
-
-          {/* Auto-scroll toggle */}
-          <button
-            onClick={() => setIsAutoScrolling(!isAutoScrolling)}
-            className={`ml-2 px-3 py-1 text-xs rounded-full border transition-all duration-200 ${
-              isAutoScrolling
-                ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-            }`}
-          >
-            {isAutoScrolling ? "Auto ⏸" : "Auto ▶"}
           </button>
         </div>
       </div>
 
-      {/* Carousel Container */}
+      {/* Carousel */}
       <div className="relative">
-        {/* Mobile Navigation Arrows */}
+        {/* Mobile arrows */}
         {canGoPrev && (
           <button
             onClick={goToPrev}
             className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 bg-white dark:bg-gray-800 shadow-lg rounded-full border border-gray-200 dark:border-gray-700 md:hidden"
-            aria-label="Previous products"
           >
             <ChevronLeft size={16} />
           </button>
         )}
-
         {canGoNext && (
           <button
             onClick={goToNext}
             className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 bg-white dark:bg-gray-800 shadow-lg rounded-full border border-gray-200 dark:border-gray-700 md:hidden"
-            aria-label="Next products"
           >
             <ChevronRight size={16} />
           </button>
         )}
 
-        {/* Products Container */}
-        <div className="overflow-hidden" {...swipeHandlers}>
+        <div
+          className="overflow-x-auto scrollbar-hide"
+          {...swipeHandlers}
+        >
           <div
-            ref={scrollContainerRef}
-            className="flex gap-4 transition-transform duration-300 ease-out"
-            style={{
-              transform: `translateX(${translateX}px)`,
-              width: `${products.length * cardWidth}px`,
-            }}
+            className="flex gap-4 w-max transition-transform duration-300"
+            style={{ transform: `translateX(-${currentIndex * (100 / visibleCount)}%)` }}
           >
             {products.map((product) => (
-              <SuggestedProductCard key={product.id} product={product} />
+              <div
+                key={product.id}
+                className={`flex-shrink-0 w-[calc(100%/${visibleCount}-1rem)]`}
+              >
+                <SuggestedProductCard product={product} />
+              </div>
             ))}
           </div>
         </div>
 
-        {/* Progress Indicators */}
+        {/* Dots */}
         {maxIndex > 0 && (
           <div className="flex justify-center mt-4 gap-2">
             {Array.from({ length: maxIndex + 1 }, (_, index) => (
@@ -212,21 +170,15 @@ export default function SuggestedProductsCarousel({
                     ? "bg-blue-600 dark:bg-blue-400 w-6"
                     : "bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500"
                 }`}
-                aria-label={`Go to slide ${index + 1}`}
               />
             ))}
           </div>
         )}
-
-        {/* Product Counter */}
-        <div className="text-center mt-2 text-sm text-gray-500 dark:text-gray-400">
-          Showing {Math.min(currentIndex + visibleCount, products.length)} of {products.length} products
-        </div>
       </div>
 
-      {/* Touch Instructions (Mobile) */}
-      <div className="md:hidden text-center mt-4">
-        <p className="text-xs text-gray-500 dark:text-gray-400">👈 Swipe left or right to see more products 👉</p>
+      {/* Mobile swipe hint */}
+      <div className="md:hidden text-center mt-4 text-xs text-gray-500 dark:text-gray-400">
+        👈 اسحب لليسار أو اليمين لمزيد من المنتجات 👉
       </div>
     </div>
   )

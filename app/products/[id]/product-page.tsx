@@ -338,7 +338,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         />
       </div>
 
-      {/* منتجات مشابهة */}
+      منتجات مشابهة
       {similarProducts.length > 0 && (
         <div className="mt-6">
           <SuggestedProduct
