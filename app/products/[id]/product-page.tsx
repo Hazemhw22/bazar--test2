@@ -17,7 +17,7 @@ import {
   Copy,
   MessageCircle,
 } from "lucide-react";
-import SuggestedProduct from "../../../components/SuggestedProductsCarousel";
+import SuggestedProductCard from "@/components/SuggestedProductCard";
 import { useEffect, useState } from "react";
 import { supabase } from "../../../lib/supabase";
 import { ProductViewCounter } from "@/components/ProductViewCounter";
@@ -338,26 +338,36 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         />
       </div>
 
-      منتجات مشابهة
-      {similarProducts.length > 0 && (
-        <div className="mt-6">
-          <SuggestedProduct
-            products={similarProducts.map((p) => ({
-              id: Number(p.id),
-              name: p.title,
-              price: Number(p.price),
-              discountedPrice: Number(p.sale_price ?? p.price),
-              rating: Number(p.rating ?? 0),
-              reviews: Number(p.reviews ?? 0),
-              image: p.images?.[0] || "",
-              store: p.shops?.shop_name ?? "",
-              category: String(p.category ?? ""),
-              description: p.desc,
-            }))}
-            title="منتجات مشابهة"
-          />
-        </div>
-      )}
+{/* {similarProducts.length > 0 && (
+  <div className="mt-6">
+    <h2 className="text-xl font-semibold mb-4">منتجات مشابهة</h2>
+    <div className="overflow-x-auto scrollbar-hide">
+      <div className="flex gap-3">
+        {similarProducts.map((p) => (
+          <div
+            key={p.id}
+            className="flex-shrink-0 w-[calc(25%-0.75rem)] xs:w-[calc(33.33%-0.75rem)] sm:w-[calc(25%-0.75rem)]"
+          >
+            <SuggestedProductCard
+              product={{
+                id: Number(p.id),
+                name: p.title,
+                price: Number(p.price),
+                discountedPrice: Number(p.sale_price ?? p.price),
+                rating: Number(p.rating ?? 0),
+                reviews: Number(p.reviews ?? 0),
+                image: p.images?.[0] || "",
+                store: p.shops?.shop_name ?? "",
+              }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)} */}
+
+
 
       {/* عداد المشاهدات */}
       <ProductViewCounter productId={product.id} currentCount={product.view_count} />
