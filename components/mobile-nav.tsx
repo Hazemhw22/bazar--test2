@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Home, Heart, ShoppingBag, ClipboardList, Menu } from "lucide-react"
 import { useCart } from "./cart-provider"
 import { useState } from "react"
+import { useI18n } from "../lib/i18n"
 
 interface MobileNavProps {
   onCartToggle: () => void
@@ -12,6 +13,7 @@ interface MobileNavProps {
 export function MobileNav({ onCartToggle }: MobileNavProps) {
   const { totalItems } = useCart()
   const [showMenu, setShowMenu] = useState(false)
+  const { t } = useI18n()
 
   return (
     <>
@@ -21,7 +23,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
           className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
           <Home size={20} />
-          Home
+          {t("nav.home")}
         </Link>
 
         <Link
@@ -29,16 +31,16 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
           className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
           <Heart size={20} />
-          Favorites
+          {t("nav.favorites")}
         </Link>
 
         <button
           onClick={onCartToggle}
-          aria-label="Cart"
+          aria-label={t("nav.cart")}
           className="relative flex flex-col items-center text-xs text-blue-600 dark:text-blue-400 font-semibold hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
         >
           <ShoppingBag size={24} />
-          Cart
+          {t("nav.cart")}
           {totalItems > 0 && (
             <span className="absolute -top-1 -right-3 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white font-medium">
               {totalItems > 9 ? "9+" : totalItems}
@@ -51,7 +53,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
           className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
           <ClipboardList size={20} />
-          Orders
+          {t("nav.orders")}
         </Link>
 
         <button
@@ -59,7 +61,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
           className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
           <Menu size={20} />
-          Menu
+          {t("nav.menu")}
         </button>
       </nav>
 
@@ -74,7 +76,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
                 onClick={() => setShowMenu(false)}
               >
                 <span className="text-2xl mb-2">📱</span>
-                <span className="text-sm font-medium">Categories</span>
+                <span className="text-sm font-medium">{t("nav.categories")}</span>
               </Link>
               <Link
                 href="/shops"
@@ -82,7 +84,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
                 onClick={() => setShowMenu(false)}
               >
                 <span className="text-2xl mb-2">🏪</span>
-                <span className="text-sm font-medium">Shops</span>
+                <span className="text-sm font-medium">{t("nav.shops")}</span>
               </Link>
               <Link
                 href="/products"
@@ -90,7 +92,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
                 onClick={() => setShowMenu(false)}
               >
                 <span className="text-2xl mb-2">🛍️</span>
-                <span className="text-sm font-medium">Products</span>
+                <span className="text-sm font-medium">{t("nav.products")}</span>
               </Link>
               <Link
                 href="/contact"
@@ -98,7 +100,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
                 onClick={() => setShowMenu(false)}
               >
                 <span className="text-2xl mb-2">📞</span>
-                <span className="text-sm font-medium">Contact</span>
+                <span className="text-sm font-medium">{t("nav.contact")}</span>
               </Link>
               <Link
                 href="/account"
@@ -106,7 +108,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
                 onClick={() => setShowMenu(false)}
               >
                 <span className="text-2xl mb-2">👤</span>
-                <span className="text-sm font-medium">Account</span>
+                <span className="text-sm font-medium">{t("nav.account")}</span>
               </Link>
             </div>
           </div>

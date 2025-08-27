@@ -8,6 +8,7 @@ import { FavoritesProvider } from "./favourite-items";
 import { SiteHeader } from "./site-header";
 import SiteFooter from "./site-footer";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { HtmlLangDirSync, I18nProvider } from "../lib/i18n";
 
 const queryClient = new QueryClient();
 
@@ -18,17 +19,20 @@ export default function AppProviders({
 }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <CartProvider>
-          <FavoritesProvider>
-            <div className="min-h-screen flex flex-col page-background">
-              <SiteHeader />
-              <main className="mx-auto max-w-8xl px-2 md:px-4 mb-8">{children}</main>
-              <SiteFooter />
-            </div>
-          </FavoritesProvider>
-        </CartProvider>
-      </ThemeProvider>
+      <I18nProvider>
+        <HtmlLangDirSync />
+        <ThemeProvider>
+          <CartProvider>
+            <FavoritesProvider>
+              <div className="min-h-screen flex flex-col page-background">
+                <SiteHeader />
+                <main className="mx-auto max-w-8xl px-2 md:px-4 mb-8">{children}</main>
+                <SiteFooter />
+              </div>
+            </FavoritesProvider>
+          </CartProvider>
+        </ThemeProvider>
+      </I18nProvider>
     </QueryClientProvider>
   );
 }

@@ -5,8 +5,10 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Facebook, Twitter, Instagram, Mail, MapPin, Phone, ArrowUp } from "lucide-react"
 import { VristoLogo } from "./vristo-logo"
+import { useI18n } from "../lib/i18n"
 
 const SiteFooter: React.FC = () => {
+  const { t } = useI18n()
   const [showScrollTop, setShowScrollTop] = useState(false)
 
   useEffect(() => {
@@ -27,16 +29,16 @@ const SiteFooter: React.FC = () => {
               <VristoLogo size={110} className="mx-auto sm:mx-0" />
             </div>
             <p className="text-sm w-full text-center sm:text-left">
-              Subscribe to our newsletter to get latest updates
+              {t("footer.newsletterText")}
             </p>
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 w-full justify-center sm:justify-start">
               <input
                 type="email"
-                placeholder="Your Email Address"
+                placeholder={t("footer.emailPlaceholder")}
                 className="bg-white dark:bg-gray-700 border border-blue-200 dark:border-gray-600 rounded-l-md px-3 py-2 flex-grow text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:border-blue-500"
               />
               <button className="bg-blue-600 hover:bg-blue-700 text-white rounded-r-md px-4 py-2 text-sm whitespace-nowrap">
-                Subscribe
+                {t("footer.subscribe")}
               </button>
             </div>
             <div className="flex space-x-3 mt-6 justify-center w-full">
@@ -66,14 +68,14 @@ const SiteFooter: React.FC = () => {
 
           {/* Second column: Quick links */}
           <div className="flex flex-col space-y-4 items-center sm:items-start text-center sm:text-left">
-            <h3 className="font-semibold text-base">Quick Links</h3>
+            <h3 className="font-semibold text-base">{t("footer.quickLinks")}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
                   href="/stores/become-owner"
                   className="hover:text-blue-600 dark:hover:text-blue-400"
                 >
-                  Become a Store Owner
+                  {t("footer.becomeOwner")}
                 </Link>
               </li>
               <li>
@@ -81,7 +83,7 @@ const SiteFooter: React.FC = () => {
                   href="/delivery/become-driver"
                   className="hover:text-blue-600 dark:hover:text-blue-400"
                 >
-                  Become a Delivery Man
+                  {t("footer.becomeDriver")}
                 </Link>
               </li>
               <li>
@@ -89,7 +91,7 @@ const SiteFooter: React.FC = () => {
                   href="/help"
                   className="hover:text-blue-600 dark:hover:text-blue-400"
                 >
-                  Help & Support
+                  {t("footer.helpSupport")}
                 </Link>
               </li>
               <li>
@@ -97,7 +99,7 @@ const SiteFooter: React.FC = () => {
                   href="/privacy"
                   className="hover:text-blue-600 dark:hover:text-blue-400"
                 >
-                  Privacy Policy
+                  {t("footer.privacy")}
                 </Link>
               </li>
               <li>
@@ -105,7 +107,7 @@ const SiteFooter: React.FC = () => {
                   href="/terms"
                   className="hover:text-blue-600 dark:hover:text-blue-400"
                 >
-                  Terms & Conditions
+                  {t("footer.terms")}
                 </Link>
               </li>
             </ul>
@@ -113,12 +115,12 @@ const SiteFooter: React.FC = () => {
 
           {/* Third column: Contact info */}
           <div className="flex flex-col space-y-4 items-center sm:items-start text-center sm:text-left">
-            <h3 className="font-medium mb-4">Contact Us</h3>
+            <h3 className="font-medium mb-4">{t("footer.contactUs")}</h3>
             <div className="flex flex-col space-y-4">
               <div>
                 <div className="flex items-center justify-center sm:justify-start mb-2">
                   <Mail className="h-5 w-5 mr-2" />
-                  <h4 className="font-medium">Send us Mail</h4>
+                  <h4 className="font-medium">{t("footer.sendMail")}</h4>
                 </div>
                 <a
                   href="mailto:support@vristo.com"
@@ -130,7 +132,7 @@ const SiteFooter: React.FC = () => {
               <div>
                 <div className="flex items-center justify-center sm:justify-start mb-2">
                   <Phone className="h-5 w-5 mr-2" />
-                  <h4 className="font-medium">Contact Us</h4>
+                  <h4 className="font-medium">{t("footer.contact")}</h4>
                 </div>
                 <a href="tel:0506667277" className="text-sm hover:underline">
                   0506667277
@@ -139,7 +141,7 @@ const SiteFooter: React.FC = () => {
               <div>
                 <div className="flex items-center justify-center sm:justify-start mb-2">
                   <MapPin className="h-5 w-5 mr-2" />
-                  <h4 className="font-medium">Find us Here</h4>
+                  <h4 className="font-medium">{t("footer.findUs")}</h4>
                 </div>
                 <p className="text-sm">Arad, Israel</p>
               </div>
@@ -148,14 +150,14 @@ const SiteFooter: React.FC = () => {
 
           {/* Fourth column: Additional info */}
           <div className="flex flex-col space-y-4 items-center sm:items-start text-center sm:text-left">
-            <h3 className="font-semibold text-base">More Information</h3>
+            <h3 className="font-semibold text-base">{t("footer.moreInfo")}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
                   href="/faq"
                   className="hover:text-blue-600 dark:hover:text-blue-400"
                 >
-                  FAQs
+                  {t("footer.faqs")}
                 </Link>
               </li>
               <li>
@@ -163,7 +165,7 @@ const SiteFooter: React.FC = () => {
                   href="/shipping"
                   className="hover:text-blue-600 dark:hover:text-blue-400"
                 >
-                  Shipping Policy
+                  {t("footer.shippingPolicy")}
                 </Link>
               </li>
               <li>
@@ -171,7 +173,7 @@ const SiteFooter: React.FC = () => {
                   href="/returns"
                   className="hover:text-blue-600 dark:hover:text-blue-400"
                 >
-                  Return & Exchange
+                  {t("footer.returns")}
                 </Link>
               </li>
             </ul>
@@ -181,7 +183,7 @@ const SiteFooter: React.FC = () => {
 
       {/* Copyright */}
       <div className="bg-gray-800 dark:bg-gray-900 py-4 mt-10 text-center text-sm text-white">
-        © 2025 Vristo. All rights reserved.
+        © 2025 Vristo. {t("footer.rights")}
       </div>
 
       {/* Back to top button */}
@@ -189,7 +191,7 @@ const SiteFooter: React.FC = () => {
         <button
           onClick={scrollToTop}
           className="fixed bottom-16 right-6 z-50 bg-blue-600 text-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform animate-bounce"
-          aria-label="Back to top"
+          aria-label={t("footer.backToTop")}
         >
           <ArrowUp size={20} />
         </button>

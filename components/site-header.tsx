@@ -18,12 +18,14 @@ import { useCart } from "./cart-provider";
 import { MobileNav } from "./mobile-nav";
 import { VristoLogo } from "./vristo-logo";
 import { LanguageSelector } from "./language-select";
+import { useI18n } from "../lib/i18n";
 import ThemeToggle from "./theme-toggle";
 import { useOnClickOutside } from "../hooks/use-click-outside";
 import { CartSidebar } from "./cart-sidebar";
 import CategoryMenu from "./CategoryMenu";
 
 export function SiteHeader() {
+  const { t } = useI18n();
   const [mounted, setMounted] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
@@ -65,7 +67,7 @@ export function SiteHeader() {
                 <input
                   ref={searchInputRef}
                   type="text"
-                  placeholder="Search products..."
+                  placeholder={t("nav.searchPlaceholder") || "Search products..."}
                   className="w-full rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 py-2 pr-10 pl-3 text-sm shadow-sm focus:border-blue-600 dark:focus:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-600 dark:focus:ring-blue-400 text-gray-900 dark:text-gray-100"
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
@@ -138,7 +140,7 @@ export function SiteHeader() {
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors relative group flex items-center gap-1"
                 >
                   <Home size={16} />
-                  Home
+                  {t("nav.home")}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
                 </Link>
                 <Link
@@ -146,7 +148,7 @@ export function SiteHeader() {
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors relative group flex items-center gap-1"
                 >
                   <List size={16} />
-                  Categories
+                  {t("nav.categories")}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
                 </Link>
                 <Link
@@ -154,7 +156,7 @@ export function SiteHeader() {
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors relative group flex items-center gap-1"
                 >
                   <Heart size={16} />
-                  Favourite
+                  {t("nav.favorites")}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
                 </Link>
                 <Link
@@ -162,7 +164,7 @@ export function SiteHeader() {
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors relative group flex items-center gap-1"
                 >
                   <Store size={16} />
-                  Shops
+                  {t("nav.shops")}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
                 </Link>
                 <Link
@@ -170,7 +172,7 @@ export function SiteHeader() {
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors relative group flex items-center gap-1"
                 >
                   <BagIcon size={16} />
-                  Products
+                  {t("nav.products")}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
                 </Link>
                 <Link
@@ -178,7 +180,7 @@ export function SiteHeader() {
                   className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors relative group flex items-center gap-1"
                 >
                   <Phone size={16} />
-                  Contact
+                  {t("nav.contact")}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
                 </Link>
               </nav>

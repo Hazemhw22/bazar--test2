@@ -1,35 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import Image from "next/image";
+import { useI18n, supportedLanguages } from "../lib/i18n";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "../components/ui/dropdown-menu";
-
-const languages = [
-  { code: "ar", label: "العربية", flag: "https://flagcdn.com/w40/ae.png" },
-  { code: "he", label: "עברית", flag: "https://flagcdn.com/w40/il.png" },
-  { code: "en", label: "English", flag: "https://flagcdn.com/w40/us.png" },
-];
+} from "./ui/dropdown-menu";
 
 export function LanguageSelector() {
-  const [currentLang, setCurrentLang] = useState("en");
+  const { locale, setLocale } = useI18n();
 
-  useEffect(() => {
-    const saved = localStorage.getItem("lang");
-    if (saved) setCurrentLang(saved);
-  }, []);
-
-  const currentLangData =
-    languages.find((l) => l.code === currentLang) || languages[2];
-
-  const handleSelect = (langCode: string) => {
-    localStorage.setItem("lang", langCode);
-    setCurrentLang(langCode);
-  };
+  const currentLangData = useMemo(() => {
+    return supportedLanguages.find((l) => l.code === locale) || supportedLanguages[0];
+  }, [locale]);
 
   return (
     <DropdownMenu>
@@ -46,10 +32,10 @@ export function LanguageSelector() {
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-30">
-        {languages.map((lang) => (
+        {supportedLanguages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
-            onClick={() => handleSelect(lang.code)}
+            onClick={() => setLocale(lang.code as any)}
             className="flex items-center gap-2"
           >
             <Image

@@ -2,6 +2,7 @@ import type React from "react";
 import "./globals.css";
 import AppProviders from "../components/AppProviders";
 import BreadcrumbsNav from "../components/BreadcrumbsNav";
+import { HtmlLangDirSync } from "../lib/i18n";
 
 export const metadata = {
   title: "Vristo",
@@ -39,6 +40,7 @@ export default function RootLayout({
       </head>
       <body className="bg-background text-foreground transition-colors duration-300">
         <AppProviders>
+        <HtmlLangDirSync />   {/* 🔥 الآن عنده access لـ I18nContext */}
           <BreadcrumbsNav />
           <main className="mx-auto max-w-screen-2xl 2xl:max-w-[1680px] px-2 md:px-4">{children}</main>
         </AppProviders>

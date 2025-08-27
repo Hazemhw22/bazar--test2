@@ -7,6 +7,7 @@ import { useCart } from "./cart-provider";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { ScrollArea } from "./ui/scroll-area";
+import { useI18n } from "../lib/i18n";
 
 interface CartSidebarProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface CartSidebarProps {
 export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
   const { items, removeItem, updateQuantity, totalPrice, clearCart } =
     useCart();
+  const { t } = useI18n();
 
   // Calculate additional costs
   const subtotal = totalPrice;
@@ -36,9 +38,9 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
           {/* Header */}
           <div className="flex items-center justify-between border-b p-4">
             <div>
-              <h2 className="text-lg font-semibold">Shopping Cart</h2>
+              <h2 className="text-lg font-semibold">{t("cart.title")}</h2>
               <p className="text-sm text-gray-500">
-                {items.length} {items.length === 1 ? "item" : "items"}
+                {items.length} {items.length === 1 ? t("cart.item") : t("cart.items")}
               </p>
             </div>
             <button
@@ -55,13 +57,11 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
               <div className="flex flex-col items-center justify-center h-full text-center p-6">
                 <ShoppingBag size={64} className="text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                  Your cart is empty
+                  {t("cart.empty")}
                 </h3>
-                <p className="text-gray-500 mb-6">
-                  Add some products to get started!
-                </p>
+                <p className="text-gray-500 mb-6">{t("cart.emptyHint")}</p>
                 <Button onClick={onClose} className="w-full">
-                  Continue Shopping
+                  {t("cart.continueShopping")}
                 </Button>
               </div>
             ) : (
@@ -89,7 +89,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                             {item.name}
                           </h3>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            ${item.price.toFixed(2)} each
+                            ${item.price.toFixed(2)} {t("cart.each")}
                           </p>
 
                           {/* Quantity Controls */}
@@ -128,7 +128,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                               <button
                                 onClick={() => removeItem(item.id)}
                                 className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors opacity-0 group-hover:opacity-100"
-                                title="Remove item"
+                                title={t("cart.removeItem")}
                               >
                                 <Trash2 size={14} />
                               </button>
@@ -150,32 +150,26 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
               <div className="p-4 space-y-3">
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      Subtotal
-                    </span>
+                    <span className="text-gray-600 dark:text-gray-400">{t("cart.subtotal")}</span>
                     <span className="font-medium">${subtotal.toFixed(2)}</span>
                   </div>
 
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      Shipping
-                    </span>
+                    <span className="text-gray-600 dark:text-gray-400">{t("cart.shipping")}</span>
                     <span className="font-medium">
-                      {shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
+                      {shipping === 0 ? t("cart.free") : `$${shipping.toFixed(2)}`}
                     </span>
                   </div>
 
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">
-                      Tax
-                    </span>
+                    <span className="text-gray-600 dark:text-gray-400">{t("cart.tax")}</span>
                     <span className="font-medium">${tax.toFixed(2)}</span>
                   </div>
 
                   <Separator />
 
                   <div className="flex justify-between text-base">
-                    <span className="font-semibold">Total</span>
+                    <span className="font-semibold">{t("cart.total")}</span>
                     <span className="font-bold text-lg">
                       ${total.toFixed(2)}
                     </span>
@@ -183,9 +177,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 </div>
 
                 {shipping > 0 && (
-                  <p className="text-xs text-gray-500 text-center">
-                    Free shipping on orders over $100
-                  </p>
+                  <p className="text-xs text-gray-500 text-center">{t("cart.freeShippingHint")}</p>
                 )}
 
                 {/* Action Buttons */}
@@ -193,13 +185,13 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                   <div className="flex flex-col gap-2">
                     <Link href="/cart" onClick={onClose}>
                       <Button variant="outline" className="w-full" size="lg">
-                        View Full Cart
+                        {t("cart.viewFull")}
                       </Button>
                     </Link>
 
                     <Link href="/checkout" onClick={onClose}>
                       <Button className="w-full" size="lg">
-                        Checkout (${total.toFixed(2)})
+                        {t("cart.checkout")} (${total.toFixed(2)})
                       </Button>
                     </Link>
                   </div>
@@ -211,7 +203,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       onClick={clearCart}
                       className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                     >
-                      Clear All
+                      {t("cart.clearAll")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -219,7 +211,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                       onClick={onClose}
                       className="flex-1"
                     >
-                      Continue Shopping
+                      {t("cart.continueShopping")}
                     </Button>
                   </div>
                 </div>
