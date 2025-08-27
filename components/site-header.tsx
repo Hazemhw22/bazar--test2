@@ -120,10 +120,11 @@ export function SiteHeader() {
             </div>
 
             {/* الأيقونات - يمين */}
-            <div className="flex items-center whitespace-nowrap gap-2">
-              {mounted && <ThemeToggle />}
-              <LanguageSelector />
-            </div>
+           <div className="flex items-center whitespace-nowrap gap-2">
+            {mounted && <ThemeToggle />}
+            {mounted && <LanguageSelector />}
+          </div>
+
           </div>
 
           {/* باقي الهيدر للديسكتوب */
@@ -196,7 +197,7 @@ export function SiteHeader() {
               <Link href="/orders" className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="My Orders">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2zM7.17 4l.84 2h8.17l1.84-2H22v2h-2l-3.6 7.59L15.25 16H8v-2h6.31l3.58-7H7.17z"/></svg>
               </Link>
-              <LanguageSelector />
+              {mounted && <LanguageSelector />}
               <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative" aria-label="الإشعارات">
                 <Bell size={20} />
                 <span className="absolute -top-1 -right-1 flex h-2 w-2 rounded-full bg-red-500"></span>
