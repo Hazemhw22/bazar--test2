@@ -13,3 +13,13 @@ export async function incrementShopVisitCount(shopId: string) {
     console.error("Error incrementing shop visit count:", error)
   }
 }
+// Supabase function to increment product cart count
+export async function incrementProductCartCount(productId: string) {
+  const { data, error } = await supabase.from("products").select("cart_count").eq("id", productId).single()
+
+  if (error || !data) return
+
+  const newCount = (data.cart_count ?? 0) + 1
+
+  await supabase.from("products").update({ cart_count: newCount }).eq("id", productId)
+}

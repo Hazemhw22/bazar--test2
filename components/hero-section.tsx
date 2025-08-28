@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { useSwipeable } from "react-swipeable"
 
 export function HeroSection() {
@@ -40,9 +40,7 @@ export function HeroSection() {
     trackMouse: true,
   })
 
-  useEffect(() => {
-    setActiveSlide(0)
-  }, [])
+  useEffect(() => setActiveSlide(0), [])
 
   useEffect(() => {
     if (isInteracting) return
@@ -53,7 +51,7 @@ export function HeroSection() {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
     }
-  }, [activeSlide, isInteracting, slides.length])
+  }, [activeSlide, isInteracting])
 
   const handleInteractionStart = () => setIsInteracting(true)
   const handleInteractionEnd = () => setIsInteracting(false)
@@ -63,105 +61,59 @@ export function HeroSection() {
   const { title, subtitle, image, bgColor } = slides[activeSlide]
 
   return (
-    <section>
-      <AnimatePresence mode="wait">
+    <section
+      {...swipeHandlers}
+      onMouseEnter={handleInteractionStart}
+      onMouseLeave={handleInteractionEnd}
+      onTouchStart={handleInteractionStart}
+      onTouchEnd={handleInteractionEnd}
+      className={`mx-auto max-w-sm sm:max-w-2xl md:max-w-4xl lg:max-w-screen-2xl 2xl:max-w-[1600px]
+                  px-2 sm:px-6 md:px-8 rounded-xl shadow-lg border transition-all duration-500 
+                  ${bgColor} border-gray-300 dark:border-gray-600`}
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-center py-4 sm:py-10">
+        {/* النص */}
         <motion.div
-          key={activeSlide}
-          {...swipeHandlers}
-          onMouseEnter={handleInteractionStart}
-          onMouseLeave={handleInteractionEnd}
-          onTouchStart={handleInteractionStart}
-          onTouchEnd={handleInteractionEnd}
+          key={title} // يجعل النص يتغير مع الشرائح
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className={`mx-auto max-w-sm sm:max-w-2xl md:max-w-4xl lg:max-w-screen-2xl 2xl:max-w-[1600px]
-                      px-2 sm:px-6 md:px-8 rounded-xl shadow-lg border transition-all duration-500 
-                      ${bgColor} border-gray-300 dark:border-gray-600`}
+          className="flex flex-col items-center md:items-start text-center md:text-left text-gray-900 dark:text-gray-100 order-2 md:order-1"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-center py-4 sm:py-10">
-            
-            {/* النص */}
-            <motion.div
-              initial={{ x: -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.6 }}
-              className="flex flex-col items-center md:items-start text-center md:text-left text-gray-900 dark:text-gray-100 order-2 md:order-1"
-            >
-              <motion.h1
-                key={title}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.98 }}
-                className="text-xl sm:text-3xl md:text-5xl font-bold mb-2 sm:mb-3"
-              >
-                {title}
-              </motion.h1>
-
-              <motion.p
-                key={subtitle}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                className="text-sm sm:text-lg md:text-xl mb-4 sm:mb-5 text-gray-700 dark:text-gray-300"
-              >
-                {subtitle}
-              </motion.p>
-
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-                <Link
-                  href="/products"
-                  className="bg-blue-600 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-md font-medium hover:bg-blue-700 transition-colors text-xs sm:text-base"
-                >
-                  Buy Now
-                </Link>
-              </motion.div>
-            </motion.div>
-
-            {/* الصورة */}
-            <motion.div
-              initial={{ x: 50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.6 }}
-              className="flex justify-center md:justify-end order-1 md:order-2"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <motion.img
-                key={image}
-                src={image}
-                alt={title}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="h-40 sm:h-72 md:h-96 w-auto object-contain"
-              />
-            </motion.div>
-          </div>
-
-          {/* النقاط */}
-          <div className="flex justify-center mt-3 sm:mt-4 pb-3 sm:pb-4 gap-2">
-            {slides.map((_, index) => (
-              <motion.button
-                key={index}
-                onClick={() => setActiveSlide(index)}
-                animate={{ width: activeSlide === index ? 20 : 8 }}
-                transition={{ duration: 0.3 }}
-                className={`h-2 rounded-full ${
-                  activeSlide === index ? "bg-blue-600 dark:bg-blue-400" : "bg-gray-300 dark:bg-gray-600"
-                }`}
-              />
-            ))}
-          </div>
+          <h1 className="text-xl sm:text-3xl md:text-5xl font-bold mb-2 sm:mb-3">{title}</h1>
+          <p className="text-sm sm:text-lg md:text-xl mb-4 sm:mb-5 text-gray-700 dark:text-gray-300">{subtitle}</p>
+          <Link
+            href="/products"
+            className="bg-blue-600 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-md font-medium hover:bg-blue-700 transition-colors text-xs sm:text-base"
+          >
+            Buy Now
+          </Link>
         </motion.div>
-      </AnimatePresence>
+
+        {/* الصورة */}
+        <motion.div
+          key={image} // تجعل الصورة تتغير مع الشرائح
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="flex justify-center md:justify-end order-1 md:order-2"
+        >
+          <img src={image} alt={title} className="h-40 sm:h-72 md:h-96 w-auto object-contain" />
+        </motion.div>
+      </div>
+
+      {/* النقاط */}
+      <div className="flex justify-center mt-3 sm:mt-4 pb-3 sm:pb-4 gap-2">
+        {slides.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setActiveSlide(index)}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              activeSlide === index ? "bg-blue-600 dark:bg-blue-400 w-5" : "bg-gray-300 dark:bg-gray-600 w-2"
+            }`}
+          />
+        ))}
+      </div>
     </section>
   )
 }

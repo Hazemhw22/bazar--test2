@@ -103,7 +103,7 @@ export default function Products() {
       {/* Hero */}
       <div className="relative w-full h-64 md:h-80 lg:h-96 rounded-2xl overflow-hidden mb-8">
         <Image
-          src="/shutterstock_342248561_688941.jpg"
+          src="/stylish-asian-senior-woman-going-shopping-wearing-trendy-clothes-sunglasses-holding-store-bags-w.jpg"
           alt="Collection hero"
           fill
           priority

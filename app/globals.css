@@ -30,6 +30,12 @@ body {
     text-wrap: balance;
   }
 }
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap');
+
+:root {
+  --font-sans: 'Montserrat', sans-serif;
+}
+
 
 @layer base {
   :root {
