@@ -240,9 +240,7 @@ body {
   border-color: rgb(30 58 138) !important;
 }
 
-* {
-  transition: none !important;
-}
+
 
 /* إخفاء شريط السحب في الهاتف */
 @media (max-width: 767px) {
