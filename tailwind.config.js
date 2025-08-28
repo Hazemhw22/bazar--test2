@@ -14,9 +14,7 @@ module.exports = {
       center: true,
       padding: "2rem",
       screens: {
-        xs: '320px',
-        "2xl": "1720px",
-        "3xl": "1840px",
+        "2xl": "1400px",
       },
     },
     extend: {
@@ -76,7 +74,6 @@ module.exports = {
       },
       screens: {
         mobile: { max: "767px" },
-        "3xl": "1920px",
       },
     },
   },

@@ -43,7 +43,7 @@ export default function ShopsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
 
-  const itemsPerPage = 9;
+  const itemsPerPage = 6;
 
   // جلب البيانات الحقيقية من supabase
   useEffect(() => {
@@ -198,82 +198,114 @@ export default function ShopsPage() {
             <p className="text-gray-600 dark:text-gray-400">{t("shops.noResultsHint")}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {paginatedShops.map((shop) => (
               <Card
                 key={shop.id}
-                className="overflow-hidden hover:shadow-md transition-all duration-300 group"
+                className="overflow-hidden hover:shadow-lg transition-all duration-300 group"
               >
                 <CardContent className="p-0">
                   {/* Shop Cover Image */}
-                  <div className="relative h-32 overflow-hidden flex items-center justify-center">
+                  <div className="relative overflow-hidden flex items-center justify-center aspect-[16/9] sm:aspect-[5/2]">
                     <Image
                       src={shop.cover_image_url || "/placeholder.svg"}
                       alt={shop.shop_name}
                       fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-black/20" />
-                  </div>
 
-                  {/* Shop Logo - بارز وفي منتصف الكارد بين الغلاف والمحتوى */}
-                  <div
-                    className="flex justify-center"
-                    style={{
-                      marginTop: "-2rem",
-                      zIndex: 20,
-                      position: "relative",
-                    }}
-                  >
-                    <div className="w-16 h-16 rounded-full border-2 border-white shadow-lg overflow-hidden bg-white flex items-center justify-center">
-                      <Image
-                        src={shop.logo_url || "/placeholder.svg"}
-                        alt={`${shop.shop_name} logo`}
-                        width={64}
-                        height={64}
-                        className="object-cover w-16 h-16"
-                      />
+                    {/* Shop Logo في المنتصف */}
+                    <div
+                      className="absolute left-1/2"
+                      style={{
+                        bottom: "1rem",
+                        transform: "translateX(-50%)",
+                        zIndex: 10,
+                        pointerEvents: "none",
+                      }}
+                    >
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white flex items-center justify-center">
+                        <Image
+                          src={shop.logo_url || "/placeholder.svg"}
+                          alt={`${shop.shop_name} logo`}
+                          width={80}
+                          height={80}
+                          sizes="64px"
+                          className="object-cover w-16 h-16 sm:w-20 sm:h-20"
+                        />
+                      </div>
                     </div>
                   </div>
 
                   {/* Shop Info */}
-                  <div className="p-4 pt-3 flex flex-col gap-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                  <div className="p-4 sm:p-6 pt-4 flex flex-col gap-3">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                         {shop.shop_name}
                       </h3>
-                      <span className="text-[10px] text-gray-400 whitespace-nowrap ms-auto">
+                      <span className="text-[10px] sm:text-xs text-gray-400 whitespace-nowrap ms-auto">
                         {shop.profiles?.full_name ?? shop.owner}
                       </span>
                     </div>
 
                     {/* الوصف */}
-                    <p className="text-xs leading-snug text-gray-600 dark:text-gray-400 mb-1 h-10 overflow-hidden">
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1 line-clamp-2">
                       {shop.shop_desc}
                     </p>
 
-                    {/* Stats (compact) */}
-                    <div className="flex items-center gap-3 text-xs mb-1">
-                      <div className="flex items-center gap-1">
-                        <Package className="h-3 w-3 text-blue-500" />
-                        <span className="text-gray-700 dark:text-gray-200 font-medium">
-                          {shop.productsCount ?? "-"}
+                    {/* Stats */}
+                    <div className="grid grid-cols-3 gap-2 mb-2 text-center">
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-center gap-1 mb-1">
+                          <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                          <span className="font-semibold text-gray-900 dark:text-white text-sm">
+                            {/* {shop.rating ?? "-"} */}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {/* {shop.reviews ? (${shop.reviews}) : ""} */}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-                        <MapPin className="h-3 w-3" />
-                        <span className="truncate max-w-[160px]">{shop.address}</span>
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-center gap-1 mb-1">
+                          <Package className="h-4 w-4 text-blue-500" />
+                          <span className="font-semibold text-gray-900 dark:text-white text-sm">
+                            {shop.productsCount ?? "-"}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          Products
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <div className="flex items-center gap-1 mb-1">
+                          <Clock className="h-4 w-4 text-green-500" />
+                          <span className="font-semibold text-gray-900 dark:text-white text-xs">
+                            {/* Delivery time not available in type, show dash */}
+                            -
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          Delivery
+                        </span>
                       </div>
                     </div>
                     {/* الكاتيجوري */}
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[10px] px-2 py-0.5">
-                        {shop.categoryTitle}
-                      </Badge>
+                    {shop.categoryTitle && (
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge>{shop.categoryTitle}</Badge>
+                      </div>
+                    )}
+                    {/* الموقع */}
+                    <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-1">
+                      <MapPin className="h-4 w-4 shrink-0" />
+                      <span className="truncate">{shop.address}</span>
                     </div>
 
                     {/* ساعات العمل */}
-                    <div className="flex items-center gap-1 text-[10px] text-gray-500 dark:text-gray-400 mb-2">
+                    <div className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 mb-2">
                       <Clock className="h-3 w-3" />
                       {(() => {
                         let workHoursArr: WorkHours[] = [];
@@ -319,7 +351,7 @@ export default function ShopsPage() {
                         );
                         return todayWork
                           ? todayWork.open
-                            ? `${todayWork.day}: ${todayWork.startTime} - ${todayWork.endTime}`
+                            ? `${todayWork.day} ${todayWork.startTime} - ${todayWork.endTime}`
                             : `${todayWork.day}: مغلق`
                           : "لا يوجد دوام اليوم";
                       })()}
@@ -328,7 +360,7 @@ export default function ShopsPage() {
                     {/* Visit Button */}
                     <div className="flex justify-end">
                       <Link href={`/shops/${shop.id}`}>
-                        <Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-md text-xs">
+                        <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm">
                           زيارة المتجر
                         </Button>
                       </Link>
