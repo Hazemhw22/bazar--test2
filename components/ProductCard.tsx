@@ -22,11 +22,8 @@ export function ProductCard({ product }: ProductCardProps) {
   const { isFavorite, toggleFavorite } = useFavorites();
 
   const mainImage = product.images?.[0] || "/placeholder.svg";
-
-  // price & sale_price adjustments
   const basePrice = Number(product.price) || 0;
   const discountedPrice = product.sale_price ?? basePrice;
-
   const category_name = product.categories?.title;
   const [activeImage, setActiveImage] = useState(mainImage);
 
@@ -126,7 +123,7 @@ export function ProductCard({ product }: ProductCardProps) {
             {product.title}
           </h3>
 
-          {/* ✅ Shop & Category فوق السعر مباشرة */}
+          {/* Shop & Category فوق السعر مباشرة */}
           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-2">
             {product.shops?.shop_name && (
               <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">
@@ -166,9 +163,9 @@ export function ProductCard({ product }: ProductCardProps) {
           <Dialog.Content className="fixed z-50 top-1/2 left-1/2 max-w-5xl w-[95vw] max-h-[90vh] overflow-auto rounded-2xl bg-white dark:bg-gray-900 shadow-2xl transform -translate-x-1/2 -translate-y-1/2 focus:outline-none border border-gray-200 dark:border-gray-700">
             <Dialog.Title className="sr-only">تفاصيل المنتج</Dialog.Title>
             <div className="grid md:grid-cols-2 gap-8 p-6">
+
               {/* Product Images */}
               <div className="space-y-4">
-                {/* Main Image */}
                 <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800">
                   <Image
                     src={activeImage}
@@ -178,14 +175,11 @@ export function ProductCard({ product }: ProductCardProps) {
                   />
                 </div>
 
-                {/* Additional Images Grid */}
                 <div className="grid grid-cols-4 gap-2">
                   {additionalImages.map((image, index) => (
                     <button
                       key={index}
-                      onClick={() =>
-                        setActiveImage(image || "/placeholder.svg")
-                      }
+                      onClick={() => setActiveImage(image || "/placeholder.svg")}
                       className={`relative aspect-square rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800 ring-2 transition-all ${
                         activeImage === image
                           ? "ring-blue-500"
@@ -213,33 +207,38 @@ export function ProductCard({ product }: ProductCardProps) {
                     {product.desc || "لا يوجد وصف"}
                   </p>
                 </div>
-                {/* 🟢 Shop & Category */}
-                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                      {product.shops?.shop_name && (
-                        <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">
-                          {product.shops.shop_name}
-                        </span>
-                      )}
-                      {category_name && (
-                        <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full">
-                          {category_name}
-                        </span>
-                      )}
-                    </div>
-                {/* ✅ القسم المثبت في الأسفل */}
-                <div className="mt-auto sticky bottom-0 left-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4 space-y-4">
+
+                {/* Shop & Category */}
+                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                  {product.shops?.shop_name && (
+                    <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">
+                      {product.shops.shop_name}
+                    </span>
+                  )}
+                  {category_name && (
+                    <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full">
+                      {category_name}
+                    </span>
+                  )}
+                </div>
+
+                {/* ✅ القسم السفلي المثبت في المودال */}
+                <div className="mt-auto sticky bottom-0 left-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4 h-[30%] flex flex-col justify-between space-y-3 overflow-y-auto">
+
                   {/* Price */}
-                  <div className="space-y-2">
-                    {discountedPrice !== basePrice && (
-                      <p className="text-lg text-gray-500 dark:text-gray-400 line-through">
-                        ₪{basePrice.toFixed(2)}
+                  <div className="flex flex-col space-y-1">
+                    <div className="flex items-center justify-between">
+                      {discountedPrice !== basePrice && (
+                        <p className="text-sm text-gray-500 dark:text-gray-400 line-through">
+                          ₪{basePrice.toFixed(2)}
+                        </p>
+                      )}
+                      <p className="text-xl font-bold text-gray-900 dark:text-white">
+                        ₪{discountedPrice.toFixed(2)}
                       </p>
-                    )}
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                      ₪{discountedPrice.toFixed(2)}
-                    </p>
+                    </div>
                     {product.sale_price && discountedPrice < basePrice && (
-                      <p className="text-green-600 dark:text-green-400 font-medium">
+                      <p className="text-green-600 dark:text-green-400 text-xs font-medium">
                         You save ₪{(basePrice - discountedPrice).toFixed(2)} (
                         {Math.round(
                           ((basePrice - discountedPrice) / basePrice) * 100
@@ -252,17 +251,15 @@ export function ProductCard({ product }: ProductCardProps) {
                   {/* Favorite Button */}
                   <button
                     onClick={handleToggleFavorite}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border w-full ${
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-md border w-full text-sm ${
                       isFavorite(Number(product.id))
                         ? "bg-red-500 text-white border-red-500"
                         : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600"
                     } transition-colors`}
                   >
                     <Heart
-                      size={18}
-                      fill={
-                        isFavorite(Number(product.id)) ? "currentColor" : "none"
-                      }
+                      size={14}
+                      fill={isFavorite(Number(product.id)) ? "currentColor" : "none"}
                     />
                     {isFavorite(Number(product.id))
                       ? "Remove from Favorites"
@@ -270,23 +267,23 @@ export function ProductCard({ product }: ProductCardProps) {
                   </button>
 
                   {/* Quantity Selector */}
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="font-medium text-gray-900 dark:text-white">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">
                       Quantity:
                     </span>
-                    <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg">
+                    <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-md">
                       <button
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        className="px-2 py-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                       >
                         -
                       </button>
-                      <span className="px-4 py-2 font-medium min-w-[3rem] text-center">
+                      <span className="px-3 py-1 text-sm font-medium min-w-[2rem] text-center">
                         {quantity}
                       </span>
                       <button
                         onClick={() => setQuantity(quantity + 1)}
-                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        className="px-2 py-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                       >
                         +
                       </button>
@@ -294,17 +291,17 @@ export function ProductCard({ product }: ProductCardProps) {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-3">
+                  <div className="flex gap-2">
                     <button
                       onClick={handleAddToCart}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
                     >
-                      <ShoppingBag size={20} />
+                      <ShoppingBag size={16} />
                       Add to Cart
                     </button>
                     <Link
                       href={`/products/${product.id}`}
-                      className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                      className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-center"
                     >
                       View Details
                     </Link>
