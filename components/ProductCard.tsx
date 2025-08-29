@@ -1,11 +1,10 @@
 "use client";
 
-import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Heart, Plus, Star, ShoppingBag, Eye } from "lucide-react";
+import { Heart, Plus, ShoppingBag, Eye } from "lucide-react";
 import { useCart } from "./cart-provider";
 import { useFavorites } from "./favourite-items";
 import { Product } from "@/lib/type";
@@ -23,8 +22,13 @@ export function ProductCard({ product }: ProductCardProps) {
   const { isFavorite, toggleFavorite } = useFavorites();
 
   const mainImage = product.images?.[0] || "/placeholder.svg";
-  const discountedPrice = product.sale_price ?? Number(product.price);
+
+  // price & sale_price adjustments
+  const basePrice = Number(product.price) || 0;
+  const discountedPrice = product.sale_price ?? basePrice;
+
   const category_name = product.categories?.title;
+  const [activeImage, setActiveImage] = useState(mainImage);
 
   const handleAddToCart = async () => {
     addItem({
@@ -35,7 +39,7 @@ export function ProductCard({ product }: ProductCardProps) {
       quantity,
     });
     setQuantity(1);
-    await incrementProductCartCount(product.id.toString());
+    await incrementProductCartCount(product.id);
   };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
@@ -43,17 +47,24 @@ export function ProductCard({ product }: ProductCardProps) {
     toggleFavorite({
       id: Number(product.id),
       name: product.title,
-      price: Number(product.price),
-      discountedPrice: discountedPrice,
+      price: basePrice,
+      discountedPrice,
       image: mainImage,
       store: product.shops?.shop_name || "",
-      inStock: true,
+      inStock: product.active,
       rating: product.rating ?? 0,
       reviews: product.reviews ?? 0,
     });
   };
 
-  const additionalImages = product.images.length > 0 ? product.images : [mainImage];
+  const additionalImages =
+    product.images.length > 0 ? product.images : [mainImage];
+
+  useEffect(() => {
+    if (isModalOpen) {
+      setActiveImage(mainImage);
+    }
+  }, [isModalOpen, mainImage]);
 
   return (
     <>
@@ -115,7 +126,7 @@ export function ProductCard({ product }: ProductCardProps) {
             {product.title}
           </h3>
 
-          {/* Shop & Category */}
+          {/* ✅ Shop & Category فوق السعر مباشرة */}
           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-2">
             {product.shops?.shop_name && (
               <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">
@@ -129,7 +140,7 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
 
-          {/* Price & Add to Cart - fixed at bottom */}
+          {/* Price & Add to Cart */}
           <div className="flex items-center justify-between mt-auto">
             <p className="text-lg font-bold text-gray-900 dark:text-white">
               {discountedPrice.toFixed(2)} ₪
@@ -154,43 +165,151 @@ export function ProductCard({ product }: ProductCardProps) {
           <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" />
           <Dialog.Content className="fixed z-50 top-1/2 left-1/2 max-w-5xl w-[95vw] max-h-[90vh] overflow-auto rounded-2xl bg-white dark:bg-gray-900 shadow-2xl transform -translate-x-1/2 -translate-y-1/2 focus:outline-none border border-gray-200 dark:border-gray-700">
             <Dialog.Title className="sr-only">تفاصيل المنتج</Dialog.Title>
-
             <div className="grid md:grid-cols-2 gap-8 p-6">
               {/* Product Images */}
               <div className="space-y-4">
+                {/* Main Image */}
                 <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800">
                   <Image
-                    src={mainImage}
+                    src={activeImage}
                     alt={product.title}
                     fill
                     className="object-cover"
                   />
                 </div>
+
+                {/* Additional Images Grid */}
                 <div className="grid grid-cols-4 gap-2">
-                  {additionalImages.slice(1).map((image, index) => (
-                    <div
+                  {additionalImages.map((image, index) => (
+                    <button
                       key={index}
-                      className="relative aspect-square rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800"
+                      onClick={() =>
+                        setActiveImage(image || "/placeholder.svg")
+                      }
+                      className={`relative aspect-square rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800 ring-2 transition-all ${
+                        activeImage === image
+                          ? "ring-blue-500"
+                          : "ring-transparent hover:ring-gray-300 dark:hover:ring-gray-600"
+                      }`}
                     >
                       <Image
                         src={image || "/placeholder.svg"}
-                        alt={`${product.title} - Image ${index + 2}`}
+                        alt={`${product.title} - Image ${index + 1}`}
                         fill
-                        className="object-cover hover:scale-110 transition-transform duration-300 cursor-pointer"
+                        className="object-cover"
                       />
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
 
               {/* Product Details */}
-              <div className="space-y-6">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {product.title}
-                </h2>
-                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                  {product.desc || "لا يوجد وصف"}
-                </p>
+              <div className="flex flex-col gap-6">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                    {product.title}
+                  </h2>
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                    {product.desc || "لا يوجد وصف"}
+                  </p>
+                </div>
+                {/* 🟢 Shop & Category */}
+                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                      {product.shops?.shop_name && (
+                        <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">
+                          {product.shops.shop_name}
+                        </span>
+                      )}
+                      {category_name && (
+                        <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-full">
+                          {category_name}
+                        </span>
+                      )}
+                    </div>
+                {/* ✅ القسم المثبت في الأسفل */}
+                <div className="mt-auto sticky bottom-0 left-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4 space-y-4">
+                  {/* Price */}
+                  <div className="space-y-2">
+                    {discountedPrice !== basePrice && (
+                      <p className="text-lg text-gray-500 dark:text-gray-400 line-through">
+                        ₪{basePrice.toFixed(2)}
+                      </p>
+                    )}
+                    <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                      ₪{discountedPrice.toFixed(2)}
+                    </p>
+                    {product.sale_price && discountedPrice < basePrice && (
+                      <p className="text-green-600 dark:text-green-400 font-medium">
+                        You save ₪{(basePrice - discountedPrice).toFixed(2)} (
+                        {Math.round(
+                          ((basePrice - discountedPrice) / basePrice) * 100
+                        )}
+                        % off)
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Favorite Button */}
+                  <button
+                    onClick={handleToggleFavorite}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border w-full ${
+                      isFavorite(Number(product.id))
+                        ? "bg-red-500 text-white border-red-500"
+                        : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600"
+                    } transition-colors`}
+                  >
+                    <Heart
+                      size={18}
+                      fill={
+                        isFavorite(Number(product.id)) ? "currentColor" : "none"
+                      }
+                    />
+                    {isFavorite(Number(product.id))
+                      ? "Remove from Favorites"
+                      : "Add to Favorites"}
+                  </button>
+
+                  {/* Quantity Selector */}
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      Quantity:
+                    </span>
+                    <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg">
+                      <button
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        -
+                      </button>
+                      <span className="px-4 py-2 font-medium min-w-[3rem] text-center">
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={() => setQuantity(quantity + 1)}
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleAddToCart}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                    >
+                      <ShoppingBag size={20} />
+                      Add to Cart
+                    </button>
+                    <Link
+                      href={`/products/${product.id}`}
+                      className="px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      View Details
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
 
