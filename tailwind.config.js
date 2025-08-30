@@ -1,4 +1,3 @@
-// tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
@@ -9,10 +8,11 @@ module.exports = {
     "./src/**/*.{ts,tsx}",
     "*.{js,ts,jsx,tsx,mdx}",
   ],
+  prefix: "",
   theme: {
     container: {
       center: true,
-      padding: "1rem",
+      padding: "2rem",
       screens: {
         "2xl": "1400px",
       },
@@ -73,11 +73,7 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       screens: {
-        mobile: { max: "767px" }, // أقل من 768px
-        tablet: { min: "768px", max: "1023px" }, // الأجهزة اللوحية
-        laptop: { min: "1024px", max: "1279px" }, // لابتوبات متوسطة
-        desktop: { min: "1280px" }, // ديسكتوب
-        custom: { min: "650px", max: "1200px" }, // هذا المدى المخصص
+        mobile: { max: "767px" },
       },
     },
   },

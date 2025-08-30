@@ -138,57 +138,57 @@ export function SiteHeader() {
           </div>
 
           {/* Desktop Header */}
-          <div className="hidden md:flex items-center justify-between w-full max-w-[1600px] mx-auto px-6">
+          <div className="hidden md:flex items-center gap-8 w-full">
 
             {/* اللوجو والعناوين */}
-<div className="flex items-center gap-5 text-[20px]">
-  <VristoLogo size={90} />
+              <div className="flex items-center gap-5 text-[20px]">
+                <VristoLogo size={90} />
 
-  <nav className="flex gap-8 font-medium font-sans">
-    <Link
-      href="/"
-      className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-    >
-      <Home size={20} /> {t("nav.home")}
-      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-    </Link>
-    <Link
-      href="/categories"
-      className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-    >
-      <List size={20} /> {t("nav.categories")}
-      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-    </Link>
-    <Link
-      href="/favourite"
-      className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-    >
-      <Heart size={20} /> {t("nav.favorites")}
-      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-    </Link>
-    <Link
-      href="/shops"
-      className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-    >
-      <Store size={20} /> {t("nav.shops")}
-      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-    </Link>
-    <Link
-      href="/products"
-      className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-    >
-      <ShoppingBag size={20} /> {t("nav.products")}
-      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-    </Link>
-    <Link
-      href="/contact"
-      className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-    >
-      <Phone size={20} /> {t("nav.contact")}
-      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-    </Link>
-  </nav>
-</div>
+                <nav className="flex gap-8 font-medium font-sans">
+                  <Link
+                    href="/"
+                    className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
+                  >
+                    <Home size={20} /> {t("nav.home")}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
+                  </Link>
+                  <Link
+                    href="/categories"
+                    className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
+                  >
+                    <List size={20} /> {t("nav.categories")}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
+                  </Link>
+                  <Link
+                    href="/favourite"
+                    className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
+                  >
+                    <Heart size={20} /> {t("nav.favorites")}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
+                  </Link>
+                  <Link
+                    href="/shops"
+                    className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
+                  >
+                    <Store size={20} /> {t("nav.shops")}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
+                  </Link>
+                  <Link
+                    href="/products"
+                    className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
+                  >
+                    <ShoppingBag size={20} /> {t("nav.products")}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
+                  >
+                    <Phone size={20} /> {t("nav.contact")}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
+                  </Link>
+                </nav>
+              </div>
 
 
             {/* أيقونات اليمين للـ Desktop */}
@@ -197,16 +197,16 @@ export function SiteHeader() {
 
               {/* أيقونات التنزيل والأوردر للشاشات الكبيرة */}
               <button className="hidden lg:flex p-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Install App">
-                <Download size={25} />
+                <Download size={20} />
               </button>
-              <Link href="/orders" className="hidden lg:flex p-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800transition-colors">
-                <Package size={25} />
+              <Link href="/orders" className="hidden lg:flex p-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-100 transition-colors">
+                <Package size={20} />
               </Link>
 
               {/* باقي الأيقونات */}
               {mounted && <LanguageSelector />}
               <button className="p-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative" aria-label="الإشعارات">
-                <Bell size={25} />
+                <Bell size={20} />
                 <span className="absolute -top-1 -right-1 flex h-2 w-2 rounded-full bg-red-500"></span>
               </button>
               <button
