@@ -1,54 +1,57 @@
-import { createServerSupabaseClient } from "../../../lib/supabase";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { supabase } from "../../../lib/supabase";
+import type { Product } from "../../../lib/type";
 import ProductDetail from "./product-page";
-import { notFound } from "next/navigation";
 
-export default async function ProductPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const supabase = createServerSupabaseClient();
+export default function ProductPage() {
+  const params = useParams();
+  const productId = params?.id as string;
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const { data: product, error } = await supabase
-    .from("products")
-    .select(
-      `
-      id,
-      created_at,
-      shop,
-      title,
-      desc,
-      price,
-      images,
-      category,
-      sale_price,
-      discount_type,
-      discount_value,
-      discount_start,
-      discount_end,
-      active,
-      view_count,
-      shops ( shop_name ),
-      categories:category ( id, desc, title, created_at )
-    `
-    )
-    .eq("id", Number(params.id)) 
-    .single();
+  useEffect(() => {
+    if (!productId) return;
 
-  if (error || !product) {
-    notFound();
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("products")
+          .select("*, shops(*), categories(*)")
+          .eq("id", productId)
+          .single();
+
+        if (error) throw error;
+        setProduct(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "حدث خطأ أثناء جلب المنتج");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [productId]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-[40vh] text-lg">
+        جاري تحميل المنتج...
+      </div>
+    );
   }
 
-  return (
-    <ProductDetail
-      params={{ id: params.id }}
-      product={{
-        ...product,
-        shops: Array.isArray(product.shops) ? product.shops[0] : product.shops,
-        categories: Array.isArray(product.categories)
-          ? product.categories[0]
-          : product.categories,
-      }}
-    />
-  );
+  if (error || !product) {
+    return (
+      <div className="flex justify-center items-center min-h-[40vh] text-lg text-red-500">
+        {error || "لم يتم العثور على المنتج"}
+      </div>
+    );
+  }
+
+  return <ProductDetail product={product} />;
 }

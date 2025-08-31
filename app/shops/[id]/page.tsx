@@ -10,6 +10,11 @@ import {
   MapPin,
   ShoppingBag,
   LayoutGrid,
+  Star,
+  Package,
+  Truck,
+  Phone,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +44,14 @@ export default function ShopDetailPage() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [productsSort, setProductsSort] = useState("newest");
   const [productsSearch, setProductsSearch] = useState("");
+
+  // Function to render shop content based on type
+  const renderShopContent = () => {
+    if (!shop) return null;
+    
+    // For now, show default content since type field is not in database yet
+    return <DefaultShopContent shop={shop} />;
+  };
 
   // جلب المنتجات حسب المتجر
   const {
@@ -199,375 +212,194 @@ export default function ShopDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full">
-      {/* Header with Cover Image */}
-      <div className="relative h-80 overflow-hidden">
-        <Image
-          src={shop.cover_image_url || "/placeholder.svg"}
-          alt={shop.shop_name}
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-black/40" />
-
-        {/* Top Navigation */}
-        <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between">
-          <Link href="/shops">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-
-          <div className="flex-1 max-w-md mx-4">
-            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors duration-200 z-10" />
-              <Input
-                type="text"
-                placeholder="Search for products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 pr-4 py-3 bg-white/95 backdrop-blur-sm border-2 border-white/20 rounded-full text-gray-900 placeholder-gray-500 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 focus:shadow-lg transition-all duration-300 transform focus:scale-105"
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30"
-              onClick={() => setIsFavorite(!isFavorite)}
-            >
-              <Heart
-                className={`h-5 w-5 ${
-                  isFavorite ? "fill-red-500 text-red-500" : ""
-                }`}
-              />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30"
-            >
-              <Share2 className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Shop Info Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-          <div className="flex items-end justify-between">
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">{shop.shop_name}</h1>
-              <div className="flex items-center gap-2 mb-3">
-                <MapPin className="h-4 w-4" />
-                <span className="text-lg">{shop.address}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div
-                  className={`w-3 h-3 rounded-full ${
-                    isOpen ? "bg-green-500" : "bg-red-500"
-                  } animate-pulse`}
-                  title={
-                    todayWork
-                      ? isOpen
-                        ? `Open until ${todayWork.endTime}`
-                        : "Closed"
-                      : "No working hours"
-                  }
-                />
-                <span className="text-lg font-medium">
-                  {todayWork
-                    ? isOpen
-                      ? `مفتوح حتى ${todayWork.endTime}`
-                      : "مغلق"
-                    : "لا يوجد دوام اليوم"}
-                </span>
-              </div>
-            </div>
-
-            {/* Shop Logo */}
-            <div className="w-28 h-28 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white ml-4">
+      {/* Hero/Banner Section */}
+  <div className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+           {/* Left Side - Hero Content */}
+      <div className="text-center lg:text-left">
+        <div className="mb-6">
+          {/* Logo */}
+          <div className="w-24 h-24 mx-auto lg:mx-0 bg-orange-200 dark:bg-orange-800 rounded-full flex items-center justify-center mb-4 overflow-hidden">
+            {shop.logo_url ? (
               <Image
-                src={shop.logo_url || "/placeholder.svg"}
-                alt={`${shop.shop_name} logo`}
-                width={80}
-                height={80}
-                className="w-full h-full object-cover"
+                src={shop.logo_url}
+                alt={shop.shop_name}
+                width={96}
+                height={96}
+                className="object-cover w-24 h-24 rounded-full"
+              />
+            ) : (
+              <span className="text-4xl">🛍️</span>
+            )}
+          </div>
+
+          {/* Cover Image */}
+          {shop.cover_image_url ? (
+            <div className="w-full h-56 sm:h-72 lg:h-80 rounded-2xl overflow-hidden shadow-md mb-4">
+              <Image
+                src={shop.cover_image_url}
+                alt={`${shop.shop_name} Cover`}
+                width={1200}
+                height={400}
+                className="object-cover w-full h-full"
+                priority
               />
             </div>
-          </div>
+          ) : (
+            <div className="w-full h-56 sm:h-72 lg:h-80 rounded-2xl overflow-hidden shadow-md mb-4 bg-gray-300 flex items-center justify-center">
+              <span className="text-gray-600">No cover available</span>
+            </div>
+          )}
+
         </div>
       </div>
 
-      {/* Shop Stats */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="container mx-auto px-4 py-6">
-          <div className="grid grid-cols-3 gap-6 text-center">
-            {/* Status */}
-            <div className="flex flex-col items-center">
-              <div className="flex items-center gap-1 mb-2">
-                <Badge
-                  className={`mt-2 ${
-                    shop.status === "Approved"
-                      ? "bg-green-500"
-                      : "bg-yellow-500"
-                  } text-white`}
-                >
-                  {shop.status}
-                </Badge>
-              </div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                Status
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                {shop.public ? "Public" : "Private"}
-              </span>
-            </div>
+      {/* Right Side - Store Info Panel */}
+      <div className="bg-gray-800 dark:bg-gray-900 rounded-2xl p-6 text-white shadow-xl">
+        {/* Store Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h2 className="text-4xl font-bold text-white mb-2">{shop.shop_name}</h2>
+            <p className="text-gray-300 text-medium mb-2">
+              {shop.profiles?.full_name ?? shop.owner}
+            </p>
+            <p className="text-green-400 text-sm font-medium">Minimum ₪0.00</p>
+          </div>
+          <div className="flex gap-2">
+            <button className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors">
+              <Heart className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-300"}`} />
+            </button>
+            <button className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors">
+              <Share2 className="w-5 h-5 text-gray-300" />
+            </button>
+          </div>
+        </div>
 
-            {/* Opening Hours */}
-            <div className="flex flex-col items-center">
-              <div className="flex items-center gap-1 mb-4">
-                <Clock className="h-6 w-6 text-blue-500" />
-                <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {(() => {
-                    // دعم العربية والإنجليزية
-                    const daysEn = [
-                      "Sunday",
-                      "Monday",
-                      "Tuesday",
-                      "Wednesday",
-                      "Thursday",
-                      "Friday",
-                      "Saturday",
-                    ];
-                    const daysAr = [
-                      "الأحد",
-                      "الإثنين",
-                      "الثلاثاء",
-                      "الأربعاء",
-                      "الخميس",
-                      "الجمعة",
-                      "السبت",
-                    ];
-                    const todayIndex = new Date().getDay();
-                    const todayEn = daysEn[todayIndex];
-                    const todayAr = daysAr[todayIndex];
+        {/* Store Metrics */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <Star className="w-5 h-5 text-green-400" />
+            <span className="text-green-400 font-medium">0.0</span>
+            <span className="text-gray-300 text-sm">0 + ratings</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <MapPin className="w-5 h-5 text-green-400" />
+            <span className="text-gray-300 text-sm">{shop.address}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Clock className="w-5 h-5 text-green-400" />
+            <span className="text-gray-300 text-sm">20-30 min</span>
+          </div>
+        </div>
 
-                    let workHoursArr: WorkHours[] = [];
-                    if (Array.isArray(shop.work_hours)) {
-                      if (
-                        shop.work_hours.length > 0 &&
-                        typeof shop.work_hours[0] === "string"
-                      ) {
-                        workHoursArr = (shop.work_hours as string[])
-                          .map((s) => {
-                            try {
-                              return JSON.parse(s) as WorkHours;
-                            } catch {
-                              return null;
-                            }
-                          })
-                          .filter(Boolean) as WorkHours[];
-                      } else {
-                        workHoursArr =
-                          shop.work_hours as unknown as WorkHours[];
-                      }
-                    } else if (typeof shop.work_hours === "string") {
-                      try {
-                        workHoursArr = JSON.parse(
-                          shop.work_hours
-                        ) as WorkHours[];
-                      } catch {
-                        workHoursArr = [];
-                      }
-                    }
-
-                    const todayWork = workHoursArr.find(
-                      (h) =>
-                        h.day?.toLowerCase() === todayEn.toLowerCase() ||
-                        h.day === todayAr
-                    );
-
-                    return todayWork
-                      ? `${todayWork.day}: ${
-                          todayWork.open
-                            ? `${todayWork.startTime} - ${todayWork.endTime}`
-                            : "مغلق"
-                        }`
-                      : `${todayEn}: لا يوجد دوام`;
-                  })()}
-                </span>
-              </div>
-              <span className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                Now {currentTime}
-              </span>
-            </div>
-
-            {/* Owner + Delivery */}
-            <div className="flex flex-col items-center">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {shop.profiles?.full_name ?? shop.owner}
-                </span>
-              </div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                Shop Owner
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                {shop.created_at?.slice(0, 10).split("-").reverse().join(".")}
-              </span>
-            </div>
+        {/* Contact Info */}
+        <div className="mt-4 pt-4 border-t border-gray-700">
+          <div className="flex items-center gap-3 mb-2">
+            <Phone className="w-4 h-4 text-green-400" />
+            <span className="text-gray-300 text-sm">Contact for details</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Mail className="w-4 h-4 text-green-400" />
+            <span className="text-gray-300 text-sm">info@store.com</span>
           </div>
         </div>
       </div>
-
-      {/* Content Tabs */}
-      <div className="w-full max-w-7xl mx-auto px-6 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex items-center gap-0 mb-6">
-            {/* Categories Tab with Icon */}
-            <TabsTrigger
-              value="categories"
-              className="flex items-center gap-2 px-4 py-2"
-            >
-              <LayoutGrid className="h-5 w-5" />
-              التصنيفات{" "}
-              <span className="ml-1 text-xs text-blue-600">
-                ({categoriesCount})
-              </span>
-            </TabsTrigger>
-
-            {/* Vertical Divider */}
-            <span className="h-8 w-px bg-gray-300 dark:bg-gray-700 mx-2" />
-
-            {/* Products Tab with Icon */}
-            <TabsTrigger
-              value="products"
-              className="flex items-center gap-2 px-4 py-2"
-            >
-              <ShoppingBag className="h-5 w-5" />
-              المنتجات{" "}
-              <span className="ml-1 text-xs text-blue-600">
-                ({productsCount})
-              </span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="categories" className="space-y-8">
-            <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
-              <button
-                className={`px-4 py-2 rounded-full border ${
-                  selectedCategory === null
-                    ? "bg-indigo-600 text-white"
-                    : "bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
-                }`}
-                onClick={() => setSelectedCategory(null)}
-              >
-                الكل
-              </button>
-              {uniqueCategories.map((cat) => (
-                <button
-                  key={cat.id}
-                  className={`px-4 py-2 rounded-full border ${
-                    selectedCategory === cat.id
-                      ? "bg-indigo-600 text-white"
-                      : "bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
-                  }`}
-                  onClick={() => setSelectedCategory(cat.id)}
-                >
-                  {cat.title}
-                </button>
-              ))}
-            </div>
-
-            {/* المنتجات حسب التصنيف المختار */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-              {(selectedCategory
-                ? products.filter((p: any) => p.category === selectedCategory)
-                : products
-              ).length === 0 ? (
-                <div className="col-span-full text-center text-gray-400">
-                  لا توجد منتجات لهذا التصنيف
-                </div>
-              ) : (
-                (selectedCategory
-                  ? products.filter((p: any) => p.category === selectedCategory)
-                  : products
-                ).map((product: Product) => (
-                  <ProductCard
-                    key={
-                      typeof product.id === "string"
-                        ? Number(product.id)
-                        : product.id
-                    }
-                    product={{
-                      ...product,
-                      id:
-                        typeof product.id === "string"
-                          ? Number(product.id)
-                          : product.id,
-                      shop:
-                        typeof product.shop === "string"
-                          ? Number(product.shop)
-                          : product.shop,
-                      price:
-                        typeof product.price === "string"
-                          ? Number(product.price)
-                          : product.price,
-                    }}
+    </div>
+  </div>
+</div>
+      {/* Main Content Area - 6am Mart Style */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Left Sidebar - Categories */}
+          <div className="lg:col-span-1">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg sticky top-24">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Categories</h3>
+              
+              {/* Search Bar */}
+              <div className="mb-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Search for items..."
+                    className="pl-10 pr-4 py-2"
                   />
-                ))
-              )}
-            </div>
-          </TabsContent>
+                </div>
+                <Button className="w-full mt-2 bg-green-600 hover:bg-green-700">
+                  Search
+                </Button>
+              </div>
 
-          <TabsContent value="products" className="space-y-6">
-            <div className="flex flex-col md:flex-row items-center justify-between mb-4 gap-3">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                جميع المنتجات
-              </h3>
-              {/* خانة البحث */}
-              <Input
-                type="text"
-                placeholder="ابحث عن منتج..."
-                value={productsSearch}
-                onChange={(e) => setProductsSearch(e.target.value)}
-                className="max-w-xs"
-              />
-              {/* التصفية */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600 dark:text-gray-300">
-                  ترتيب:
-                </span>
+              {/* Category List */}
+              <div className="space-y-2">
+                <button
+                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                    selectedCategory === null
+                      ? "bg-green-600 text-white"
+                      : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                  }`}
+                  onClick={() => setSelectedCategory(null)}
+                >
+                  All
+                </button>
+                {uniqueCategories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
+                      selectedCategory === cat.id
+                        ? "bg-green-600 text-white"
+                        : "hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                    onClick={() => setSelectedCategory(cat.id)}
+                  >
+                    {cat.title}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Section - Products Grid */}
+          <div className="lg:col-span-3">
+            {/* Products Header */}
+            <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Products ({productsCount})
+              </h2>
+              <div className="flex items-center gap-4">
+                <Input
+                  type="text"
+                  placeholder="Search products..."
+                  value={productsSearch}
+                  onChange={(e) => setProductsSearch(e.target.value)}
+                  className="w-64"
+                />
                 <select
-                  className="border rounded px-2 py-1 text-sm dark:bg-gray-800 dark:text-white"
+                  className="border rounded-lg px-3 py-2 text-sm dark:bg-gray-800 dark:text-white"
                   onChange={(e) => setProductsSort(e.target.value)}
                   value={productsSort}
                 >
-                  <option value="newest">الأحدث</option>
-                  <option value="highPrice">الأعلى سعراً</option>
-                  <option value="lowPrice">الأقل سعراً</option>
+                  <option value="newest">Newest</option>
+                  <option value="highPrice">Highest Price</option>
+                  <option value="lowPrice">Lowest Price</option>
                 </select>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {/* Products Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {productsLoading ? (
-                <div className="text-center text-gray-400 col-span-full">
-                  جاري تحميل المنتجات...
+                <div className="text-center text-gray-400 col-span-full py-8">
+                  Loading products...
                 </div>
               ) : productsError ? (
-                <div className="text-center text-red-500 col-span-full">
-                  حدث خطأ أثناء جلب المنتجات: {productsError.message}
+                <div className="text-center text-red-500 col-span-full py-8">
+                  Error loading products: {productsError.message}
                 </div>
               ) : filteredSortedProducts.length === 0 ? (
-                <div className="text-center text-gray-400 col-span-full">
-                  لا توجد منتجات لهذا المتجر
+                <div className="text-center text-gray-400 col-span-full py-8">
+                  No products found for this store
                 </div>
               ) : (
                 filteredSortedProducts.map((product: Product) => (
@@ -592,8 +424,30 @@ export default function ShopDetailPage() {
                 ))
               )}
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Shop Type Components
+interface ShopContentProps {
+  shop: Shop;
+}
+
+// Default Shop Content
+function DefaultShopContent({ shop }: ShopContentProps) {
+  return (
+    <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg mb-6">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-12 h-12 bg-gray-500 rounded-full flex items-center justify-center">
+          <span className="text-white text-xl">🏪</span>
+        </div>
+        <div>
+          <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">متجر عام</h3>
+          <p className="text-gray-600 dark:text-gray-300">منتجات متنوعة</p>
+        </div>
       </div>
     </div>
   );
