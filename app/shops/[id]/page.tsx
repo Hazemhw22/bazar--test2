@@ -174,10 +174,16 @@ export default function ShopDetailPage() {
   const categoriesCount = uniqueCategories.length;
 
   // فلترة وتصفية المنتجات
-  const filteredSortedProducts = products
-    .filter((product: Product) =>
-      product.title?.toLowerCase().includes(productsSearch.toLowerCase())
-    )
+const filteredSortedProducts = products
+  .filter((product: Product) => {
+    const matchesSearch = product.title
+      ?.toLowerCase()
+      .includes(productsSearch.toLowerCase());
+    const matchesCategory =
+      selectedCategory === null || product.categories?.id === selectedCategory;
+    return matchesSearch && matchesCategory;
+  })
+
     .sort((a: Product, b: Product) => {
       if (productsSort === "newest") {
         return (
@@ -341,7 +347,7 @@ export default function ShopDetailPage() {
                   }`}
                   onClick={() => setSelectedCategory(null)}
                 >
-                  All
+                  ALL
                 </button>
                 {uniqueCategories.map((cat) => (
                   <button
@@ -357,6 +363,7 @@ export default function ShopDetailPage() {
                   </button>
                 ))}
               </div>
+
             </div>
           </div>
 
@@ -368,7 +375,9 @@ export default function ShopDetailPage() {
                 Products ({productsCount})
               </h2>
               <div className="flex items-center gap-4">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
+                
                   type="text"
                   placeholder="Search products..."
                   value={productsSearch}
