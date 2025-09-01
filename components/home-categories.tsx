@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Category } from "@/lib/type";
+import Link from "next/link";
 
 const fallbackIcons = [
   "🏠", "🌿", "📱", "☕", "👕", "👜", "👟", "🛒", "🎁", "💡"
@@ -99,7 +100,18 @@ export function HomeCategories() {
   return (
     <section className="w-full py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        
+          {/* العنوان + عرض الكل */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+            الفئات المقترحة
+          </h2>
+          <Link
+            href="/categories"
+            className="text-green-600 hover:text-green-700 font-medium"
+          >
+            عرض الكل
+          </Link>
+        </div>
 
         <div className="relative group">
           {showLeftArrow && (

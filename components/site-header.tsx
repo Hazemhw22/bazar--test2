@@ -118,9 +118,9 @@ export function SiteHeader() {
                   {selectedCity ? getCityDisplayName(selectedCity) : "Select Location"}
                 </span>
               </button>
-
+               <div>                <VristoLogo size={70} />
+                </div>
               <div className="flex items-center gap-2">
-                <VristoLogo size={50} />
                 {mounted && <ThemeToggle />}
                 {mounted && <LanguageSelector />}
               </div>
