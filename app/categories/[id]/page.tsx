@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useMemo, useEffect } from "react";
 import {
   ArrowLeft,
@@ -23,7 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -40,6 +40,7 @@ import { supabase } from "@/lib/supabase";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useParams } from "next/navigation";
 import type { Product, Shop } from "@/lib/type";
+import { DualRangeSlider } from "../../../components/ui/dualrangeslider"
 
 type SortOption = "name" | "price-low" | "price-high" | "rating" | "newest";
 type ViewMode = "grid" | "list";
@@ -47,11 +48,10 @@ type ViewMode = "grid" | "list";
 export default function CategoryDetailPage() {
   const params = useParams();
   const categoryId = Number(params?.id as string);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("name");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [showFilters, setShowFilters] = useState(false);
-  const [priceRange, setPriceRange] = useState([0, 1500]);
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(
     []
@@ -59,14 +59,19 @@ export default function CategoryDetailPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState<"products" | "shops">("products");
 
+  // ✅ Price state (بدل ما نستخدم priceRange array)
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(1500);
+
   const itemsPerPage = 12;
 
-  // جلب بيانات الكاتيجوري من قاعدة البيانات
+  // جلب بيانات الكاتيجوري
   const [category, setCategory] = useState<{
     id: number;
     title: string;
     desc: string;
   } | null>(null);
+
   useEffect(() => {
     supabase
       .from("categories")
@@ -78,7 +83,7 @@ export default function CategoryDetailPage() {
       });
   }, [categoryId]);
 
-  // جلب المنتجات المرتبطة بالكاتيجوري مع بيانات الشوب
+  // جلب المنتجات
   const [products, setProducts] = useState<Product[]>([]);
   useEffect(() => {
     supabase
@@ -90,7 +95,7 @@ export default function CategoryDetailPage() {
       });
   }, [categoryId]);
 
-  // استخراج الشوبس الفريدة المرتبطة بالكاتيجوري
+  // استخراج الشوبس
   const shops: Shop[] = useMemo(() => {
     const unique: Record<number, Shop> = {};
     products.forEach((p) => {
@@ -106,8 +111,8 @@ export default function CategoryDetailPage() {
     return Object.values(unique);
   }, [products]);
 
-  // استخراج الساب كاتيجوري (إذا كان لديك)
-  const subcategories = [...new Set(products.map((p) => p.desc))];
+  // استخراج الساب كاتيجوري
+  const subcategories = [...new Set(products.map((p) => p.title))];
 
   // فلترة وفرز المنتجات
   const filteredAndSortedProducts = useMemo(() => {
@@ -117,27 +122,25 @@ export default function CategoryDetailPage() {
         product.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (product.shops?.shop_name
           ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) ??
-          false);
+          .includes(searchQuery.toLowerCase()) ?? false);
 
       const price = Number(product.sale_price ?? product.price);
-      const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
+      const matchesPrice = price >= minPrice && price <= maxPrice;
 
       const matchesRating =
         selectedRatings.length === 0 ||
         selectedRatings.includes(product.rating ?? 0);
 
-      // إذا كان لديك subcategory حقيقي غيّر هذا السطر
       const matchesSubcategory =
         selectedSubcategories.length === 0 ||
-        selectedSubcategories.includes(product.desc);
+        selectedSubcategories.includes(product.title);
 
       return (
         matchesSearch && matchesPrice && matchesRating && matchesSubcategory
       );
     });
 
-    // Sort products
+    // sort
     switch (sortBy) {
       case "price-low":
         filtered.sort(
@@ -164,14 +167,7 @@ export default function CategoryDetailPage() {
     }
 
     return filtered;
-  }, [
-    products,
-    searchQuery,
-    sortBy,
-    priceRange,
-    selectedRatings,
-    selectedSubcategories,
-  ]);
+  }, [products, searchQuery, sortBy, minPrice, maxPrice, selectedRatings, selectedSubcategories]);
 
   // Pagination
   const totalPages = Math.ceil(filteredAndSortedProducts.length / itemsPerPage);
@@ -203,31 +199,38 @@ export default function CategoryDetailPage() {
   };
 
   const clearAllFilters = () => {
-    setPriceRange([0, 1500]);
+    setMinPrice(0);
+    setMaxPrice(1500);
     setSelectedRatings([]);
     setSelectedSubcategories([]);
   };
 
-  // Filters Component
+  // ✅ Filters Component
   const FiltersContent = () => (
     <div className="space-y-6">
       {/* Price Range */}
-      <div>
-        <h4 className="font-medium mb-3">Price Range</h4>
-        <Slider
-          value={priceRange}
-          onValueChange={setPriceRange}
-          max={1500}
-          step={10}
-          className="mb-2"
-        />
-        <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-          <span>${priceRange[0]}</span>
-          <span>${priceRange[1]}</span>
+      <div className="space-y-4 mb-6">
+        <h3 className="font-medium">Price Range</h3>
+        <div className="flex justify-between text-sm text-muted-foreground">
+          <span>{minPrice} ₪</span>
+          <span>{maxPrice} ₪</span>
+        </div>
+        <div className="px-2">
+          <DualRangeSlider
+            min={0}
+            max={10000}
+            minValue={minPrice}
+            maxValue={maxPrice}
+            step={10}
+            onChange={({ min, max }) => {
+              setMinPrice(min);
+              setMaxPrice(max);
+            }}
+          />
         </div>
       </div>
 
-      {/* Rating Filter */}
+      {/* Rating */}
       <div>
         <h4 className="font-medium mb-3">Rating</h4>
         <div className="space-y-2">
@@ -254,7 +257,7 @@ export default function CategoryDetailPage() {
         </div>
       </div>
 
-      {/* Subcategory Filter */}
+      {/* Subcategories */}
       <div>
         <h4 className="font-medium mb-3">Subcategories</h4>
         <div className="space-y-2">
@@ -499,11 +502,11 @@ export default function CategoryDetailPage() {
                           key={Number(product.id)}
                           product={{
                             ...restProduct,
-                            id: Number(product.id),
-                            price: Number(product.price),
+                            id: (product.id),
+                            price: (product.price),
                             shop:
                               typeof product.shop === "string"
-                                ? Number(product.shop)
+                                ? (product.shop)
                                 : product.shop,
                           }}
                         />

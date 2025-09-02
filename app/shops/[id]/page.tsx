@@ -417,15 +417,15 @@ const filteredSortedProducts = products
                       ...product,
                       id:
                         typeof product.id === "string"
-                          ? Number(product.id)
+                          ? (product.id)
                           : product.id,
                       shop:
                         typeof product.shop === "string"
-                          ? Number(product.shop)
+                          ? (product.shop)
                           : product.shop,
                       price:
                         typeof product.price === "string"
-                          ? Number(product.price)
+                          ? (product.price)
                           : product.price,
                     }}
                   />

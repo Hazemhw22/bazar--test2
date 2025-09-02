@@ -15,14 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
-import Image from "next/image";
 import { supabase } from "@/lib/supabase";
-
-export interface Category {
-  id: number;
-  title: string;
-  desc: string;
-}
+import { Category } from "@/lib/type";
 
 type SortOption = "title" | "products" | "trending";
 
@@ -65,12 +59,11 @@ export default function CategoriesPage() {
     fetchCounts();
   }, [categories]);
 
-  // يمكنك إبقاء trending وهمي أو ربطه بجدول آخر
+  // إضافة بيانات إضافية (trending وهمي)
   const categoriesWithExtra = categories.map((cat) => ({
     ...cat,
     productCount: productCounts[cat.id] ?? 0,
     trending: Math.random() > 0.5,
-    image: "/placeholder.svg?height=200&width=300",
     color: "from-blue-500 to-purple-600",
   }));
 
@@ -182,68 +175,71 @@ export default function CategoriesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredAndSortedCategories.map((category) => (
-              <Card
-                key={category.id}
-                className="group overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-0 bg-white dark:bg-gray-800"
-              >
-                <CardContent className="p-0">
-                  {/* Category Image with Gradient Overlay */}
-                  <div className="relative h-48 overflow-hidden">
-                    <Image
-                      src={category.image || "/placeholder.svg"}
+            {filteredAndSortedCategories.map((category) => {
+              const IconComponent = category.icon
+                ? (require("lucide-react")[category.icon] as React.ElementType)
+                : Package;
+
+              return (
+                <Card
+                  key={category.id}
+                  className="group overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-0 bg-white dark:bg-gray-800"
+                >
+                  <CardContent className="p-0">
+                    {/* أيقونة التصنيف */}
+                   <div className="relative h-48 flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
+                    <img
+                      src={category.icon}
                       alt={category.title}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div
-                      className={`absolute inset-0 bg-gradient-to-br ${category.color} opacity-80`}
+                      className="h-16 w-16 object-contain"
                     />
 
-                    {/* Trending Badge */}
-                    {category.trending && (
-                      <div className="absolute top-4 right-4">
-                        <Badge className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">
-                          🔥 Trending
-                        </Badge>
-                      </div>
-                    )}
+                      {/* Trending Badge */}
+                      {category.trending && (
+                        <div className="absolute top-4 right-4">
+                          <Badge className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">
+                            🔥 Trending
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
 
-                    {/* Category Name Overlay */}
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <h3 className="text-2xl font-bold text-white mb-2 drop-shadow-lg">
+                    {/* Category Details */}
+                    <div className="p-6 space-y-4">
+                      {/* Category Title */}
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
                         {category.title}
                       </h3>
+
+                      {/* Description */}
+                      <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-3">
+                        {category.desc}
+                      </p>
+
+                      {/* Product Count */}
+                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <Package className="h-4 w-4" />
+                        <span>
+                          {category.productCount.toLocaleString()} products
+                          available
+                        </span>
+                      </div>
+
+                      {/* View Products Button */}
+                      <Link
+                        href={`/categories/${category.id}`}
+                        className="block"
+                      >
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 group-hover:bg-blue-700">
+                          View Products
+                          <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                        </Button>
+                      </Link>
                     </div>
-                  </div>
-
-                  {/* Category Details */}
-                  <div className="p-6 space-y-4">
-                    {/* Description */}
-                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-3">
-                      {category.desc}
-                    </p>
-
-                    {/* Product Count */}
-                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                      <Package className="h-4 w-4" />
-                      <span>
-                        {category.productCount.toLocaleString()} products
-                        available
-                      </span>
-                    </div>
-
-                    {/* View Products Button */}
-                    <Link href={`/categories/${category.id}`} className="block">
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 group-hover:bg-blue-700">
-                        View Products
-                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
