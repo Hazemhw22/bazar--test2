@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react"
 import { supabase } from "@/lib/supabase"
@@ -10,8 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { VristoLogo } from "@/components/vristo-logo"
 
-export default function NewPasswordPage() {
-  const searchParams = useSearchParams()
+export default function NewPasswordPage({ searchParams }: { searchParams: { [key: string]: string } }) {
   const router = useRouter()
 
   const [password, setPassword] = useState("")
@@ -24,16 +23,15 @@ export default function NewPasswordPage() {
   const [isSuccess, setIsSuccess] = useState(false)
   const [isValidToken, setIsValidToken] = useState(false)
 
-  // استخراج access_token و refresh_token من الرابط
-  const access_token = searchParams?.get("access_token")
-  const refresh_token = searchParams?.get("refresh_token")
+  const access_token = searchParams?.access_token
+  const refresh_token = searchParams?.refresh_token
 
   useEffect(() => {
     if (access_token && refresh_token) {
       supabase.auth.setSession({
         access_token,
         refresh_token
-      }).then(({ data, error }) => {
+      }).then(({ error }) => {
         if (error) {
           setError("Invalid or expired reset link. Please request a new password reset.")
         } else {
