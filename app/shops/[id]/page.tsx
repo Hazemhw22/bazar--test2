@@ -174,16 +174,10 @@ export default function ShopDetailPage() {
   const categoriesCount = uniqueCategories.length;
 
   // فلترة وتصفية المنتجات
-const filteredSortedProducts = products
-  .filter((product: Product) => {
-    const matchesSearch = product.title
-      ?.toLowerCase()
-      .includes(productsSearch.toLowerCase());
-    const matchesCategory =
-      selectedCategory === null || product.categories?.id === selectedCategory;
-    return matchesSearch && matchesCategory;
-  })
-
+  const filteredSortedProducts = products
+    .filter((product: Product) =>
+      product.title?.toLowerCase().includes(productsSearch.toLowerCase())
+    )
     .sort((a: Product, b: Product) => {
       if (productsSort === "newest") {
         return (
@@ -218,102 +212,77 @@ const filteredSortedProducts = products
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full">
-      {/* Hero/Banner Section */}
-  <div className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-           {/* Left Side - Hero Content */}
-      <div className="text-center lg:text-left">
-        <div className="mb-6">
-          {/* Logo */}
-          <div className="w-24 h-24 mx-auto lg:mx-0 bg-orange-200 dark:bg-orange-800 rounded-full flex items-center justify-center mb-4 overflow-hidden">
-            {shop.logo_url ? (
-              <Image
-                src={shop.logo_url}
-                alt={shop.shop_name}
-                width={96}
-                height={96}
-                className="object-cover w-24 h-24 rounded-full"
-              />
-            ) : (
-              <span className="text-4xl">🛍️</span>
-            )}
+      {/* Hero/Banner Section - 6am Mart Style */}
+      <div className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            {/* Left Side - Hero Content */}
+            <div className="text-center lg:text-left">
+              <div className="mb-6">
+                <div className="w-24 h-24 mx-auto lg:mx-0 bg-orange-200 dark:bg-orange-800 rounded-full flex items-center justify-center mb-4">
+                  <span className="text-4xl">🛍️</span>
+                </div>
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                  Fruits And Groceries, Delivered With Ease
+                </h1>
+                <p className="text-lg text-gray-600 dark:text-gray-300">
+                  Fresh products delivered to your doorstep in minutes
+                </p>
+              </div>
+            </div>
+
+            {/* Right Side - Store Info Panel (Dark Grey) */}
+            <div className="bg-gray-800 dark:bg-gray-900 rounded-2xl p-6 text-white shadow-xl">
+              {/* Store Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">{shop.shop_name}</h2>
+                  <p className="text-gray-300 text-sm mb-2">{shop.address}</p>
+                  <p className="text-green-400 text-sm font-medium">Minimum ₪0.00</p>
+                </div>
+                <div className="flex gap-2">
+                  <button className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors">
+                    <Heart className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-300"}`} />
+                  </button>
+                  <button className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors">
+                    <Share2 className="w-5 h-5 text-gray-300" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Store Metrics */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Star className="w-5 h-5 text-green-400" />
+                  <span className="text-green-400 font-medium">0.0</span>
+                  <span className="text-gray-300 text-sm">0 + ratings</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <MapPin className="w-5 h-5 text-green-400" />
+                  <span className="text-gray-300 text-sm">Location</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-green-400" />
+                  <span className="text-gray-300 text-sm">20-30 min</span>
+                </div>
+              </div>
+
+              {/* Contact Info */}
+              <div className="mt-4 pt-4 border-t border-gray-700">
+                <div className="flex items-center gap-3 mb-2">
+                  <Phone className="w-4 h-4 text-green-400" />
+                  <span className="text-gray-300 text-sm">{shop.phone || "Contact for details"}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Mail className="w-4 h-4 text-green-400" />
+                  <span className="text-gray-300 text-sm">{shop.email || "info@store.com"}</span>
+                </div>
+              </div>
+            </div>
           </div>
-
-          {/* Cover Image */}
-          {shop.cover_image_url ? (
-            <div className="w-full h-56 sm:h-72 lg:h-80 rounded-2xl overflow-hidden shadow-md mb-4">
-              <Image
-                src={shop.cover_image_url}
-                alt={`${shop.shop_name} Cover`}
-                width={1200}
-                height={400}
-                className="object-cover w-full h-full"
-                priority
-              />
-            </div>
-          ) : (
-            <div className="w-full h-56 sm:h-72 lg:h-80 rounded-2xl overflow-hidden shadow-md mb-4 bg-gray-300 flex items-center justify-center">
-              <span className="text-gray-600">No cover available</span>
-            </div>
-          )}
-
         </div>
       </div>
 
-      {/* Right Side - Store Info Panel */}
-      <div className="bg-gray-800 dark:bg-gray-900 rounded-2xl p-6 text-white shadow-xl">
-        {/* Store Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h2 className="text-4xl font-bold text-white mb-2">{shop.shop_name}</h2>
-            <p className="text-gray-300 text-medium mb-2">
-              {shop.profiles?.full_name ?? shop.owner}
-            </p>
-            <p className="text-green-400 text-sm font-medium">Minimum ₪0.00</p>
-          </div>
-          <div className="flex gap-2">
-            <button className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors">
-              <Heart className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-300"}`} />
-            </button>
-            <button className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors">
-              <Share2 className="w-5 h-5 text-gray-300" />
-            </button>
-          </div>
-        </div>
-
-        {/* Store Metrics */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <Star className="w-5 h-5 text-green-400" />
-            <span className="text-green-400 font-medium">0.0</span>
-            <span className="text-gray-300 text-sm">0 + ratings</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <MapPin className="w-5 h-5 text-green-400" />
-            <span className="text-gray-300 text-sm">{shop.address}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Clock className="w-5 h-5 text-green-400" />
-            <span className="text-gray-300 text-sm">20-30 min</span>
-          </div>
-        </div>
-
-        {/* Contact Info */}
-        <div className="mt-4 pt-4 border-t border-gray-700">
-          <div className="flex items-center gap-3 mb-2">
-            <Phone className="w-4 h-4 text-green-400" />
-            <span className="text-gray-300 text-sm">Contact for details</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Mail className="w-4 h-4 text-green-400" />
-            <span className="text-gray-300 text-sm">info@store.com</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
       {/* Main Content Area - 6am Mart Style */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -347,7 +316,7 @@ const filteredSortedProducts = products
                   }`}
                   onClick={() => setSelectedCategory(null)}
                 >
-                  ALL
+                  All
                 </button>
                 {uniqueCategories.map((cat) => (
                   <button
@@ -363,7 +332,6 @@ const filteredSortedProducts = products
                   </button>
                 ))}
               </div>
-
             </div>
           </div>
 
@@ -376,7 +344,6 @@ const filteredSortedProducts = products
               </h2>
               <div className="flex items-center gap-4">
                 <Input
-                
                   type="text"
                   placeholder="Search products..."
                   value={productsSearch}
@@ -417,15 +384,15 @@ const filteredSortedProducts = products
                       ...product,
                       id:
                         typeof product.id === "string"
-                          ? (product.id)
+                          ? Number(product.id)
                           : product.id,
                       shop:
                         typeof product.shop === "string"
-                          ? (product.shop)
+                          ? Number(product.shop)
                           : product.shop,
                       price:
                         typeof product.price === "string"
-                          ? (product.price)
+                          ? Number(product.price)
                           : product.price,
                     }}
                   />

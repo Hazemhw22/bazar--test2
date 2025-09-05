@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useMemo, useEffect } from "react";
 import {
   ArrowLeft,
@@ -24,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -40,7 +40,6 @@ import { supabase } from "@/lib/supabase";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useParams } from "next/navigation";
 import type { Product, Shop } from "@/lib/type";
-import { DualRangeSlider } from "../../../components/ui/dualrangeslider"
 
 type SortOption = "name" | "price-low" | "price-high" | "rating" | "newest";
 type ViewMode = "grid" | "list";
@@ -48,30 +47,25 @@ type ViewMode = "grid" | "list";
 export default function CategoryDetailPage() {
   const params = useParams();
   const categoryId = Number(params?.id as string);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("name");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [showFilters, setShowFilters] = useState(false);
+  const [priceRange, setPriceRange] = useState([0, 1500]);
   const [selectedRatings, setSelectedRatings] = useState<number[]>([]);
-  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>(
-    []
-  );
+  const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState<"products" | "shops">("products");
 
-  // ✅ Price state (بدل ما نستخدم priceRange array)
-  const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(1500);
-
   const itemsPerPage = 12;
 
-  // جلب بيانات الكاتيجوري
+  // جلب بيانات الكاتيجوري من قاعدة البيانات
   const [category, setCategory] = useState<{
     id: number;
     title: string;
     desc: string;
+    image_url?: string;
   } | null>(null);
-
   useEffect(() => {
     supabase
       .from("categories")
@@ -83,7 +77,7 @@ export default function CategoryDetailPage() {
       });
   }, [categoryId]);
 
-  // جلب المنتجات
+  // جلب المنتجات المرتبطة بالكاتيجوري مع بيانات الشوب
   const [products, setProducts] = useState<Product[]>([]);
   useEffect(() => {
     supabase
@@ -95,7 +89,7 @@ export default function CategoryDetailPage() {
       });
   }, [categoryId]);
 
-  // استخراج الشوبس
+  // استخراج الشوبس الفريدة المرتبطة بالكاتيجوري
   const shops: Shop[] = useMemo(() => {
     const unique: Record<number, Shop> = {};
     products.forEach((p) => {
@@ -111,8 +105,8 @@ export default function CategoryDetailPage() {
     return Object.values(unique);
   }, [products]);
 
-  // استخراج الساب كاتيجوري
-  const subcategories = [...new Set(products.map((p) => p.title))];
+  // استخراج الساب كاتيجوري (إذا كان لديك)
+  const subcategories = [...new Set(products.map((p) => p.desc))];
 
   // فلترة وفرز المنتجات
   const filteredAndSortedProducts = useMemo(() => {
@@ -125,7 +119,7 @@ export default function CategoryDetailPage() {
           .includes(searchQuery.toLowerCase()) ?? false);
 
       const price = Number(product.sale_price ?? product.price);
-      const matchesPrice = price >= minPrice && price <= maxPrice;
+      const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
 
       const matchesRating =
         selectedRatings.length === 0 ||
@@ -133,14 +127,13 @@ export default function CategoryDetailPage() {
 
       const matchesSubcategory =
         selectedSubcategories.length === 0 ||
-        selectedSubcategories.includes(product.title);
+        selectedSubcategories.includes(product.desc);
 
       return (
         matchesSearch && matchesPrice && matchesRating && matchesSubcategory
       );
     });
 
-    // sort
     switch (sortBy) {
       case "price-low":
         filtered.sort(
@@ -167,7 +160,14 @@ export default function CategoryDetailPage() {
     }
 
     return filtered;
-  }, [products, searchQuery, sortBy, minPrice, maxPrice, selectedRatings, selectedSubcategories]);
+  }, [
+    products,
+    searchQuery,
+    sortBy,
+    priceRange,
+    selectedRatings,
+    selectedSubcategories,
+  ]);
 
   // Pagination
   const totalPages = Math.ceil(filteredAndSortedProducts.length / itemsPerPage);
@@ -199,38 +199,30 @@ export default function CategoryDetailPage() {
   };
 
   const clearAllFilters = () => {
-    setMinPrice(0);
-    setMaxPrice(1500);
+    setPriceRange([0, 1500]);
     setSelectedRatings([]);
     setSelectedSubcategories([]);
   };
 
-  // ✅ Filters Component
   const FiltersContent = () => (
     <div className="space-y-6">
       {/* Price Range */}
-      <div className="space-y-4 mb-6">
-        <h3 className="font-medium">Price Range</h3>
-        <div className="flex justify-between text-sm text-muted-foreground">
-          <span>{minPrice} ₪</span>
-          <span>{maxPrice} ₪</span>
-        </div>
-        <div className="px-2">
-          <DualRangeSlider
-            min={0}
-            max={10000}
-            minValue={minPrice}
-            maxValue={maxPrice}
-            step={10}
-            onChange={({ min, max }) => {
-              setMinPrice(min);
-              setMaxPrice(max);
-            }}
-          />
+      <div>
+        <h4 className="font-medium mb-3">Price Range</h4>
+        <Slider
+          value={priceRange}
+          onValueChange={setPriceRange}
+          max={1500}
+          step={10}
+          className="mb-2"
+        />
+        <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+          <span>${priceRange[0]}</span>
+          <span>${priceRange[1]}</span>
         </div>
       </div>
 
-      {/* Rating */}
+      {/* Rating Filter */}
       <div>
         <h4 className="font-medium mb-3">Rating</h4>
         <div className="space-y-2">
@@ -246,10 +238,7 @@ export default function CategoryDetailPage() {
                 className="flex items-center gap-1 text-sm"
               >
                 {[...Array(rating)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-5 w-5 text-yellow-400 fill-current"
-                  />
+                  <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
                 ))}
               </label>
             </div>
@@ -257,7 +246,7 @@ export default function CategoryDetailPage() {
         </div>
       </div>
 
-      {/* Subcategories */}
+      {/* Subcategory Filter */}
       <div>
         <h4 className="font-medium mb-3">Subcategories</h4>
         <div className="space-y-2">
@@ -308,33 +297,48 @@ export default function CategoryDetailPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 opacity-80" />
         <div className="absolute inset-0 flex items-center">
           <div className="container mx-auto px-4">
-            <div className="flex items-center gap-2 sm:gap-4 mb-4">
-              <Link href="/categories">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 h-8 w-8 sm:h-10 sm:w-10"
-                >
-                  <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-2xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
-                  {category.title}
-                </h1>
-                <p className="text-white/90 text-sm sm:text-lg hidden sm:block">
-                  {category.desc}
-                </p>
-                <Badge className="mt-1 sm:mt-2 bg-white/20 text-white border-white/30 text-xs sm:text-sm">
-                  {products.length} Products Available
-                </Badge>
+            <div className="flex items-center gap-4 sm:gap-6 justify-between">
+              <div className="flex items-center gap-2 sm:gap-4">
+                <Link href="/categories">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 h-8 w-8 sm:h-10 sm:w-10"
+                  >
+                    <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </Button>
+                </Link>
+                <div>
+                  <h1 className="text-2xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
+                    {category.title}
+                  </h1>
+                  <p className="text-white/90 text-sm sm:text-lg hidden sm:block">
+                    {category.desc}
+                  </p>
+                  <Badge className="mt-1 sm:mt-2 bg-white/20 text-white border-white/30 text-xs sm:text-sm">
+                    {products.length} Products Available
+                  </Badge>
+                </div>
               </div>
+
+              {/* صورة الكاتيجوري على يمين الهيدر */}
+              {category.image_url && (
+                <div className="hidden sm:block w-32 h-32 sm:w-40 sm:h-40 rounded-lg overflow-hidden">
+                  <Image
+                    src={category.image_url}
+                    alt={category.title}
+                    width={160}
+                    height={160}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tabs directly under category image */}
+         {/* Tabs directly under category image */}
       <div className="container mx-auto px-4">
         <Tabs
           value={activeTab}

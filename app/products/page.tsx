@@ -6,6 +6,7 @@ import Image from "next/image"
 import { Dialog } from "@headlessui/react"
 import { supabase } from "../../lib/supabase"
 import { ProductsList } from "../../components/product-list"
+import ProductRowCard from "../../components/ProductRowCard"
 import { DualRangeSlider } from "../../components/ui/dualrangeslider"
 import { Input } from "../../components/ui/input"
 import { Button } from "../../components/ui/button"
@@ -24,8 +25,9 @@ import {
   CommandList,
 } from "../../components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/popover"
-import { ChevronDown, SlidersHorizontal, X } from "lucide-react"
+import { ChevronDown, SlidersHorizontal, X, Grid3X3, List } from "lucide-react"
 import SortIcon from "../../components/SortIcon"
+import { Category } from "../../lib/type" // عدّل المسار حسب مكان الملف
 
 export default function Products() {
   const [minPrice, setMinPrice] = useState(0)
@@ -40,18 +42,21 @@ export default function Products() {
   const [brandSearch, setBrandSearch] = useState("")
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
   const [selectedColors, setSelectedColors] = useState<string[]>([])
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list")
 
+  // Fetch categories and brands
   useQuery({
     queryKey: ["categories-brands"],
     queryFn: async () => {
-      const { data: cats } = await supabase.from("categories").select("title")
+      const { data: cats } = await supabase.from("categories").select("title, id, image_url")
       const { data: shops } = await supabase.from("shops").select("shop_name")
-      setCategories(["All", ...(cats?.map((c: any) => c.title).filter(Boolean) ?? [])])
+      setCategories(["All", ...(cats?.map((c: any) => c) ?? [])])
       setBrands(["All", ...(shops?.map((s: any) => s.shop_name).filter(Boolean) ?? [])])
       return null
     },
   })
 
+  // Fetch products
   const {
     data: products = [],
     isLoading,
@@ -115,6 +120,89 @@ export default function Products() {
           <div className="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-4">Simple is More</div>
           <div className="text-lg md:text-xl lg:text-2xl opacity-90">Discover fresh arrivals and best deals</div>
         </div>
+      </div>
+
+      {/* Category Pills Section */}
+      <div className="mb-8 relative">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Categories</h2>
+
+        <div className="relative">
+          {/* Left Arrow */}
+          <button
+            className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+            onClick={() => {
+              const el = document.getElementById("category-scroll")
+              if (el) el.scrollBy({ left: -150, behavior: "smooth" })
+            }}
+            aria-label="Scroll Left"
+          >
+            <ChevronDown className="rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
+          </button>
+
+          {/* Scrollable Pills */}
+          <div
+            id="category-scroll"
+            className="flex overflow-x-auto gap-3 scrollbar-hide pb-2 scroll-smooth"
+          >
+            {categories.map((cat: Category | string) => {
+              const isCategoryObject = typeof cat !== "string"
+              const title = isCategoryObject ? cat.title : cat
+
+              return (
+                <button
+                  key={isCategoryObject ? cat.id : cat}
+                  onClick={() => setSelectedCategory(title)}
+                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl border whitespace-nowrap transition-all ${
+                    selectedCategory === title
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700"
+                  }`}
+                >
+                  {/* صورة الكاتيجوري */}
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 relative">
+                    {isCategoryObject && cat.image_url ? (
+                      <Image
+                        src={cat.image_url}
+                        alt={title}
+                        fill
+                        className="object-cover rounded-full"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold">
+                        {title[0]}
+                      </div>
+                    )}
+                  </div>
+
+                  <span className="text-sm font-medium mt-1">{title}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Right Arrow */}
+          <button
+            className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+            onClick={() => {
+              const el = document.getElementById("category-scroll")
+              if (el) el.scrollBy({ left: 150, behavior: "smooth" })
+            }}
+            aria-label="Scroll Right"
+          >
+            <ChevronDown className="-rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
+          </button>
+        </div>
+
+        {/* Custom scrollbar hide */}
+        <style jsx>{`
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+          .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+        `}</style>
       </div>
 
       {/* Mobile filter button */}
@@ -295,9 +383,67 @@ export default function Products() {
             </div>
           </div>
 
+          {/* View Toggle */}
+          <div className="flex items-center gap-2 mb-6">
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Show by:</span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  New items
+                  <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>New items</DropdownMenuItem>
+                <DropdownMenuItem>Popular items</DropdownMenuItem>
+                <DropdownMenuItem>On sale</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
+            <div className="flex border border-gray-300 dark:border-gray-600 rounded-md">
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className="rounded-r-none border-r border-gray-300 dark:border-gray-600"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "grid" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("grid")}
+                className="rounded-l-none"
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
           {isLoading && <div className="text-xl text-center py-12">جاري التحميل...</div>}
           {error && <div className="text-xl text-center py-12 text-red-500">حدث خطأ أثناء جلب المنتجات</div>}
-          <ProductsList products={filteredProducts} />
+          
+          {/* Products Display */}
+          {viewMode === "list" ? (
+            <div className="space-y-4">
+              {filteredProducts.map((p: any) => (
+                <ProductRowCard key={p.id} product={p} />
+              ))}
+            </div>
+          ) : (
+            <ProductsList products={filteredProducts} />
+          )}
+
+          {/* Show More Button */}
+          {filteredProducts.length > 0 && (
+            <div className="text-center mt-8">
+              <Button variant="outline" size="lg" className="flex items-center gap-2 mx-auto">
+                Show more products
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
         </section>
       </div>
 

@@ -3,19 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Category } from "@/lib/type";
-
-const fallbackIcons = [
-  "🏠",
-  "🌿",
-  "📱",
-  "☕",
-  "👕",
-  "👜",
-  "👟",
-  "🛒",
-  "🎁",
-  "💡",
-];
+import Image from "next/image";
 
 export default function CategoryMenu() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -34,15 +22,26 @@ export default function CategoryMenu() {
       className="flex flex-row-reverse gap-2 overflow-x-auto py-2 scrollbar-hide"
       dir="rtl"
     >
-      {categories.map((cat, idx) => (
+      {categories.map((cat) => (
         <button
           key={cat.id}
-          className="flex flex-row-reverse items-center gap-1 text-sm whitespace-nowrap px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border-0 flex-shrink-0"
+          className="flex flex-row-reverse items-center gap-2 text-sm whitespace-nowrap px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border-0 flex-shrink-0"
         >
-          <span className="text-lg">
-            {cat.icon || fallbackIcons[idx % fallbackIcons.length]}
-          </span>
-          {cat.title}
+          {/* صورة التصنيف */}
+          {cat.image_url ? (
+            <Image
+              src={cat.image_url}
+              alt={cat.title}
+              width={24}
+              height={24}
+              className="rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600" />
+          )}
+
+          {/* اسم التصنيف */}
+          <span>{cat.title}</span>
         </button>
       ))}
     </div>

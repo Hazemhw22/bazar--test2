@@ -1,8 +1,9 @@
 export interface Category {
-  id: number;
-  title: string;
-  desc: string;
-  icon?: string; // Add this line to include the optional icon property
+id: number;
+title: string;
+desc: string;
+image_url?: string;
+created_at: string;
 }
 
 export interface Product {
@@ -58,4 +59,64 @@ export interface WorkHours {
   open: boolean;
   startTime: string;
   endTime: string;
+}
+// New: Auth profile (linked to Supabase auth.users)
+export interface Profile {
+  id: string; // auth user id (uuid)
+  email?: string | null;
+  display_name?: string | null; // maps to firstName per checkout
+  avatar_url?: string | null;
+  created_at?: string;
+}
+
+// New: Order JSON subtypes
+export interface ShippingMethodJson {
+  type: string;
+  duration: string;
+  cost: number;
+}
+
+export interface ShippingAddressJson {
+  name: string;
+  address: string;
+  city: string;
+  zip: string;
+  district: string;
+  phone: string;
+  email: string;
+}
+
+export interface PaymentMethodJson {
+  type: string;
+  name_on_card?: string;
+  card_number?: string;
+  expiration_date?: string;
+  provider?: string;
+}
+
+export interface OrderData {
+    id: string;
+    created_at: string;
+    buyer_id: string;
+    status: string;
+    product_id: number;
+    shipping_method: any;
+    shipping_address: any;
+    payment_method: any;
+    // Joined data
+    products?: {
+        id: number;
+        title: string;
+        price: number;
+        images: any[];
+        shop: number;
+        shops?: {
+            shop_name: string;
+        };
+    };
+    profiles?: {
+        id: string;
+        full_name: string;
+        email: string;
+    };
 }

@@ -7,7 +7,7 @@ import { PopularStores } from "../components/popular-stores";
 import MainProductSection from "../components/MainProductSection";
 import AdBanner from "../components/AdBanner";
 import AutoCarousel from "../components/AutoCarousel"; // الهيرو الصغير الجديد
-import  {HomeCategories}  from "../components/home-categories";
+import { HomeCategories } from "../components/home-categories";
 import { SpecialOffers } from "../components/special-offers";
 import { LocationModal } from "../components/location-modal";
 import { useLocation } from "../components/location-provider";

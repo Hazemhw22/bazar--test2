@@ -26,6 +26,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { supabase } from "@/lib/supabase";
+import type {
+  PaymentMethodJson,
+  ShippingAddressJson,
+  ShippingMethodJson,
+} from "@/lib/type";
 
 interface FormData {
   email: string;
@@ -54,6 +60,7 @@ export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
     email: "",
     firstName: "",
@@ -94,40 +101,164 @@ export default function CheckoutPage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handlePlaceOrder = async () => {
-    setIsLoading(true);
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    // Generate order ID and store order data
-    const orderId = `ORD-${Date.now()}`;
-    const currentDate = new Date();
-    const orderData = {
-      id: orderId,
-      items,
-      total,
-      shippingAddress: {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        address: formData.address,
-        city: formData.city,
-        state: formData.state,
-        zipCode: formData.zipCode,
-      },
-      orderDate: currentDate.toISOString(),
-      estimatedDelivery: new Date(
-        currentDate.getTime() + 7 * 24 * 60 * 60 * 1000
-      ).toISOString(),
-    };
-
-    // Store in localStorage for demo purposes
-    localStorage.setItem("lastOrder", JSON.stringify(orderData));
-
-    clearCart();
-    router.push(`/order-confirmation?orderId=${orderId}`);
+  const validate = () => {
+    const required = [
+      formData.email,
+      formData.firstName,
+      formData.address,
+      formData.city,
+      formData.state,
+      formData.zipCode,
+      formData.phone,
+    ];
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (required.some((v) => !String(v).trim())) {
+      return "Please fill all required fields.";
+    }
+    if (!emailRegex.test(formData.email)) {
+      return "Please enter a valid email address.";
+    }
+    return null;
   };
 
+  function randomPassword(length = 16) {
+    const chars =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+    let pass = "";
+    for (let i = 0; i < length; i++)
+      pass += chars[Math.floor(Math.random() * chars.length)];
+    return pass;
+  }
+
+  const handlePlaceOrder = async () => {
+    setErrorMsg(null);
+    const invalid = validate();
+    if (invalid) {
+      setErrorMsg(invalid);
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // 1️⃣ تحقق من وجود المستخدم في profiles
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", formData.email)
+        .maybeSingle();
+
+      let userId: string | null = existingProfile?.id ?? null;
+
+      // 2️⃣ إذا المستخدم غير موجود، أنشئ حساب جديد في Auth و profiles
+      if (!userId) {
+        const generatedPassword = randomPassword();
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: formData.email,
+          password: generatedPassword,
+        });
+
+        if (signUpError && signUpError.message.includes("already registered")) {
+          // المستخدم موجود مسبقًا في Auth
+          const { data: sessionData } = await supabase.auth.getSession();
+          userId = sessionData.session?.user.id ?? null;
+        } else if (signUpData.user?.id) {
+          userId = signUpData.user.id;
+        }
+
+        if (!userId) throw new Error("Failed to create or fetch user account");
+
+        // إدخال أو تحديث بيانات الـ profile
+        await supabase.from("profiles").upsert(
+          {
+            id: userId,
+            full_name: `${formData.firstName} ${formData.lastName}`,
+            email: formData.email,
+            phone: formData.phone,
+            address: formData.address,
+            country: formData.country,
+            status: "active",
+            role: 3,
+            registration_date: new Date().toISOString(),
+          },
+          { onConflict: "id" }
+        );
+      }
+
+      // 3️⃣ تحضير بيانات الشحن والدفع
+      const shipping_method: ShippingMethodJson = {
+        type:
+          formData.shippingMethod === "standard"
+            ? "Standard"
+            : formData.shippingMethod === "express"
+            ? "Express"
+            : "Overnight",
+        duration:
+          formData.shippingMethod === "standard"
+            ? "5-7 Business Days"
+            : formData.shippingMethod === "express"
+            ? "2-3 Business Days"
+            : "1 Business Day",
+        cost: shippingCost,
+      };
+
+      const shipping_address: ShippingAddressJson = {
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        address: formData.address,
+        city: formData.city,
+        zip: formData.zipCode,
+        district: formData.state,
+        phone: formData.phone,
+        email: formData.email,
+      };
+
+      const payment_method: PaymentMethodJson =
+        formData.paymentMethod === "card"
+          ? {
+              type: "Credit Card",
+              name_on_card: formData.cardName,
+              card_number: formData.cardNumber
+                ? `** ** ** ${formData.cardNumber.slice(-4)}`
+                : undefined,
+              expiration_date: formData.expiryDate,
+              provider: "Visa",
+            }
+          : formData.paymentMethod === "bank"
+          ? { type: "Bank Transfer" }
+          : formData.paymentMethod === "instore"
+          ? { type: "In-store" }
+          : formData.paymentMethod === "paypal"
+          ? { type: "PayPal" }
+          : { type: "Cash on Delivery" };
+
+      // 4️⃣ إدخال الطلب
+      const primaryProductId = Number(items[0]?.id ?? 0);
+      const { data: insertedOrders, error: orderError } = await supabase
+        .from("orders")
+        .insert({
+          buyer_id: userId,
+          status: "processing",
+          product_id: primaryProductId,
+          shipping_method,
+          shipping_address,
+          payment_method,
+        })
+        .select(); // مهم: لنحصل على الصفوف المُدخلة
+
+      if (orderError || !insertedOrders?.length) throw orderError ?? new Error("Failed to create order");
+
+      const realOrderId = insertedOrders[0].id;
+
+      // 5️⃣ مسح السلة والانتقال لتأكيد الطلب
+      clearCart();
+      router.push(`/order-confirmation?orderId=${realOrderId}`);
+
+    } catch (e: any) {
+      setErrorMsg(e.message ?? "Failed to place order");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   if (items.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -153,6 +284,9 @@ export default function CheckoutPage() {
             Back to Cart
           </Link>
           <h1 className="text-2xl lg:text-3xl font-bold">Checkout</h1>
+          {errorMsg && (
+            <p className="mt-2 text-sm text-red-600">{errorMsg}</p>
+          )}
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
@@ -264,36 +398,6 @@ export default function CheckoutPage() {
                         <SelectItem value="Jerusalem">Jerusalem</SelectItem>
                         <SelectItem value="Tel Aviv">Tel Aviv</SelectItem>
                         <SelectItem value="Haifa">Haifa</SelectItem>
-                        <SelectItem value="Rishon LeZion">
-                          Rishon LeZion
-                        </SelectItem>
-                        <SelectItem value="Petah Tikva">Petah Tikva</SelectItem>
-                        <SelectItem value="Ashdod">Ashdod</SelectItem>
-                        <SelectItem value="Netanya">Netanya</SelectItem>
-                        <SelectItem value="Beer Sheva">Beer Sheva</SelectItem>
-                        <SelectItem value="Bnei Brak">Bnei Brak</SelectItem>
-                        <SelectItem value="Holon">Holon</SelectItem>
-                        <SelectItem value="Ramat Gan">Ramat Gan</SelectItem>
-                        <SelectItem value="Ashkelon">Ashkelon</SelectItem>
-                        <SelectItem value="Rehovot">Rehovot</SelectItem>
-                        <SelectItem value="Bat Yam">Bat Yam</SelectItem>
-                        <SelectItem value="Beit Shemesh">
-                          Beit Shemesh
-                        </SelectItem>
-                        <SelectItem value="Kfar Saba">Kfar Saba</SelectItem>
-                        <SelectItem value="Herzliya">Herzliya</SelectItem>
-                        <SelectItem value="Hadera">Hadera</SelectItem>
-                        <SelectItem value="Modi'in">Modi'in</SelectItem>
-                        <SelectItem value="Nazareth">Nazareth</SelectItem>
-                        <SelectItem value="Lod">Lod</SelectItem>
-                        <SelectItem value="Ramla">Ramla</SelectItem>
-                        <SelectItem value="Arad">Arad</SelectItem>
-                        <SelectItem value="Eilat">Eilat</SelectItem>
-                        <SelectItem value="Tiberias">Tiberias</SelectItem>
-                        <SelectItem value="Acre">Acre</SelectItem>
-                        <SelectItem value="Kiryat Gat">Kiryat Gat</SelectItem>
-                        <SelectItem value="Dimona">Dimona</SelectItem>
-                        <SelectItem value="Safed">Safed</SelectItem>
                         <SelectItem value="Other">Other</SelectItem>
                       </SelectContent>
                     </Select>
@@ -312,25 +416,9 @@ export default function CheckoutPage() {
                         <SelectValue placeholder="Select district" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Jerusalem">
-                          Jerusalem District
-                        </SelectItem>
-                        <SelectItem value="Northern">
-                          Northern District
-                        </SelectItem>
-                        <SelectItem value="Haifa">Haifa District</SelectItem>
-                        <SelectItem value="Central">
-                          Central District
-                        </SelectItem>
-                        <SelectItem value="Tel Aviv">
-                          Tel Aviv District
-                        </SelectItem>
-                        <SelectItem value="Southern">
-                          Southern District
-                        </SelectItem>
-                        <SelectItem value="Judea and Samaria">
-                          Judea and Samaria
-                        </SelectItem>
+                        <SelectItem value="Central">Central</SelectItem>
+                        <SelectItem value="Northern">Northern</SelectItem>
+                        <SelectItem value="Southern">Southern</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

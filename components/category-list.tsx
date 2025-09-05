@@ -2,11 +2,22 @@
 
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, ArrowRight, Package, TrendingUp } from "lucide-react";
+import {
+  Search,
+  Package,
+  TrendingUp,
+  Monitor,
+  Smartphone,
+  Headphones,
+  Laptop,
+  Tv,
+  Speaker,
+  Watch,
+  Lightbulb,
+  Wifi,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -15,10 +26,52 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
-import { Category } from "@/lib/type";
+
+export interface Category {
+  id: number;
+  title: string;
+  desc: string;
+  image_url?: string; // الصورة من قاعدة البيانات
+}
 
 type SortOption = "title" | "products" | "trending";
+type CategoryWithExtra = Category & {
+  productCount: number;
+  trending: boolean;
+  color: string;
+};
+
+// خريطة الأيقونات
+const getCategoryIcon = (title: string) => {
+  const iconMap: Record<string, any> = {
+    Phones: Smartphone,
+    Headsets: Headphones,
+    Laptops: Laptop,
+    "TV sets": Tv,
+    Sound: Speaker,
+    Watches: Watch,
+    Others: Lightbulb,
+    Internet: Wifi,
+  };
+  return iconMap[title] || Package;
+};
+
+// خريطة الألوان
+const getIconColor = (title: string) => {
+  const colorMap: Record<string, string> = {
+    Phones: "#4A70FF",
+    Headsets: "#8A63D2",
+    Laptops: "#FFB84A",
+    "TV sets": "#FF638A",
+    Sound: "#FFD700",
+    Watches: "#8A63D2",
+    Others: "#4A70FF",
+    Internet: "#FFB84A",
+  };
+  return colorMap[title] || "#6B7280";
+};
 
 export default function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,7 +81,7 @@ export default function CategoriesPage() {
     {}
   );
 
-  // جلب التصنيفات من قاعدة البيانات
+  // جلب التصنيفات
   const {
     data: categories = [],
     isLoading,
@@ -59,15 +112,15 @@ export default function CategoriesPage() {
     fetchCounts();
   }, [categories]);
 
-  // إضافة بيانات إضافية (trending وهمي)
-  const categoriesWithExtra = categories.map((cat) => ({
+  // إضافة الحقول الإضافية
+  const categoriesWithExtra: CategoryWithExtra[] = categories.map((cat) => ({
     ...cat,
     productCount: productCounts[cat.id] ?? 0,
     trending: Math.random() > 0.5,
     color: "from-blue-500 to-purple-600",
   }));
 
-  // فلترة وفرز التصنيفات
+  // فلترة وفرز
   const filteredAndSortedCategories = categoriesWithExtra
     .filter((category) => {
       const matchesSearch =
@@ -95,11 +148,11 @@ export default function CategoriesPage() {
         <div className="container mx-auto px-4 py-8">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Shop by Categories
+              Explore Our Categories
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Discover thousands of products across all categories. Find exactly
-              what you're looking for.
+              Discover products organized into categories to help you find what
+              you love faster.
             </p>
           </div>
 
@@ -174,70 +227,76 @@ export default function CategoriesPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredAndSortedCategories.map((category) => {
-              const IconComponent = category.icon
-                ? (require("lucide-react")[category.icon] as React.ElementType)
-                : Package;
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredAndSortedCategories.map((category, idx) => {
+              const IconComponent = getCategoryIcon(category.title);
+              const iconColor = getIconColor(category.title);
+              const isHighlighted = idx === 0;
 
               return (
-                <Card
+                <Link
                   key={category.id}
-                  className="group overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 border-0 bg-white dark:bg-gray-800"
+                  href={`/categories/${category.id}`}
+                  aria-label={category.title}
                 >
-                  <CardContent className="p-0">
-                    {/* أيقونة التصنيف */}
-                   <div className="relative h-48 flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
-                    <img
-                      src={category.icon}
-                      alt={category.title}
-                      className="h-16 w-16 object-contain"
-                    />
-
-                      {/* Trending Badge */}
-                      {category.trending && (
-                        <div className="absolute top-4 right-4">
-                          <Badge className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold">
-                            🔥 Trending
-                          </Badge>
+                  <div
+                    className={`relative rounded-2xl border transition-all duration-300 hover:shadow-lg ${
+                      isHighlighted
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                    }`}
+                  >
+                    <div className="p-6 space-y-4">
+                      {/* صورة أو أيقونة */}
+                      {category.image_url ? (
+                        <Image
+                          src={category.image_url}
+                          alt={category.title}
+                          width={48}
+                          height={48}
+                          className="rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div
+                          className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                            isHighlighted
+                              ? "bg-white/20"
+                              : "bg-gray-100 dark:bg-gray-700"
+                          }`}
+                        >
+                          <IconComponent
+                            className="w-6 h-6"
+                            style={{
+                              color: isHighlighted ? "white" : iconColor,
+                            }}
+                          />
                         </div>
                       )}
-                    </div>
 
-                    {/* Category Details */}
-                    <div className="p-6 space-y-4">
-                      {/* Category Title */}
-                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                      {/* العنوان */}
+                      <h3
+                        className={`font-semibold text-lg ${
+                          isHighlighted
+                            ? "text-white"
+                            : "text-gray-900 dark:text-gray-100"
+                        }`}
+                      >
                         {category.title}
                       </h3>
 
-                      {/* Description */}
-                      <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-3">
+                      {/* الوصف */}
+                      <p
+                        className={`text-sm leading-relaxed ${
+                          isHighlighted
+                            ? "text-white/80"
+                            : "text-gray-600 dark:text-gray-400"
+                        }`}
+                      >
                         {category.desc}
                       </p>
-
-                      {/* Product Count */}
-                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                        <Package className="h-4 w-4" />
-                        <span>
-                          {category.productCount.toLocaleString()} products
-                          available
-                        </span>
-                      </div>
-
-                      {/* View Products Button */}
-                      <Link
-                        href={`/categories/${category.id}`}
-                        className="block"
-                      >
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 group-hover:bg-blue-700">
-                          View Products
-                          <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                        </Button>
-                      </Link>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </Link>
               );
             })}
           </div>

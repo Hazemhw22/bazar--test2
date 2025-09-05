@@ -5,10 +5,7 @@ import { ChevronRight, ChevronLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Category } from "@/lib/type";
 import Link from "next/link";
-
-const fallbackIcons = [
-  "🏠", "🌿", "📱", "☕", "👕", "👜", "👟", "🛒", "🎁", "💡"
-];
+import Image from "next/image";
 
 export function HomeCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -37,12 +34,7 @@ export function HomeCategories() {
         return;
       }
 
-      const transformed = (data || []).map((cat, idx) => ({
-        ...cat,
-        icon: cat.icon || fallbackIcons[idx % fallbackIcons.length],
-      }));
-
-      setCategories(transformed);
+      setCategories(data || []);
     } catch (err) {
       console.error("Error fetching categories:", err);
       setError("خطأ غير متوقع.");
@@ -100,7 +92,7 @@ export function HomeCategories() {
   return (
     <section className="w-full py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-          {/* العنوان + عرض الكل */}
+        {/* العنوان + عرض الكل */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
             الفئات المقترحة
@@ -142,10 +134,21 @@ export function HomeCategories() {
                 key={category.id}
                 className="flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44"
               >
-                <div
-                  className="w-full aspect-square rounded-2xl p-4 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform duration-200 cursor-pointer"
-                >
-                  <div className="text-4xl mb-3">{category.icon}</div>
+                <div className="w-full aspect-square rounded-2xl p-4 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform duration-200 cursor-pointer">
+                  {/* صورة التصنيف */}
+                  {category.image_url ? (
+                    <Image
+                      src={category.image_url}
+                      alt={category.title}
+                      width={64}
+                      height={64}
+                      className="object-contain mb-3"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 mb-3 bg-gray-200 dark:bg-gray-700 rounded-full" />
+                  )}
+
+                  {/* اسم التصنيف */}
                   <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100">
                     {category.title}
                   </h3>
