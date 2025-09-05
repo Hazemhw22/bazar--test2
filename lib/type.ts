@@ -60,14 +60,39 @@ export interface WorkHours {
   startTime: string;
   endTime: string;
 }
-// New: Auth profile (linked to Supabase auth.users)
+
+
 export interface Profile {
-  id: string; // auth user id (uuid)
-  email?: string | null;
-  display_name?: string | null; // maps to firstName per checkout
-  avatar_url?: string | null;
-  created_at?: string;
+  idx: number;
+  id: string;
+  full_name: string | null;
+  profession: string | null;
+  country: string | null;
+  address: string | null;
+  location: string | null;
+  phone: string | null;
+  website: string | null;
+  is_default_address: boolean;
+  linkedin_username: string | null;
+  twitter_username: string | null;
+  facebook_username: string | null;
+  github_username: string | null;
+  theme: 'light' | 'dark';
+  public_profile: boolean;
+  show_email: boolean;
+  enable_shortcuts: boolean;
+  hide_navigation: boolean;
+  show_advertisements: boolean;
+  enable_social: boolean;
+  updated_at: string;
+  email: string | null;
+  avatar_url: string | null;
+  registration_date: string | null;
+  status: string | null;
+  username: string | null;
+  role: string | null;
 }
+
 
 // New: Order JSON subtypes
 export interface ShippingMethodJson {
