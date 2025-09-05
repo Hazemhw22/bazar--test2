@@ -1,10 +1,11 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react"
+import { useSearchParams, useRouter } from "next/navigation"
+import { Eye, EyeOff, Mail, Lock, User, CheckCircle, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,9 +14,13 @@ import { VristoLogo } from "@/components/vristo-logo"
 import { supabase } from "@/lib/supabase" 
 
 export default function AuthPage() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
   const [isSignUp, setIsSignUp] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [successMessage, setSuccessMessage] = useState("")
+  const [generalError, setGeneralError] = useState("")
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -29,6 +34,16 @@ export default function AuthPage() {
     password: "",
     confirmPassword: "",
   })
+
+  // Check for success messages from URL params (e.g., after password reset)
+  useEffect(() => {
+    const message = searchParams?.get("message")
+    if (message) {
+      setSuccessMessage(decodeURIComponent(message))
+      // Clear the message after 5 seconds
+      setTimeout(() => setSuccessMessage(""), 5000)
+    }
+  }, [searchParams])
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -67,6 +82,13 @@ export default function AuthPage() {
     if (errors[field as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [field]: "" }))
     }
+    // Clear general error when user starts typing
+    if (generalError) {
+      setGeneralError("")
+    }
+    if (successMessage) {
+      setSuccessMessage("")
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,55 +97,63 @@ export default function AuthPage() {
     if (!validateForm()) return
 
     setIsLoading(true)
+    setGeneralError("")
+    setSuccessMessage("")
 
-    if (!isSignUp) {
-      // تسجيل الدخول
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      })
-
-      setIsLoading(false)
-
-      if (error) {
-        setErrors((prev) => ({ ...prev, email: error.message }))
-      } else {
-        window.location.href = "/account"
-      }
-    } else {
-      // تسجيل حساب جديد
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-      })
-
-      if (signUpError) {
-        setIsLoading(false)
-        setErrors((prev) => ({ ...prev, email: signUpError.message }))
-        return
-      }
-
-      // بعد التسجيل، نضيف البيانات إلى جدول profiles
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .insert({
-          id: signUpData.user?.id,
-          full_name: formData.fullName,
+    try {
+      if (!isSignUp) {
+        // تسجيل الدخول
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: formData.email,
-          registration_date: new Date().toISOString(),
+          password: formData.password,
         })
 
-      setIsLoading(false)
+        if (error) {
+          setGeneralError(error.message)
+        } else {
+          setSuccessMessage("Login successful! Redirecting to your account...")
+          setTimeout(() => {
+            router.push("/account")
+          }, 1500)
+        }
+      } else {
+        // تسجيل حساب جديد
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+        })
 
-      if (profileError) {
-        setErrors((prev) => ({ ...prev, email: profileError.message }))
-        return
+        if (signUpError) {
+          setGeneralError(signUpError.message)
+          setIsLoading(false)
+          return
+        }
+
+        // بعد التسجيل، نضيف البيانات إلى جدول profiles
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert({
+            id: signUpData.user?.id,
+            full_name: formData.fullName,
+            email: formData.email,
+            registration_date: new Date().toISOString(),
+          })
+
+        if (profileError) {
+          setGeneralError(profileError.message)
+          setIsLoading(false)
+          return
+        }
+
+        setSuccessMessage("Account created successfully! Please check your email for verification link.")
+        setIsSignUp(false)
+        setFormData((prev) => ({ ...prev, password: "", confirmPassword: "" }))
       }
-
-      alert("SignUp successful! Check your email for verification link.")
-      setIsSignUp(false)
-      setFormData((prev) => ({ ...prev, password: "", confirmPassword: "" }))
+    } catch (err) {
+      setGeneralError("An unexpected error occurred. Please try again.")
     }
+
+    setIsLoading(false)
   }
 
   return (
@@ -173,6 +203,26 @@ export default function AuthPage() {
                 Sign Up
               </button>
             </div>
+
+            {/* Success Message */}
+            {successMessage && (
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="text-green-600 dark:text-green-400" size={20} />
+                  <p className="text-green-800 dark:text-green-200 text-sm">{successMessage}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {generalError && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                <div className="flex items-center space-x-3">
+                  <AlertCircle className="text-red-600 dark:text-red-400" size={20} />
+                  <p className="text-red-800 dark:text-red-200 text-sm">{generalError}</p>
+                </div>
+              </div>
+            )}
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6 mb-6">
