@@ -111,9 +111,9 @@ export default function AuthPage() {
           return
         }
 
-        // إدخال البيانات في جدول profiles باستخدام upsert
+        // إضافة البيانات في جدول profiles
         const { error: profileError } = await supabase.from("profiles").upsert({
-          id: signUpData.user.id,       // يجب أن يكون موجود في auth.users
+          id: signUpData.user.id,
           full_name: formData.fullName,
           email: formData.email,
           registration_date: new Date().toISOString(),
@@ -138,7 +138,8 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="hidden lg:flex min-h-screen">
+      <div className="flex flex-col lg:flex-row min-h-screen">
+        {/* اليسار - الفورم */}
         <div className="flex-1 flex items-center justify-center p-8 bg-white dark:bg-gray-900">
           <div className="w-full max-w-md space-y-8">
             <div className="text-center mb-6">
@@ -313,6 +314,7 @@ export default function AuthPage() {
           </div>
         </div>
 
+        {/* اليمين - الصورة */}
         <div className="flex-1 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center p-8">
           <div className="relative w-full max-w-lg">
             <Image
