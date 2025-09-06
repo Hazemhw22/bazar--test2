@@ -3,12 +3,12 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Card, CardContent, CardHeader } from "../../components/ui/card";
+import { Card, CardContent } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import { Package, CheckCircle, Truck, Clock, XCircle, AlertCircle } from "lucide-react";
 import { pdf, Document, Page, Text, View, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
-import QuickViewModal from "../../components/QuickViewModal"; // افترض وجود مكون QuickViewModal
+import QuickViewModal from "../../components/QuickViewModal";
 
 export default function OrdersPage() {
   const [ordersData, setOrdersData] = useState<any[]>([]);
@@ -45,18 +45,11 @@ export default function OrdersPage() {
 
       const { data, error } = await supabase
         .from("orders")
-        .select(`
-          *,
-          products:product_id (
-            *,
-            shop:shop_id (shop_name),
-            category:category_id (title)
-          )
-        `)
+        .select(`*, products:product_id (*, shop:shop_id (*), category:category_id (*))`)
         .eq("buyer_id", userId)
         .order("created_at", { ascending: false });
 
-      if (error) console.error("Supabase Error:", error);
+      if (error) console.error(error);
       else setOrdersData(data || []);
       setLoading(false);
     };
@@ -75,13 +68,14 @@ export default function OrdersPage() {
         <Page style={styles.page}>
           <View style={styles.section}>
             <Text style={styles.title}>Order #{order.id}</Text>
+            <Text>Product: {order.products?.title}</Text>
+            <Text>Category: {order.products?.category?.title}</Text>
+            <Text>Shop: {order.products?.shop?.shop_name}</Text>
             <Text>Status: {order.status}</Text>
             <Text>Payment: {order.payment_method?.type || "Credit Card"}</Text>
             <Text>Delivery: {order.shipping_method?.type || "Standard"}</Text>
             <Text>Date: {new Date(order.created_at).toLocaleDateString()}</Text>
             <Text>Total: ${order.products?.price || "0.00"}</Text>
-            <Text>Store: {order.products?.shop?.shop_name || "Unknown"}</Text>
-            <Text>Category: {order.products?.category?.title || "Unknown"}</Text>
           </View>
         </Page>
       </Document>
@@ -117,9 +111,10 @@ export default function OrdersPage() {
               <div className="flex justify-between flex-col sm:flex-row sm:items-center">
                 <div>
                   <h4 className="font-semibold text-lg">{order.products?.title || "Product"}</h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {order.products?.shop?.shop_name} &bull; {order.products?.category?.title}
+                  </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Order #{order.id}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Store: {order.products?.shop?.shop_name || "Unknown"}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Category: {order.products?.category?.title || "Unknown"}</p>
                 </div>
                 <Badge className={`${getStatusColor(order.status)} flex items-center gap-1 mt-2 sm:mt-0`}>
                   {getStatusIcon(order.status)} {order.status}

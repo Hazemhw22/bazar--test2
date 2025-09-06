@@ -27,7 +27,7 @@ export default function NewPasswordPage() {
   useEffect(() => {
     const init = async () => {
       // الحالة 1: الرابط فيه ?code=...
-      const code = searchParams!.get("code")
+      const code = searchParams?.get("code") || null;
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (error) {
@@ -110,7 +110,7 @@ export default function NewPasswordPage() {
         setIsSuccess(true)
         setMessage("Password updated successfully! Redirecting to your account...")
         setTimeout(() => {
-          router.push("/account")
+        router.replace("/account")
         }, 2000)
       }
     } catch {

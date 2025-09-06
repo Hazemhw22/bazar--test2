@@ -49,8 +49,8 @@ interface OrderData {
 }
 
 export default function OrderConfirmationPage() {
-  const searchParams = useSearchParams();
-  const orderId = searchParams.get("orderId");
+const searchParams = useSearchParams();
+const orderId = searchParams?.get("orderId") ?? null;
   const router = useRouter();
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
