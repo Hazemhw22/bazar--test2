@@ -1,83 +1,93 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { supabase } from "@/lib/supabase"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { VristoLogo } from "@/components/vristo-logo"
-import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { VristoLogo } from "@/components/vristo-logo";
+import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function NewPasswordPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [error, setError] = useState("")
-  const [message, setMessage] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
-  const [isValidToken, setIsValidToken] = useState(false)
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isValidToken, setIsValidToken] = useState(false);
 
+  // ✅ استخدم useEffect للتحقق من الرابط فقط بعد تحميل الصفحة
   useEffect(() => {
+    if (!searchParams) return;
+
     const init = async () => {
-      const code = searchParams?.get("code") ?? null
+      const code = searchParams.get("code") ?? null;
+
       if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
-        if (error) setError("Invalid or expired reset link. Please request a new password reset.")
-        else setIsValidToken(true)
-        return
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) setError("Invalid or expired reset link. Please request a new password reset.");
+        else setIsValidToken(true);
+        return;
       }
 
-      const hash = window.location.hash
+      const hash = window.location.hash;
       if (hash) {
-        const params = new URLSearchParams(hash.replace("#", ""))
-        const access_token = params.get("access_token")
-        const refresh_token = params.get("refresh_token")
+        const params = new URLSearchParams(hash.replace("#", ""));
+        const access_token = params.get("access_token");
+        const refresh_token = params.get("refresh_token");
+
         if (access_token && refresh_token) {
-          const { error } = await supabase.auth.setSession({ access_token, refresh_token })
-          if (error) setError("Invalid or expired reset link. Please request a new password reset.")
-          else setIsValidToken(true)
-          return
+          const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+          if (error) setError("Invalid or expired reset link. Please request a new password reset.");
+          else setIsValidToken(true);
+          return;
         }
       }
 
-      setError("Invalid or missing reset link. Please request a new password reset.")
-    }
-    init()
-  }, [searchParams])
+      setError("Invalid or missing reset link. Please request a new password reset.");
+    };
 
-  const validatePassword = (pw: string) => pw.length < 6 ? "Password must be at least 6 characters long" : null
+    init();
+  }, [searchParams]);
+
+  const validatePassword = (pw: string) => (pw.length < 6 ? "Password must be at least 6 characters long" : null);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(""); setMessage(""); setIsSuccess(false)
+    e.preventDefault();
+    setError("");
+    setMessage("");
+    setIsSuccess(false);
 
-    if (!password || !confirmPassword) return setError("Please fill in both fields")
-    const pwError = validatePassword(password)
-    if (pwError) return setError(pwError)
-    if (password !== confirmPassword) return setError("Passwords do not match")
-    if (!isValidToken) return setError("Invalid or expired reset link. Please request a new password reset.")
+    if (!password || !confirmPassword) return setError("Please fill in both fields");
 
-    setIsLoading(true)
+    const pwError = validatePassword(password);
+    if (pwError) return setError(pwError);
+
+    if (password !== confirmPassword) return setError("Passwords do not match");
+    if (!isValidToken) return setError("Invalid or expired reset link. Please request a new password reset.");
+
+    setIsLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password })
-      if (error) setError(error.message)
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) setError(error.message);
       else {
-        setIsSuccess(true)
-        setMessage("Password updated successfully! Redirecting to your account...")
-        setTimeout(() => router.replace("/account"), 2000)
+        setIsSuccess(true);
+        setMessage("Password updated successfully! Redirecting to your account...");
+        setTimeout(() => router.replace("/account"), 2000);
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.")
+      setError("An unexpected error occurred. Please try again.");
     }
-    setIsLoading(false)
-  }
+    setIsLoading(false);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
@@ -193,5 +203,5 @@ export default function NewPasswordPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
