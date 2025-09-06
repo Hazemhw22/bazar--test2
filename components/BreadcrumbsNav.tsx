@@ -20,69 +20,34 @@ const iconMap: Record<string, React.ReactNode> = {
   about: <InfoIcon fontSize="small" className="mr-1" />,
 };
 
-const BreadcrumbsNav = () => {
-  const pathname = usePathname();
-  const [dynamicLabels, setDynamicLabels] = useState<Record<string, string>>(
-    {}
-  );
+export default function BreadcrumbsNav() {
+  const pathname = usePathname() || "/";
+  const [dynamicLabels, setDynamicLabels] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    if (!pathname) return;
+
     const segments = pathname.split("/").filter(Boolean);
 
-    // جلب اسم المنتج الحقيقي
-    if (segments[0] === "products" && segments[1]) {
-      const id = segments[1];
-      supabase
-        .from("products")
-        .select("title")
-        .eq("id", id)
-        .single()
-        .then(({ data }) => {
-          if (data?.title) {
-            setDynamicLabels((prev) => ({
-              ...prev,
-              [id]: data.title,
-            }));
-          }
-        });
-    }
-    // جلب اسم المتجر الحقيقي
-    if (segments[0] === "shops" && segments[1]) {
-      const id = segments[1];
-      supabase
-        .from("shops")
-        .select("shop_name")
-        .eq("id", id)
-        .single()
-        .then(({ data }) => {
-          if (data?.shop_name) {
-            setDynamicLabels((prev) => ({
-              ...prev,
-              [id]: data.shop_name,
-            }));
-          }
-        });
-    }
-    // جلب اسم التصنيف الحقيقي
-    if (segments[0] === "categories" && segments[1]) {
-      const id = segments[1];
-      supabase
-        .from("categories")
-        .select("title")
-        .eq("id", id)
-        .single()
-        .then(({ data }) => {
-          if (data?.title) {
-            setDynamicLabels((prev) => ({
-              ...prev,
-              [id]: data.title,
-            }));
-          }
-        });
-    }
+    segments.forEach(async (segment, index) => {
+      if (/^\d+$/.test(segment)) {
+        const parentSegment = segments[index - 1];
+
+        if (parentSegment === "products") {
+          const { data } = await supabase.from("products").select("title").eq("id", segment).single();
+          if (data?.title) setDynamicLabels(prev => ({ ...prev, [segment]: data.title }));
+        } else if (parentSegment === "shops") {
+          const { data } = await supabase.from("shops").select("shop_name").eq("id", segment).single();
+          if (data?.shop_name) setDynamicLabels(prev => ({ ...prev, [segment]: data.shop_name }));
+        } else if (parentSegment === "categories") {
+          const { data } = await supabase.from("categories").select("title").eq("id", segment).single();
+          if (data?.title) setDynamicLabels(prev => ({ ...prev, [segment]: data.title }));
+        }
+      }
+    });
   }, [pathname]);
 
-  if (pathname === "/") return null;
+  if (!pathname || pathname === "/") return null;
 
   const segments = pathname.split("/").filter(Boolean);
 
@@ -90,33 +55,19 @@ const BreadcrumbsNav = () => {
     const href = "/" + segments.slice(0, i + 1).join("/");
     const isLast = i === segments.length - 1;
 
-    // إذا كان segment عبارة عن id (رقم)، استبدله بالاسم الديناميكي إذا توفر
     const isId = /^\d+$/.test(segment);
-    let label = decodeURIComponent(
-      segment.charAt(0).toUpperCase() + segment.slice(1)
-    );
-    if (isId && dynamicLabels[segment]) {
-      label = dynamicLabels[segment];
-    }
+    let label = decodeURIComponent(segment.charAt(0).toUpperCase() + segment.slice(1));
+    if (isId && dynamicLabels[segment]) label = dynamicLabels[segment];
 
-    // أضف أيقونة إذا كان المسار معرف في iconMap
-    const icon =
-      iconMap[segments[i]] || (i > 0 && iconMap[segments[i - 1]]) || null;
+    const icon = iconMap[segments[i]] || (i > 0 && iconMap[segments[i - 1]]) || null;
 
     return isLast ? (
-      <span
-        key={href}
-        className="flex items-center text-sm font-medium text-muted-foreground dark:text-gray-300"
-      >
+      <span key={href} className="flex items-center text-sm font-medium text-muted-foreground dark:text-gray-300">
         {icon}
         {label}
       </span>
     ) : (
-      <Link
-        key={href}
-        href={href}
-        className="flex items-center text-sm text-gray-500 dark:text-gray-400 hover:underline"
-      >
+      <Link key={href} href={href} className="flex items-center text-sm text-gray-500 dark:text-gray-400 hover:underline">
         {icon}
         {label}
       </Link>
@@ -126,15 +77,8 @@ const BreadcrumbsNav = () => {
   return (
     <div className="w-full py-3 flex justify-center">
       <div className="max-w-5xl w-full px-4">
-        <Breadcrumbs
-          separator={<NavigateNextIcon fontSize="small" />}
-          aria-label="breadcrumb"
-          classes={{ separator: "text-gray-400 dark:text-gray-500" }}
-        >
-          <Link
-            href="/"
-            className="flex items-center text-sm text-gray-500 dark:text-gray-400 hover:underline"
-          >
+        <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb" classes={{ separator: "text-gray-400 dark:text-gray-500" }}>
+          <Link href="/" className="flex items-center text-sm text-gray-500 dark:text-gray-400 hover:underline">
             <HomeIcon fontSize="small" className="mr-1" />
             Home
           </Link>
@@ -143,6 +87,4 @@ const BreadcrumbsNav = () => {
       </div>
     </div>
   );
-};
-
-export default BreadcrumbsNav;
+}

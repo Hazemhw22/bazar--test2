@@ -92,69 +92,74 @@ export default function AuthPage() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  e.preventDefault()
 
-    if (!validateForm()) return
+  if (!validateForm()) return
 
-    setIsLoading(true)
-    setGeneralError("")
-    setSuccessMessage("")
+  setIsLoading(true)
+  setGeneralError("")
+  setSuccessMessage("")
 
-    try {
-      if (!isSignUp) {
-        // تسجيل الدخول
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        })
+  try {
+    if (!isSignUp) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      })
 
-        if (error) {
-          setGeneralError(error.message)
-        } else {
-          setSuccessMessage("Login successful! Redirecting to your account...")
-          setTimeout(() => {
-            router.push("/account")
-          }, 1500)
-        }
+      if (error) {
+        setGeneralError(error.message)
+      } else if (data.session) {
+        // الجلسة موجودة
+        setSuccessMessage("Login successful! Redirecting to your account...")
+
+        // ننتظر قليلاً لتأكد من تخزين الـ session في المتصفح
+        setTimeout(() => {
+          router.push("/account")
+        }, 500) // نصف ثانية
       } else {
-        // تسجيل حساب جديد
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        setGeneralError("Login failed. Please try again.")
+      }
+    } else {
+      // تسجيل حساب جديد (Sign Up)
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+      })
+
+      if (signUpError) {
+        setGeneralError(signUpError.message)
+        setIsLoading(false)
+        return
+      }
+
+      // إضافة البيانات إلى جدول profiles
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .insert({
+          id: signUpData.user?.id,
+          full_name: formData.fullName,
           email: formData.email,
-          password: formData.password,
+          registration_date: new Date().toISOString(),
         })
 
-        if (signUpError) {
-          setGeneralError(signUpError.message)
-          setIsLoading(false)
-          return
-        }
-
-        // بعد التسجيل، نضيف البيانات إلى جدول profiles
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .insert({
-            id: signUpData.user?.id,
-            full_name: formData.fullName,
-            email: formData.email,
-            registration_date: new Date().toISOString(),
-          })
-
-        if (profileError) {
-          setGeneralError(profileError.message)
-          setIsLoading(false)
-          return
-        }
-
-        setSuccessMessage("Account created successfully! Please check your email for verification link.")
-        setIsSignUp(false)
-        setFormData((prev) => ({ ...prev, password: "", confirmPassword: "" }))
+      if (profileError) {
+        setGeneralError(profileError.message)
+        setIsLoading(false)
+        return
       }
-    } catch (err) {
-      setGeneralError("An unexpected error occurred. Please try again.")
-    }
 
-    setIsLoading(false)
+      setSuccessMessage("Account created successfully! Please check your email for verification link.")
+      setIsSignUp(false)
+      setFormData((prev) => ({ ...prev, password: "", confirmPassword: "" }))
+    }
+  } catch (err) {
+    setGeneralError("An unexpected error occurred. Please try again.")
   }
+
+  setIsLoading(false)
+}
+
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

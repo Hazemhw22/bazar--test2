@@ -1,17 +1,18 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { VristoLogo } from "@/components/vristo-logo"
+import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react"
+import Link from "next/link"
 
-export default function NewPasswordPage({ searchParams }: { searchParams: { [key: string]: string } }) {
+export default function NewPasswordPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -23,25 +24,46 @@ export default function NewPasswordPage({ searchParams }: { searchParams: { [key
   const [isSuccess, setIsSuccess] = useState(false)
   const [isValidToken, setIsValidToken] = useState(false)
 
-  const access_token = searchParams?.access_token
-  const refresh_token = searchParams?.refresh_token
-
   useEffect(() => {
-    if (access_token && refresh_token) {
-      supabase.auth.setSession({
-        access_token,
-        refresh_token
-      }).then(({ error }) => {
+    const init = async () => {
+      // الحالة 1: الرابط فيه ?code=...
+      const code = searchParams!.get("code")
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (error) {
           setError("Invalid or expired reset link. Please request a new password reset.")
         } else {
           setIsValidToken(true)
         }
-      })
-    } else {
+        return
+      }
+
+      // الحالة 2: الرابط فيه #access_token=...&refresh_token=...
+      const hash = window.location.hash
+      if (hash) {
+        const params = new URLSearchParams(hash.replace("#", ""))
+        const access_token = params.get("access_token")
+        const refresh_token = params.get("refresh_token")
+
+        if (access_token && refresh_token) {
+          const { error } = await supabase.auth.setSession({
+            access_token,
+            refresh_token,
+          })
+          if (error) {
+            setError("Invalid or expired reset link. Please request a new password reset.")
+          } else {
+            setIsValidToken(true)
+          }
+          return
+        }
+      }
+
       setError("Invalid or missing reset link. Please request a new password reset.")
     }
-  }, [access_token, refresh_token])
+
+    init()
+  }, [searchParams])
 
   const validatePassword = (password: string) => {
     if (password.length < 6) {
@@ -80,7 +102,6 @@ export default function NewPasswordPage({ searchParams }: { searchParams: { [key
     setIsLoading(true)
 
     try {
-      // تغيير كلمة المرور بعد تعيين الجلسة
       const { error } = await supabase.auth.updateUser({ password })
 
       if (error) {
@@ -92,7 +113,7 @@ export default function NewPasswordPage({ searchParams }: { searchParams: { [key
           router.push("/account")
         }, 2000)
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred. Please try again.")
     }
 
@@ -143,73 +164,68 @@ export default function NewPasswordPage({ searchParams }: { searchParams: { [key
             )}
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  New Password
-                </Label>
-                <div className="mt-1 relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 h-12"
-                    placeholder="Enter new password"
-                    disabled={isLoading || !isValidToken}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-                <p className="mt-1 text-xs text-gray-500">Password must be at least 6 characters long</p>
-              </div>
-
-              <div>
-                <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Confirm New Password
-                </Label>
-                <div className="mt-1 relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10 pr-10 h-12"
-                    placeholder="Confirm new password"
-                    disabled={isLoading || !isValidToken}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium"
-                disabled={isLoading || !isValidToken || isSuccess}
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="loader"></div>
-                    <span className="ml-2">Updating...</span>
+            {isValidToken && (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    New Password
+                  </Label>
+                  <div className="mt-1 relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 pr-10 h-12"
+                      placeholder="Enter new password"
+                      disabled={isLoading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
                   </div>
-                ) : (
-                  "Reset Password"
-                )}
-              </Button>
-            </form>
+                  <p className="mt-1 text-xs text-gray-500">Password must be at least 6 characters long</p>
+                </div>
+
+                <div>
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Confirm New Password
+                  </Label>
+                  <div className="mt-1 relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="pl-10 pr-10 h-12"
+                      placeholder="Confirm new password"
+                      disabled={isLoading}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                  disabled={isLoading || isSuccess}
+                >
+                  {isLoading ? "Updating..." : "Reset Password"}
+                </Button>
+              </form>
+            )}
 
             {/* Back to Login */}
             <div className="text-center">
