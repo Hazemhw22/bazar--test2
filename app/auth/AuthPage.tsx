@@ -1,6 +1,5 @@
 "use client"
 
-import type React from "react"
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
@@ -16,11 +15,13 @@ import { supabase } from "@/lib/supabase"
 export default function AuthPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
+
   const [isSignUp, setIsSignUp] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [successMessage, setSuccessMessage] = useState("")
   const [generalError, setGeneralError] = useState("")
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -28,6 +29,7 @@ export default function AuthPage() {
     confirmPassword: "",
     rememberMe: false,
   })
+
   const [errors, setErrors] = useState({
     fullName: "",
     email: "",
@@ -35,12 +37,10 @@ export default function AuthPage() {
     confirmPassword: "",
   })
 
-  // Check for success messages from URL params (e.g., after password reset)
   useEffect(() => {
     const message = searchParams?.get("message")
     if (message) {
       setSuccessMessage(decodeURIComponent(message))
-      // Clear the message after 5 seconds
       setTimeout(() => setSuccessMessage(""), 5000)
     }
   }, [searchParams])
@@ -55,22 +55,15 @@ export default function AuthPage() {
 
     if (isSignUp && !formData.fullName) newErrors.fullName = "Full Name is required"
 
-    if (!formData.email) {
-      newErrors.email = "Email is required"
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = "Please enter a valid email"
-    }
+    if (!formData.email) newErrors.email = "Email is required"
+    else if (!validateEmail(formData.email)) newErrors.email = "Please enter a valid email"
 
-    if (!formData.password) {
-      newErrors.password = "Password is required"
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters"
-    }
+    if (!formData.password) newErrors.password = "Password is required"
+    else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters"
 
-    if (isSignUp && !formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password"
-    } else if (isSignUp && formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match"
+    if (isSignUp) {
+      if (!formData.confirmPassword) newErrors.confirmPassword = "Please confirm your password"
+      else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match"
     }
 
     setErrors(newErrors)
@@ -79,113 +72,90 @@ export default function AuthPage() {
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
-    if (errors[field as keyof typeof errors]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
-    }
-    // Clear general error when user starts typing
-    if (generalError) {
-      setGeneralError("")
-    }
-    if (successMessage) {
-      setSuccessMessage("")
-    }
+    if (errors[field as keyof typeof errors]) setErrors((prev) => ({ ...prev, [field]: "" }))
+    if (generalError) setGeneralError("")
+    if (successMessage) setSuccessMessage("")
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
+    e.preventDefault()
+    if (!validateForm()) return
 
-  if (!validateForm()) return
+    setIsLoading(true)
+    setGeneralError("")
+    setSuccessMessage("")
 
-  setIsLoading(true)
-  setGeneralError("")
-  setSuccessMessage("")
+    try {
+      if (!isSignUp) {
+        // Sign In
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        })
 
-  try {
-    if (!isSignUp) {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      })
-
-      if (error) {
-        setGeneralError(error.message)
-      } else if (data.session) {
-        // الجلسة موجودة
-        setSuccessMessage("Login successful! Redirecting to your account...")
-
-        // ننتظر قليلاً لتأكد من تخزين الـ session في المتصفح
-        setTimeout(() => {
-          router.push("/account")
-        }, 500) // نصف ثانية
+        if (error) setGeneralError(error.message)
+        else if (data.session) {
+          setSuccessMessage("Login successful! Redirecting...")
+          setTimeout(() => router.push("/account"), 500)
+        } else setGeneralError("Login failed. Please try again.")
       } else {
-        setGeneralError("Login failed. Please try again.")
-      }
-    } else {
-      // تسجيل حساب جديد (Sign Up)
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-      })
+        // Sign Up
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+        })
 
-      if (signUpError) {
-        setGeneralError(signUpError.message)
-        setIsLoading(false)
-        return
-      }
+        if (signUpError || !signUpData.user?.id) {
+          setGeneralError(signUpError?.message || "Failed to create user.")
+          setIsLoading(false)
+          return
+        }
 
-      // إضافة البيانات إلى جدول profiles
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .insert({
-          id: signUpData.user?.id,
+        // إدخال البيانات في جدول profiles باستخدام upsert
+        const { error: profileError } = await supabase.from("profiles").upsert({
+          id: signUpData.user.id,       // يجب أن يكون موجود في auth.users
           full_name: formData.fullName,
           email: formData.email,
           registration_date: new Date().toISOString(),
         })
 
-      if (profileError) {
-        setGeneralError(profileError.message)
-        setIsLoading(false)
-        return
+        if (profileError) {
+          setGeneralError(profileError.message)
+          setIsLoading(false)
+          return
+        }
+
+        setSuccessMessage("Account created! Check your email for verification.")
+        setIsSignUp(false)
+        setFormData((prev) => ({ ...prev, password: "", confirmPassword: "" }))
       }
-
-      setSuccessMessage("Account created successfully! Please check your email for verification link.")
-      setIsSignUp(false)
-      setFormData((prev) => ({ ...prev, password: "", confirmPassword: "" }))
+    } catch {
+      setGeneralError("An unexpected error occurred. Please try again.")
     }
-  } catch (err) {
-    setGeneralError("An unexpected error occurred. Please try again.")
+
+    setIsLoading(false)
   }
-
-  setIsLoading(false)
-}
-
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="hidden lg:flex min-h-screen">
         <div className="flex-1 flex items-center justify-center p-8 bg-white dark:bg-gray-900">
           <div className="w-full max-w-md space-y-8">
-            {/* Logo */}
             <div className="text-center mb-6">
               <div className="rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
                 <VristoLogo />
               </div>
             </div>
 
-            {/* Welcome Text */}
             <div className="text-center space-y-2">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                 {isSignUp ? "Create an Account" : "Welcome Back"}
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                {isSignUp
-                  ? "Fill in your details to sign up"
-                  : "Welcome Back, Please enter your details"}
+                {isSignUp ? "Fill in your details to sign up" : "Please enter your details"}
               </p>
             </div>
 
-            {/* Tab Switcher */}
             <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
               <button
                 onClick={() => setIsSignUp(false)}
@@ -209,7 +179,6 @@ export default function AuthPage() {
               </button>
             </div>
 
-            {/* Success Message */}
             {successMessage && (
               <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
                 <div className="flex items-center space-x-3">
@@ -219,7 +188,6 @@ export default function AuthPage() {
               </div>
             )}
 
-            {/* Error Message */}
             {generalError && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
                 <div className="flex items-center space-x-3">
@@ -229,9 +197,7 @@ export default function AuthPage() {
               </div>
             )}
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6 mb-6">
-              {/* Full Name */}
               {isSignUp && (
                 <div>
                   <Label htmlFor="fullName" className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -252,7 +218,6 @@ export default function AuthPage() {
                 </div>
               )}
 
-              {/* Email */}
               <div>
                 <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Email Address
@@ -271,7 +236,6 @@ export default function AuthPage() {
                 {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
               </div>
 
-              {/* Password */}
               <div>
                 <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Password
@@ -297,7 +261,6 @@ export default function AuthPage() {
                 {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
               </div>
 
-              {/* Confirm Password */}
               {isSignUp && (
                 <div>
                   <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -318,7 +281,6 @@ export default function AuthPage() {
                 </div>
               )}
 
-              {/* Remember me + Forgot */}
               {!isSignUp && (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2 mb-4">
@@ -340,25 +302,17 @@ export default function AuthPage() {
                 </div>
               )}
 
-              {/* Submit */}
               <Button
                 type="submit"
                 className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium"
                 disabled={isLoading}
               >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <div className="loader"></div>
-                  </div>
-                ) : (
-                  isSignUp ? "Sign Up" : "Login"
-                )}
+                {isLoading ? "Loading..." : isSignUp ? "Sign Up" : "Login"}
               </Button>
             </form>
           </div>
         </div>
 
-        {/* Right Side - Illustration */}
         <div className="flex-1 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center p-8">
           <div className="relative w-full max-w-lg">
             <Image

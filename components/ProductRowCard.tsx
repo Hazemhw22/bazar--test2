@@ -5,6 +5,8 @@ import { Heart, ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import Link from "next/link";
+import { useCart } from "@/components/cart-provider";
+import { useFavorites } from "@/components/favourite-items";
 
 type RowProduct = {
   id: number;
@@ -28,6 +30,7 @@ export default function ProductRowCard({ product }: { product: RowProduct }) {
   const imageSrc = product.images && product.images.length > 0 ? product.images[0] : "/placeholder.svg";
   const rating = Math.round(product.rating || 0);
   const hasSale = product.sale_price != null && Number(product.sale_price) > 0 && Number(product.sale_price) < product.price;
+
   const discountLabel = (() => {
     if (!hasSale) return null;
     if (product.discount_type === "percentage") {
@@ -36,6 +39,39 @@ export default function ProductRowCard({ product }: { product: RowProduct }) {
     }
     return "-";
   })();
+
+  // Cart & Favorites
+  const { addItem } = useCart();
+  const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
+
+  const handleAddToCart = () => {
+    addItem({
+      id: product.id,
+      name: product.title,
+      price: hasSale ? Number(product.sale_price) : product.price,
+      image: imageSrc,
+      quantity: 1,
+    });
+  };
+
+  const isFavorite = favorites.some(fav => fav.id === product.id);
+
+ const handleWishlist = () => {
+  const favoriteItem = {
+    id: product.id,
+    name: product.title,
+    price: hasSale ? Number(product.sale_price) : product.price,
+    discountedPrice: product.sale_price ?? product.price,
+    image: imageSrc,
+    store: product.shops?.shop_name ?? "Unknown",
+    rating: product.rating ?? 0,
+    reviews: product.reviews ?? 0,
+  };
+
+  if (isFavorite) removeFromFavorites(product.id);
+  else addToFavorites(favoriteItem);
+};
+
 
   return (
     <div className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
@@ -106,13 +142,22 @@ export default function ProductRowCard({ product }: { product: RowProduct }) {
           </div>
           
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Button size="sm" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700">
+            <Button 
+              size="sm" 
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
+              onClick={handleAddToCart}
+            >
               <ShoppingCart className="h-4 w-4 mr-2" />
               Add to cart
             </Button>
-            <Button size="sm" variant="outline" className="w-full sm:w-auto">
-              <Heart className="h-4 w-4 mr-2" />
-              Wishlist
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full sm:w-auto"
+              onClick={handleWishlist}
+            >
+              <Heart className={`h-4 w-4 mr-2 ${isFavorite ? "text-red-500" : ""}`} />
+              {isFavorite ? "Remove from Wishlist" : "Wishlist"}
             </Button>
           </div>
         </div>
@@ -120,5 +165,3 @@ export default function ProductRowCard({ product }: { product: RowProduct }) {
     </div>
   );
 }
-
-

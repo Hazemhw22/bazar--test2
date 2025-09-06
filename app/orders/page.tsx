@@ -3,9 +3,9 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Card, CardContent } from "../../components/ui/card";
-import { Badge } from "../../components/ui/badge";
-import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Package, CheckCircle, Truck, Clock, XCircle, AlertCircle } from "lucide-react";
 import { pdf, Document, Page, Text, View, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
 import QuickViewModal from "../../components/QuickViewModal";
@@ -45,14 +45,15 @@ export default function OrdersPage() {
 
       const { data, error } = await supabase
         .from("orders")
-        .select(`*, products:product_id (*, shop:shop_id (*), category:category_id (*))`)
+        .select(`*, products:product_id (*)`)
         .eq("buyer_id", userId)
         .order("created_at", { ascending: false });
 
-      if (error) console.error(error);
+      if (error) console.error("Supabase Error:", error);
       else setOrdersData(data || []);
       setLoading(false);
     };
+
     fetchOrders();
   }, []);
 
@@ -68,9 +69,6 @@ export default function OrdersPage() {
         <Page style={styles.page}>
           <View style={styles.section}>
             <Text style={styles.title}>Order #{order.id}</Text>
-            <Text>Product: {order.products?.title}</Text>
-            <Text>Category: {order.products?.category?.title}</Text>
-            <Text>Shop: {order.products?.shop?.shop_name}</Text>
             <Text>Status: {order.status}</Text>
             <Text>Payment: {order.payment_method?.type || "Credit Card"}</Text>
             <Text>Delivery: {order.shipping_method?.type || "Standard"}</Text>
@@ -111,9 +109,6 @@ export default function OrdersPage() {
               <div className="flex justify-between flex-col sm:flex-row sm:items-center">
                 <div>
                   <h4 className="font-semibold text-lg">{order.products?.title || "Product"}</h4>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {order.products?.shop?.shop_name} &bull; {order.products?.category?.title}
-                  </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Order #{order.id}</p>
                 </div>
                 <Badge className={`${getStatusColor(order.status)} flex items-center gap-1 mt-2 sm:mt-0`}>
