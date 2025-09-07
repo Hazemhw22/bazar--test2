@@ -164,14 +164,13 @@ export function ProductCard({ product }: ProductCardProps) {
             <Dialog.Title className="sr-only">تفاصيل المنتج</Dialog.Title>
             
             {/* Mobile Layout */}
-<div className="lg:hidden flex flex-col h-[90vh]">
+            <div className="lg:hidden flex flex-col h-[90vh]">
               {/* Mobile Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white truncate pr-2">
                   {product.title}
                 </h2>
                 <Dialog.Close className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
-                  <XCircle size={20} />
                 </Dialog.Close>
               </div>
 

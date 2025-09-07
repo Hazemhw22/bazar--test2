@@ -36,14 +36,13 @@ export default function QuickViewModal({ order, onClose }: QuickViewModalProps) 
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] p-0 overflow-hidden rounded-3xl">
         {/* Mobile Layout */}
-        <div className="lg:hidden flex flex-col h-full">
+            <div className="lg:hidden flex flex-col h-[90vh]">
           {/* Mobile Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white truncate pr-2">
               Order #{order.id}
             </h2>
             <DialogClose className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
-              <XCircle size={20} />
             </DialogClose>
           </div>
 
@@ -64,7 +63,7 @@ export default function QuickViewModal({ order, onClose }: QuickViewModalProps) 
           </div>
 
           {/* Mobile Content */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-2">
             <div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                 {order.products?.title || "Product"}
@@ -116,12 +115,7 @@ export default function QuickViewModal({ order, onClose }: QuickViewModalProps) 
             </div>
           </div>
 
-          {/* Mobile Actions */}
-          <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-900">
-            <Button onClick={onClose} className="w-full py-3 rounded-xl">
-              Close
-            </Button>
-          </div>
+
         </div>
 
         {/* Desktop Layout */}
