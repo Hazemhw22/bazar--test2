@@ -295,7 +295,7 @@ export default function ShopDetailPage() {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Left Sidebar - Categories */}
-          <div className="lg:col-span-1">
+          <div className="hidden lg:block lg:col-span-1">
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg sticky top-24">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Categories</h3>
               
@@ -350,28 +350,28 @@ export default function ShopDetailPage() {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Products ({productsCount})
               </h2>
-              <div className="flex items-center gap-4">
-                <Input
-                  type="text"
-                  placeholder="Search products..."
-                  value={productsSearch}
-                  onChange={(e) => setProductsSearch(e.target.value)}
-                  className="w-64"
-                />
-                <select
-                  className="border rounded-lg px-3 py-2 text-sm dark:bg-gray-800 dark:text-white"
-                  onChange={(e) => setProductsSort(e.target.value)}
-                  value={productsSort}
-                >
-                  <option value="newest">Newest</option>
-                  <option value="highPrice">Highest Price</option>
-                  <option value="lowPrice">Lowest Price</option>
-                </select>
-              </div>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full">
+                  <Input
+                    type="text"
+                    placeholder="Search products..."
+                    value={productsSearch}
+                    onChange={(e) => setProductsSearch(e.target.value)}
+                    className="w-full sm:w-64"
+                  />
+                  <select
+                    className="border rounded-lg px-3 py-2 text-sm dark:bg-gray-800 dark:text-white w-full sm:w-auto"
+                    onChange={(e) => setProductsSort(e.target.value)}
+                    value={productsSort}
+                  >
+                    <option value="newest">Newest</option>
+                    <option value="highPrice">Highest Price</option>
+                    <option value="lowPrice">Lowest Price</option>
+                  </select>
+                </div>
             </div>
 
             {/* Products Grid with interleaved banners */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {productsLoading ? (
                 <div className="text-center text-gray-400 col-span-full py-8">
                   Loading products...
