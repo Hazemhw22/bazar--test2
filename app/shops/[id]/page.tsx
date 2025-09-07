@@ -31,6 +31,8 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import type { Shop, Category, Product, WorkHours } from "@/lib/type";
 import { ProductCard } from "../../../components/ProductCard";
+import { HomeCategories } from "@/components/home-categories";
+import AdBanner from "@/components/AdBanner";
 
 export default function ShopDetailPage() {
   const params = useParams();
@@ -214,20 +216,24 @@ export default function ShopDetailPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full">
       {/* Hero/Banner Section - 6am Mart Style */}
       <div className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
             {/* Left Side - Hero Content */}
             <div className="text-center lg:text-left">
               <div className="mb-6">
-                <div className="w-24 h-24 mx-auto lg:mx-0 bg-orange-200 dark:bg-orange-800 rounded-full flex items-center justify-center mb-4">
-                  <span className="text-4xl">🛍️</span>
-                </div>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-                  Fruits And Groceries, Delivered With Ease
+               <div className="w-24 h-24 mx-auto lg:mx-0 bg-orange-200 dark:bg-orange-800 rounded-full flex items-center justify-center mb-4 overflow-hidden">
+                <Image
+                  src={shop.logo_url || "/placeholder.svg"}
+                  alt={shop.shop_name}
+                  width={96}
+                  height={96}
+                  className="object-cover w-full h-full rounded-full"
+                />
+              </div>
+
+                <h1 className="text-sm sm:text-xs lg:text-sm font-bold text-gray-900 dark:text-white mb-4">
+                  {shop.shop_desc || "لا يوجد وصف متاح"}
                 </h1>
-                <p className="text-lg text-gray-600 dark:text-gray-300">
-                  Fresh products delivered to your doorstep in minutes
-                </p>
               </div>
             </div>
 
@@ -255,11 +261,10 @@ export default function ShopDetailPage() {
                 <div className="flex items-center gap-3">
                   <Star className="w-5 h-5 text-green-400" />
                   <span className="text-green-400 font-medium">0.0</span>
-                  <span className="text-gray-300 text-sm">0 + ratings</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <MapPin className="w-5 h-5 text-green-400" />
-                  <span className="text-gray-300 text-sm">Location</span>
+                  <span className="text-gray-300 text-sm">{shop.address}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Clock className="w-5 h-5 text-green-400" />
@@ -271,11 +276,11 @@ export default function ShopDetailPage() {
               <div className="mt-4 pt-4 border-t border-gray-700">
                 <div className="flex items-center gap-3 mb-2">
                   <Phone className="w-4 h-4 text-green-400" />
-                  <span className="text-gray-300 text-sm">{shop.phone || "Contact for details"}</span>
+                  <span className="text-gray-300 text-sm">Contact for details</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Mail className="w-4 h-4 text-green-400" />
-                  <span className="text-gray-300 text-sm">{shop.email || "info@store.com"}</span>
+                  <span className="text-gray-300 text-sm">info@store.com</span>
                 </div>
               </div>
             </div>
@@ -284,7 +289,10 @@ export default function ShopDetailPage() {
       </div>
 
       {/* Main Content Area - 6am Mart Style */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-6">
+          <HomeCategories />
+        </div>
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Left Sidebar - Categories */}
           <div className="lg:col-span-1">
@@ -362,7 +370,7 @@ export default function ShopDetailPage() {
               </div>
             </div>
 
-            {/* Products Grid */}
+            {/* Products Grid with interleaved banners */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {productsLoading ? (
                 <div className="text-center text-gray-400 col-span-full py-8">
@@ -377,25 +385,35 @@ export default function ShopDetailPage() {
                   No products found for this store
                 </div>
               ) : (
-                filteredSortedProducts.map((product: Product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={{
-                      ...product,
-                      id:
-                        typeof product.id === "string"
-                          ? Number(product.id)
-                          : product.id,
-                      shop:
-                        typeof product.shop === "string"
-                          ? Number(product.shop)
-                          : product.shop,
-                      price:
-                        typeof product.price === "string"
-                          ? Number(product.price)
-                          : product.price,
-                    }}
-                  />
+                filteredSortedProducts.map((product: Product, index: number) => (
+                  <>
+                    {/* Insert a banner before some rows on wider screens */}
+                    {index > 0 && index % 8 === 0 && (
+                      <AdBanner
+                        imageSrc="/banner-1.jpg"
+                        title="Fresh Deals"
+                        subtitle="Save more on your favorites"
+                      />
+                    )}
+                    <ProductCard
+                      key={product.id}
+                      product={{
+                        ...product,
+                        id:
+                          typeof product.id === "string"
+                            ? (product.id)
+                            : product.id,
+                        shop:
+                          typeof product.shop === "string"
+                            ? (product.shop)
+                            : product.shop,
+                        price:
+                          typeof product.price === "string"
+                            ? (product.price)
+                            : product.price,
+                      }}
+                    />
+                  </>
                 ))
               )}
             </div>

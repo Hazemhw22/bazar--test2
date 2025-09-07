@@ -35,6 +35,7 @@ export interface Shop {
   address: string;
   status: string;
   public: boolean;
+  desc?: string; // <-- العمود الصحيح من قاعدة البيانات
   cover_image_url?: string;
   logo_url?: string;
   work_hours: string[];
