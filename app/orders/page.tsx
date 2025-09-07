@@ -84,81 +84,153 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-6">
-      {ordersData.length > 0 ? ordersData.map((order) => (
-        <Card key={order.id}>
-          <div className="flex flex-col sm:flex-row">
-            {/* صورة المنتج */}
-            <div className="w-full h-64 sm:w-1/3 sm:h-auto lg:w-1/4 relative rounded-t-lg sm:rounded-l-lg sm:rounded-tr-none overflow-hidden">
-              {order.products?.images?.length > 0 ? (
-                <Image
-                  src={order.products.images[0]}
-                  alt={order.products.title || "Product"}
-                  fill
-                  style={{ objectFit: "cover" }}
-                  className="rounded-t-lg sm:rounded-l-lg sm:rounded-tr-none"
-                />
-              ) : (
-                <div className="flex items-center justify-center w-full h-full bg-gray-100 dark:bg-gray-800">
-                  <Package size={32} className="text-gray-400" />
-                </div>
-              )}
-            </div>
-
-            {/* التفاصيل */}
-            <CardContent className="flex-1 flex flex-col justify-between p-4">
-              <div className="flex justify-between flex-col sm:flex-row sm:items-center">
-                <div>
-                  <h4 className="font-semibold text-lg">{order.products?.title || "Product"}</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Order #{order.id}</p>
-                </div>
-                <Badge className={`${getStatusColor(order.status)} flex items-center gap-1 mt-2 sm:mt-0`}>
-                  {getStatusIcon(order.status)} {order.status}
-                </Badge>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <div>
-                    <p className="font-medium">Payment</p>
-                    <p className="text-gray-600 dark:text-gray-400">{order.payment_method?.type || "Credit Card"}</p>
+      {ordersData.length > 0 ? (
+        <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:gap-6">
+          {ordersData.map((order) => (
+            <Card key={order.id} className="overflow-hidden">
+                {/* Mobile Layout: Card Style */}
+                <div className="lg:hidden flex flex-col h-full">
+                  {/* Product Image */}
+                  <div className="relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-800">
+                    {order.products?.images?.length > 0 ? (
+                      <Image
+                        src={order.products.images[0]}
+                        alt={order.products.title || "Product"}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center w-full h-full bg-gray-100 dark:bg-gray-800">
+                        <Package size={32} className="text-gray-400" />
+                      </div>
+                    )}
                   </div>
+
+                  {/* Order Details - Mobile Optimized */}
+                  <CardContent className="flex-1 flex flex-col justify-between p-3 space-y-2">
+                    {/* Product Name */}
+                    <h4 className="text-sm font-medium line-clamp-2">{order.products?.title || "Product"}</h4>
+
+                    {/* Order ID */}
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Order #{order.id}</p>
+
+                    {/* Status */}
+                    <Badge className={`${getStatusColor(order.status)} text-xs px-1 py-1 flex items-center gap-1 w-max`}>
+                      {getStatusIcon(order.status)} {order.status}
+                    </Badge>
+
+                    {/* Other Info */}
+                    <div className="space-y-1 text-xs mt-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0"></div>
+                        <span className="text-gray-600 dark:text-gray-400 truncate">{order.payment_method?.type || "Credit Card"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></div>
+                        <span className="text-gray-600 dark:text-gray-400 truncate">{order.shipping_method?.type || "Standard"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-purple-500 rounded-full flex-shrink-0"></div>
+                        <span className="text-gray-600 dark:text-gray-400">{new Date(order.created_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-col gap-2 mt-3">
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-sm">${order.products?.price || "0.00"}</span>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <Button size="sm" onClick={() => setSelectedOrder(order)} className="w-full text-xs py-1">
+                          View Details
+                        </Button>
+                        <PDFDownloadLink
+                          document={generatePDF(order)}
+                          fileName={`order_${order.id}.pdf`}
+                          className="inline-flex items-center justify-center px-2 py-1 rounded bg-blue-600 text-white text-xs hover:bg-blue-700 w-full"
+                        >
+                          Download PDF
+                        </PDFDownloadLink>
+                      </div>
+                    </div>
+                  </CardContent>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <div>
-                    <p className="font-medium">Delivery</p>
-                    <p className="text-gray-600 dark:text-gray-400">{order.shipping_method?.type || "Standard"}</p>
+              {/* Desktop Layout: Original Style with Fixed Image */}
+              <div className="hidden lg:flex flex-row">
+                {/* Product Image - Fixed aspect ratio */}
+                <div className="w-1/4 relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-800">
+                  {order.products?.images?.length > 0 ? (
+                    <Image
+                      src={order.products.images[0]}
+                      alt={order.products.title || "Product"}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center w-full h-full bg-gray-100 dark:bg-gray-800">
+                      <Package size={32} className="text-gray-400" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Order Details - Desktop */}
+                <CardContent className="flex-1 flex flex-col justify-between p-4">
+                  <div className="flex justify-between flex-col sm:flex-row sm:items-center">
+                    <div>
+                      <h4 className="font-semibold text-lg">{order.products?.title || "Product"}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Order #{order.id}</p>
+                    </div>
+                    <Badge className={`${getStatusColor(order.status)} flex items-center gap-1 mt-2 sm:mt-0`}>
+                      {getStatusIcon(order.status)} {order.status}
+                    </Badge>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                  <div>
-                    <p className="font-medium">Date</p>
-                    <p className="text-gray-600 dark:text-gray-400">{new Date(order.created_at).toLocaleDateString()}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <div>
+                        <p className="font-medium">Payment</p>
+                        <p className="text-gray-600 dark:text-gray-400">{order.payment_method?.type || "Credit Card"}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <div>
+                        <p className="font-medium">Delivery</p>
+                        <p className="text-gray-600 dark:text-gray-400">{order.shipping_method?.type || "Standard"}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <div>
+                        <p className="font-medium">Date</p>
+                        <p className="text-gray-600 dark:text-gray-400">{new Date(order.created_at).toLocaleDateString()}</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="flex justify-between items-center mt-4">
-                <span className="font-bold text-lg">${order.products?.price || "0.00"}</span>
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={() => setSelectedOrder(order)}>View Details</Button>
-                  <PDFDownloadLink
-                    document={generatePDF(order)}
-                    fileName={`order_${order.id}.pdf`}
-                    className="inline-flex items-center justify-center px-3 py-1 rounded bg-blue-600 text-white text-sm hover:bg-blue-700"
-                  >
-                    Download PDF
-                  </PDFDownloadLink>
-                </div>
+                  <div className="flex justify-between items-center mt-4">
+                    <span className="font-bold text-lg">${order.products?.price || "0.00"}</span>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => setSelectedOrder(order)}>View Details</Button>
+                      <PDFDownloadLink
+                        document={generatePDF(order)}
+                        fileName={`order_${order.id}.pdf`}
+                        className="inline-flex items-center justify-center px-3 py-1 rounded bg-blue-600 text-white text-sm hover:bg-blue-700"
+                      >
+                        Download PDF
+                      </PDFDownloadLink>
+                    </div>
+                  </div>
+                </CardContent>
               </div>
-            </CardContent>
-          </div>
-        </Card>
-      )) : (
+            </Card>
+          ))}
+        </div>
+      ) : (
         <div className="text-center py-12">
           <Package size={48} className="mx-auto text-gray-400 mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Orders Yet</h3>
