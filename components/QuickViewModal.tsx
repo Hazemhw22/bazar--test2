@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Package, CheckCircle, Truck, Clock, XCircle, AlertCircle, Calendar, CreditCard, Truck as TruckIcon } from "lucide-react";
@@ -42,9 +42,9 @@ export default function QuickViewModal({ order, onClose }: QuickViewModalProps) 
             <h2 className="text-lg font-bold text-gray-900 dark:text-white truncate pr-2">
               Order #{order.id}
             </h2>
-            <Dialog.Close className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
+            <DialogClose className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
               <XCircle size={20} />
-            </Dialog.Close>
+            </DialogClose>
           </div>
 
           {/* Mobile Image */}

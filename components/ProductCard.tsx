@@ -164,7 +164,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <Dialog.Title className="sr-only">تفاصيل المنتج</Dialog.Title>
             
             {/* Mobile Layout */}
-            <div className="lg:hidden flex flex-col h-full">
+<div className="lg:hidden flex flex-col h-[90vh]">
               {/* Mobile Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white truncate pr-2">
@@ -257,66 +257,61 @@ export function ProductCard({ product }: ProductCardProps) {
               </div>
 
               {/* Mobile Fixed Bottom Actions */}
-              <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-900">
-                <div className="space-y-3">
-                  {/* Favorite Button */}
-                  <button
-                    onClick={handleToggleFavorite}
-                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border w-full text-sm font-medium ${
-                      isFavorite(Number(product.id))
-                        ? "bg-red-500 text-white border-red-500"
-                        : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600"
-                    } transition-colors`}
-                  >
-                    <Heart
-                      size={16}
-                      fill={isFavorite(Number(product.id)) ? "currentColor" : "none"}
-                    />
-                    {isFavorite(Number(product.id)) ? "Remove from Favorites" : "Add to Favorites"}
-                  </button>
-
-                  {/* Quantity Selector */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      Quantity:
-                    </span>
-                    <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-xl">
-                      <button
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors rounded-l-xl"
-                      >
-                        -
-                      </button>
-                      <span className="px-4 py-2 text-sm font-medium min-w-[3rem] text-center">
-                        {quantity}
-                      </span>
-                      <button
-                        onClick={() => setQuantity(quantity + 1)}
-                        className="px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors rounded-r-xl"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleAddToCart}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                    >
-                      <ShoppingBag size={16} />
-                      Add to Cart
-                    </button>
-                    <Link
-                      href={`/products/${product.id}`}
-                      className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-center"
-                    >
-                      View Details
-                    </Link>
-                  </div>
-                </div>
+          <div className="border-t border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-900">
+            <div className="flex items-center gap-2">
+              {/* Quantity Selector */}
+              <span className="text-sm font-medium text-gray-900 dark:text-white"> Quantity : </span>
+              <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-xl">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="px-3 py-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors rounded-l-xl"
+                >
+                  -
+                </button>
+                <span className="px-3 py-1 text-sm font-medium min-w-[2.5rem] text-center">
+                  {quantity}
+                </span>
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="px-3 py-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors rounded-r-xl"
+                >
+                  +
+                </button>
               </div>
+              {/* Favorite Button صغير */}
+              <button
+                onClick={handleToggleFavorite}
+                className={`flex items-center justify-center p-2 rounded-xl border text-sm transition-colors ${
+                  isFavorite(Number(product.id))
+                    ? "bg-red-500 text-white border-red-500"
+                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600"
+                }`}
+                title={isFavorite(Number(product.id)) ? "Remove from Favorites" : "Add to Favorites"}
+              >
+                <Heart
+                  size={16}
+                  fill={isFavorite(Number(product.id)) ? "currentColor" : "none"}
+                />
+              </button>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={handleAddToCart}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-1"
+              >
+                <ShoppingBag size={16} />
+                Add to Cart
+              </button>
+              <Link
+                href={`/products/${product.id}`}
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-medium flex items-center justify-center"
+              >
+                View Details
+              </Link>
+            </div>
+          </div>
             </div>
 
             {/* Desktop Layout */}
