@@ -40,6 +40,7 @@ import { supabase } from "@/lib/supabase";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useParams } from "next/navigation";
 import type { Product, Shop } from "@/lib/type";
+import { incrementCategoryViewCount } from "@/lib/tracking"
 
 type SortOption = "name" | "price-low" | "price-high" | "rating" | "newest";
 type ViewMode = "grid" | "list";
@@ -66,16 +67,26 @@ export default function CategoryDetailPage() {
     desc: string;
     image_url?: string;
   } | null>(null);
-  useEffect(() => {
-    supabase
-      .from("categories")
-      .select("*")
-      .eq("id", categoryId)
-      .single()
-      .then(({ data }) => {
-        setCategory(data);
-      });
-  }, [categoryId]);
+
+  // جلب بيانات الكاتيجوري من قاعدة البيانات
+useEffect(() => {
+  supabase
+    .from("categories")
+    .select("*")
+    .eq("id", categoryId)
+    .single()
+    .then(({ data }) => {
+      setCategory(data);
+    });
+}, [categoryId]);
+
+// رفع عدد المشاهدات عند فتح صفحة الكاتيجوري
+useEffect(() => {
+  if (categoryId) {
+    incrementCategoryViewCount(categoryId);
+  }
+}, [categoryId]);
+
 
   // جلب المنتجات المرتبطة بالكاتيجوري مع بيانات الشوب
   const [products, setProducts] = useState<Product[]>([]);
@@ -88,6 +99,7 @@ export default function CategoryDetailPage() {
         setProducts(data || []);
       });
   }, [categoryId]);
+  
 
   // استخراج الشوبس الفريدة المرتبطة بالكاتيجوري
   const shops: Shop[] = useMemo(() => {

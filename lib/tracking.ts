@@ -23,3 +23,19 @@ export async function incrementProductCartCount(productId: string) {
 
   await supabase.from("products").update({ cart_count: newCount }).eq("id", productId)
 }
+export async function incrementCategoryViewCount(categoryId: number) {
+  const { data, error } = await supabase
+    .from("categories")
+    .select("view_count")
+    .eq("id", categoryId)  // هنا number
+    .single()
+
+  if (error || !data) return
+
+  const newCount = (data.view_count ?? 0) + 1
+
+  await supabase
+    .from("categories")
+    .update({ view_count: newCount })
+    .eq("id", categoryId)
+}
