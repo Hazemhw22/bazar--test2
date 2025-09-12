@@ -83,7 +83,7 @@ export default function OrdersPage() {
   if (loading) return <div className="text-center py-12 text-gray-600 dark:text-gray-400">Loading orders...</div>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 mobile:max-w-[480px] mobile:mx-auto mobile:px-4">
       {ordersData.length > 0 ? (
         <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:gap-6">
           {ordersData.map((order) => (

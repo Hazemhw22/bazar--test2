@@ -17,7 +17,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg flex justify-around items-center py-2 md:hidden z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-gray-200/60 dark:border-border/60 shadow-lg flex justify-around items-center py-2 md:hidden z-50 rounded-t-2xl">
         <Link
           href="/"
           className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
@@ -42,7 +42,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
           <ShoppingBag size={24} />
           {t("nav.cart")}
           {totalItems > 0 && (
-            <span className="absolute -top-1 -right-3 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white font-medium">
+            <span className="absolute -top-1 -right-3 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white font-medium shadow-md">
               {totalItems > 9 ? "9+" : totalItems}
             </span>
           )}

@@ -137,43 +137,39 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       <div className="flex flex-col lg:flex-row min-h-screen">
         {/* اليسار - الفورم */}
-        <div className="flex-1 flex items-center justify-center p-8 bg-white dark:bg-gray-900">
-          <div className="w-full max-w-md space-y-8">
+        <div className="flex-1 flex items-center justify-center p-6 sm:p-8">
+          <div className="w-full max-w-md space-y-8 mobile:max-w-[480px]">
             <div className="text-center mb-6">
-              <div className="rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-                <VristoLogo />
+              <div className="rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm lg:hidden">
+                <img src="/login.svg" alt="" />
               </div>
             </div>
 
-            <div className="text-center space-y-2">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                {isSignUp ? "Create an Account" : "Welcome Back"}
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                {isSignUp ? "Fill in your details to sign up" : "Please enter your details"}
-              </p>
+            <div className="text-left space-y-2">
+              <h1 className="text-4xl font-extrabold leading-tight">{isSignUp ? "Create your" : "Login to your"}</h1>
+              <h2 className="text-4xl font-extrabold">Account</h2>
             </div>
 
-            <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+            <div className="flex bg-card rounded-full p-1 border border-border/50">
               <button
                 onClick={() => setIsSignUp(false)}
-                className={`flex-1 py-3 px-4 rounded-md text-sm font-medium transition-colors ${
+                className={`flex-1 py-3 px-4 rounded-full text-sm font-medium transition-colors ${
                   !isSignUp
-                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
-                    : "text-gray-600 dark:text-gray-400"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground"
                 }`}
               >
                 Sign In
               </button>
               <button
                 onClick={() => setIsSignUp(true)}
-                className={`flex-1 py-3 px-4 rounded-md text-sm font-medium transition-colors ${
+                className={`flex-1 py-3 px-4 rounded-full text-sm font-medium transition-colors ${
                   isSignUp
-                    ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
-                    : "text-gray-600 dark:text-gray-400"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground"
                 }`}
               >
                 Sign Up
@@ -254,7 +250,7 @@ export default function AuthPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -290,13 +286,13 @@ export default function AuthPage() {
                       checked={formData.rememberMe}
                       onCheckedChange={(checked) => handleInputChange("rememberMe", checked as boolean)}
                     />
-                    <Label htmlFor="remember" className="text-sm text-gray-600 dark:text-gray-400">
+                    <Label htmlFor="remember" className="text-sm text-muted-foreground">
                       Remember me
                     </Label>
                   </div>
                   <Link
                     href="/auth/forgot-password"
-                    className="text-sm text-blue-600 hover:text-blue-500 mb-4 inline-block"
+                    className="text-sm text-primary hover:underline mb-4 inline-block"
                   >
                     Forgot Password?
                   </Link>
@@ -305,20 +301,41 @@ export default function AuthPage() {
 
               <Button
                 type="submit"
-                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                className="w-full h-12 rounded-full"
                 disabled={isLoading}
               >
                 {isLoading ? "Loading..." : isSignUp ? "Sign Up" : "Login"}
               </Button>
             </form>
+
+            {/* Social Auth */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <div className="flex-1 h-px bg-border" />
+                <span>or continue with</span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+              <div className="flex items-center justify-center gap-4">
+                <button className="w-14 h-14 rounded-2xl bg-card border border-border/60">💙</button>
+                <button className="w-14 h-14 rounded-2xl bg-card border border-border/60">🟢</button>
+                <button className="w-14 h-14 rounded-2xl bg-card border border-border/60">🍎</button>
+              </div>
+              <div className="text-center text-sm text-muted-foreground">
+                {isSignUp ? (
+                  <>Already have an account? <Link href="/auth" className="text-primary">Sign in</Link></>
+                ) : (
+                  <>Don't have an account? <button onClick={() => setIsSignUp(true)} className="text-primary">Sign up</button></>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* اليمين - الصورة */}
-        <div className="flex-1 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center p-8">
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-green-100 to-green-200 dark:from-pink-900 dark:to-blue-700 items-center justify-center p-8">
           <div className="relative w-full max-w-lg">
             <Image
-              src="/couple-going-shopping.png"
+              src="/login.svg"
               alt="Shopping illustration"
               width={600}
               height={600}

@@ -109,7 +109,7 @@ export default function FavouritePage() {
 
   return (
     <div className="page-background">
-      <div className="container mx-auto px-4 py-8 ">
+      <div className="container mx-auto px-4 py-8 mobile:max-w-[480px]">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
@@ -149,7 +149,7 @@ export default function FavouritePage() {
 
         {favorites.length === 0 ? (
           /* Empty State */
-          <div className="text-center py-16  rounded-lg bg-white dark:bg-gray-800">
+          <div className="text-center py-16 rounded-2xl bg-card">
             <Heart size={80} className="mx-auto text-gray-400 mb-6" />
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">No favorites yet</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
@@ -165,7 +165,7 @@ export default function FavouritePage() {
         ) : (
           <>
             {/* Filters and Controls */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border-2 border-blue-200 dark:border-blue-800 p-4 mb-6">
+            <div className="bg-card rounded-2xl border border-border/50 p-4 mb-6">
               <div className="flex flex-col lg:flex-row gap-4">
                 {/* Search */}
                 <div className="flex-1">
@@ -251,7 +251,7 @@ export default function FavouritePage() {
 
             {/* Favorites Grid/List */}
             {filteredAndSortedFavorites.length === 0 ? (
-              <div className="text-center py-12 border-2 border-blue-200 dark:border-blue-800 rounded-lg bg-white dark:bg-gray-800">
+              <div className="text-center py-12 border border-border/50 rounded-2xl bg-card">
                 <Search size={48} className="mx-auto text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No results found</h3>
                 <p className="text-gray-600 dark:text-gray-400">Try adjusting your search or filter criteria.</p>

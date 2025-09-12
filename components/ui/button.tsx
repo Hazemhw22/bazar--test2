@@ -14,10 +14,10 @@ const buttonVariants = {
     link: "text-primary underline-offset-4 hover:underline",
   },
   size: {
-    default: "h-10 px-4 py-2",
-    sm: "h-9 rounded-md px-3",
-    lg: "h-11 rounded-md px-8",
-    icon: "h-10 w-10",
+    default: "h-10 px-4 py-2 mobile:h-12 mobile:px-6",
+    sm: "h-9 px-3 mobile:h-10",
+    lg: "h-11 px-8 mobile:h-12 mobile:px-8",
+    icon: "h-10 w-10 mobile:h-12 mobile:w-12",
   },
 }
 
@@ -31,7 +31,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size = "default", asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     const baseClasses =
-      "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+      "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 shadow-[0_1px_0_rgba(255,255,255,0.04)_inset]"
     const variantClasses = buttonVariants.variant[variant]
     const sizeClasses = buttonVariants.size[size]
 

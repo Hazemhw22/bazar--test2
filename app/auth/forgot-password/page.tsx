@@ -74,20 +74,20 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       <div className="flex min-h-screen">
         {/* Left Side - Form */}
-        <div className="flex-1 flex items-center justify-center p-8 bg-white dark:bg-gray-900">
+        <div className="flex-1 flex items-center justify-center p-6 sm:p-8">
           <div className="w-full max-w-md space-y-8">
             {/* Logo */}
             <div className="text-center mb-6">
-              <div className="rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-                <VristoLogo />
+              <div className="rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm lg:hidden">
+                <img src="/phishing-account-concept.png" alt="" />
               </div>
             </div>
 
             {/* Header */}
-            <div className="text-center space-y-2">
+            <div className="text-left space-y-2">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                 Forgot Password?
               </h1>
@@ -138,7 +138,7 @@ export default function ForgotPasswordPage() {
 
               <Button
                 type="submit"
-                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                className="w-full h-12 rounded-full"
                 disabled={isLoading || isSuccess}
               >
                 {isLoading ? (
@@ -166,11 +166,11 @@ export default function ForgotPasswordPage() {
         </div>
 
         {/* Right Side - Illustration */}
-        <div className="hidden lg:flex flex-1 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 items-center justify-center p-8">
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-green-100 to-green-200 dark:from-pink-900 dark:to-blue-700 items-center justify-center p-8">
           <div className="relative w-full max-w-lg">
             <div className="text-center space-y-4">
-              <div className="w-32 h-32 mx-auto bg-white/20 rounded-full flex items-center justify-center">
-                <Mail size={48} className="text-blue-600" />
+              <div className="mx-auto rounded-full flex items-center justify-center">
+                <img src="/phishing-account-concept.png" alt="" />
               </div>
               <h3 className="text-2xl font-semibold text-blue-900 dark:text-blue-100">
                 Reset Your Password

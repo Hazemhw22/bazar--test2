@@ -120,7 +120,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     return <div className="p-4 text-red-500">المنتج غير موجود أو حدث خطأ.</div>;
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div className="w-full max-w-[1400px] mx-auto py-8 px-4 sm:px-6 lg:px-8 mobile:max-w-[480px]">
       {/* Product Type Header */}
       {renderProductContent()}
 
@@ -192,7 +192,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
         {/* Right Section - Product Details (1/3 width) */}
         <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-lg">
+          <div className="bg-card rounded-2xl p-6 shadow-lg">
             {/* Product Title & Rating */}
             <div className="mb-4">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">

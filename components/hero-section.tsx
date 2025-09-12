@@ -68,8 +68,8 @@ export function HeroSection() {
       onTouchStart={handleInteractionStart}
       onTouchEnd={handleInteractionEnd}
       className={`mx-auto max-w-sm sm:max-w-2xl md:max-w-4xl lg:max-w-screen-2xl 2xl:max-w-[1600px]
-                  px-2 sm:px-6 md:px-8 rounded-xl shadow-lg border transition-all duration-500 
-                  ${bgColor} border-gray-300 dark:border-gray-600`}
+                  px-2 sm:px-6 md:px-8 rounded-2xl shadow-lg transition-all duration-500 
+                  bg-card`}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-center py-4 sm:py-10">
         {/* النص */}
@@ -78,13 +78,13 @@ export function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className="flex flex-col items-center md:items-start text-center md:text-left text-gray-900 dark:text-gray-100 order-2 md:order-1"
+          className="flex flex-col items-center md:items-start text-center md:text-left order-2 md:order-1"
         >
-          <h1 className="text-xl sm:text-3xl md:text-5xl font-bold mb-2 sm:mb-3">{title}</h1>
-          <p className="text-sm sm:text-lg md:text-xl mb-4 sm:mb-5 text-gray-700 dark:text-gray-300">{subtitle}</p>
+          <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-2 sm:mb-3">{title}</h1>
+          <p className="text-sm sm:text-lg md:text-xl mb-4 sm:mb-5 text-muted-foreground">{subtitle}</p>
           <Link
             href="/products"
-            className="bg-blue-600 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-md font-medium hover:bg-blue-700 transition-colors text-xs sm:text-base"
+            className="bg-primary text-primary-foreground px-5 py-2.5 rounded-full font-medium hover:bg-primary/90 transition-colors text-sm"
           >
             Buy Now
           </Link>
@@ -109,7 +109,7 @@ export function HeroSection() {
             key={index}
             onClick={() => setActiveSlide(index)}
             className={`h-2 rounded-full transition-all duration-300 ${
-              activeSlide === index ? "bg-blue-600 dark:bg-blue-400 w-5" : "bg-gray-300 dark:bg-gray-600 w-2"
+              activeSlide === index ? "bg-primary w-5" : "bg-muted-foreground/30 w-2"
             }`}
           />
         ))}

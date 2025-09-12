@@ -273,8 +273,8 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-4 lg:py-8">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-6 py-2 lg:py-8 mobile:max-w-[480px]">
         <div className="mb-4 lg:mb-6">
           <Link
             href="/cart"
@@ -293,7 +293,7 @@ export default function CheckoutPage() {
           {/* Checkout Form */}
           <div className="space-y-4 lg:space-y-6">
             {/* Contact Information */}
-            <Card>
+            <Card className="bg-card rounded-2xl">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <MapPin size={20} />
@@ -331,7 +331,7 @@ export default function CheckoutPage() {
             </Card>
 
             {/* Shipping Address */}
-            <Card>
+            <Card className="bg-card rounded-2xl">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg">Shipping Address</CardTitle>
               </CardHeader>
@@ -442,7 +442,7 @@ export default function CheckoutPage() {
             </Card>
 
             {/* Shipping Method */}
-            <Card>
+            <Card className="bg-card rounded-2xl">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Truck size={20} />
@@ -527,7 +527,7 @@ export default function CheckoutPage() {
             </Card>
 
             {/* Payment Method */}
-            <Card>
+            <Card className="bg-card rounded-2xl">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <CreditCard size={20} />
@@ -544,13 +544,13 @@ export default function CheckoutPage() {
                 >
                   {/* Credit/Debit Card */}
                   <div
-                    className={`flex flex-col border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                    className={`flex flex-col border rounded-2xl transition-colors ${
                       formData.paymentMethod === "card"
-                        ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
-                        : "border-gray-300 dark:border-gray-600"
+                        ? "border-blue-600 bg-blue-600/10"
+                        : "border-border/60 hover:bg-muted/30"
                     }`}
                   >
-                    <div className="flex items-center space-x-3 p-3">
+                    <div className="flex items-center gap-3 p-4">
                       <RadioGroupItem value="card" id="card" />
                       <Label
                         htmlFor="card"
@@ -640,13 +640,13 @@ export default function CheckoutPage() {
 
                   {/* Bank Transfer */}
                   <div
-                    className={`flex flex-col border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                    className={`flex flex-col border rounded-2xl transition-colors ${
                       formData.paymentMethod === "bank"
-                        ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
-                        : "border-gray-300 dark:border-gray-600"
+                        ? "border-blue-600 bg-blue-600/10"
+                        : "border-border/60 hover:bg-muted/30"
                     }`}
                   >
-                    <div className="flex items-center space-x-3 p-3">
+                    <div className="flex items-center gap-3 p-4">
                       <RadioGroupItem value="bank" id="bank" />
                       <Label
                         htmlFor="bank"
@@ -675,13 +675,13 @@ export default function CheckoutPage() {
 
                   {/* Pay In-Store */}
                   <div
-                    className={`flex flex-col border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                    className={`flex flex-col border rounded-2xl transition-colors ${
                       formData.paymentMethod === "instore"
-                        ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
-                        : "border-gray-300 dark:border-gray-600"
+                        ? "border-blue-600 bg-blue-600/10"
+                        : "border-border/60 hover:bg-muted/30"
                     }`}
                   >
-                    <div className="flex items-center space-x-3 p-3">
+                    <div className="flex items-center gap-3 p-4">
                       <RadioGroupItem value="instore" id="instore" />
                       <Label
                         htmlFor="instore"
@@ -728,13 +728,13 @@ export default function CheckoutPage() {
 
                   {/* PayPal */}
                   <div
-                    className={`flex flex-col border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                    className={`flex flex-col border rounded-2xl transition-colors ${
                       formData.paymentMethod === "paypal"
-                        ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
-                        : "border-gray-300 dark:border-gray-600"
+                        ? "border-blue-600 bg-blue-600/10"
+                        : "border-border/60 hover:bg-muted/30"
                     }`}
                   >
-                    <div className="flex items-center space-x-3 p-3">
+                    <div className="flex items-center gap-3 p-4">
                       <RadioGroupItem value="paypal" id="paypal" />
                       <Label
                         htmlFor="paypal"
@@ -763,13 +763,13 @@ export default function CheckoutPage() {
 
                   {/* Cash on Delivery */}
                   <div
-                    className={`flex flex-col border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                    className={`flex flex-col border rounded-2xl transition-colors ${
                       formData.paymentMethod === "cod"
-                        ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
-                        : "border-gray-300 dark:border-gray-600"
+                        ? "border-blue-600 bg-blue-600/10"
+                        : "border-border/60 hover:bg-muted/30"
                     }`}
                   >
-                    <div className="flex items-center space-x-3 p-3">
+                    <div className="flex items-center gap-3 p-4">
                       <RadioGroupItem value="cod" id="cod" />
                       <Label
                         htmlFor="cod"
@@ -801,7 +801,7 @@ export default function CheckoutPage() {
 
           {/* Order Summary - Mobile: Shows at bottom, Desktop: Shows on right */}
           <div className="lg:sticky lg:top-8 lg:h-fit">
-            <Card>
+            <Card className="bg-card rounded-2xl">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg">Order Summary</CardTitle>
               </CardHeader>
@@ -870,6 +870,6 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
-    </div>
+    </div>    
   );
 }

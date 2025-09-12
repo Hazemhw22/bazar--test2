@@ -104,7 +104,7 @@ export function SiteHeader() {
         <div className="mx-auto px-3 sm:px-4 py-1 md:py-1 flex justify-between items-center max-w-[1600px]">
 
           {/* Mobile Header */}
-          <div className="w-full flex md:hidden flex-col gap-2">
+          <div className="w-full flex md:hidden flex-col gap-3">
 
             {/* اللوجو والموقع */}
             <div className="flex justify-between items-center">
@@ -112,30 +112,31 @@ export function SiteHeader() {
                 onClick={handleLocationChange}
                 className="flex items-center gap-1.5 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer group"
               >
-                <MapPin className="w-4 h-4 text-black dark:text-white group-hover:text-blue-600 transition-colors" />
-                <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-blue-600 transition-colors">
+                <MapPin className="w-5 h-5 text-white" />
+                <span className="text-sm text-gray-300">
                   {selectedCity ? getCityDisplayName(selectedCity) : "Select Location"}
                 </span>
               </button>
                <div><VristoLogo size={56} /></div>
-              <div className="flex items-center gap-2">
-                {mounted && <ThemeToggle />}
-                {mounted && <LanguageSelector />}
-              </div>
+              <button onClick={handleCartToggle} className="relative">
+                <ShoppingCart className="w-6 h-6" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-2 text-[10px] bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center">
+                    {totalItems > 9 ? "9+" : totalItems}
+                  </span>
+                )}
+              </button>
             </div>
 
             {/* Search */}
-            <div className="flex items-center px-2">
-              <div className="relative flex items-center flex-1 rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
-                <span className="pl-2 text-purple-500">✨</span>
+            <div className="px-1">
+              <div className="relative flex items-center flex-1 rounded-full bg-card border border-border/50 overflow-hidden">
+                <Search size={16} className="mx-3 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Search for brands or products"
-                  className="flex-1 bg-transparent py-1.5 px-2 text-sm focus:outline-none dark:text-white"
+                  placeholder="Search"
+                  className="flex-1 bg-transparent py-3 pr-3 text-sm focus:outline-none"
                 />
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded-full m-1 transition-colors">
-                  <Search size={14} />
-                </button>
               </div>
             </div>
           </div>

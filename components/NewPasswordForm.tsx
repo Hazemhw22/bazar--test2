@@ -81,18 +81,18 @@ export default function NewPasswordForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+    <div className="min-h-screen bg-background flex">
       {/* Left - Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-white dark:bg-gray-900">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center mb-6">
-            <div className="rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-              <VristoLogo />
+            <div className="rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm lg:hidden">
+              <img src="/newpass.png" alt="" />
             </div>
           </div>
 
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Set New Password</h1>
+          <div className="text-left space-y-2">
+            <h1 className="text-3xl font-bold">Create New Password</h1>
             <p className="text-gray-600 dark:text-gray-400">
               Enter your new password below. Make sure it's secure and easy to remember.
             </p>
@@ -167,7 +167,7 @@ export default function NewPasswordForm() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium" disabled={isLoading || isSuccess}>
+              <Button type="submit" className="w-full h-12 rounded-full" disabled={isLoading || isSuccess}>
                 {isLoading ? "Updating..." : "Reset Password"}
               </Button>
             </form>
@@ -182,10 +182,10 @@ export default function NewPasswordForm() {
       </div>
 
       {/* Right - Illustration */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900 dark:to-green-800 items-center justify-center p-8">
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-green-100 to-green-200 dark:from-pink-900 dark:to-blue-700 items-center justify-center p-8">
         <div className="relative w-full max-w-lg text-center space-y-4">
-          <div className="w-32 h-32 mx-auto bg-white/20 rounded-full flex items-center justify-center">
-            <Lock size={48} className="text-green-600" />
+          <div className="rounded-full flex items-center justify-center">
+              <img src="/newpass.png" alt="" />
           </div>
           <h3 className="text-2xl font-semibold text-green-900 dark:text-green-100">Secure Your Account</h3>
           <p className="text-green-800 dark:text-green-200">

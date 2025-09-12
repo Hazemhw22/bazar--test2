@@ -160,149 +160,21 @@ console.log(formattedDate); // "05 September 2025"
 
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8 mobile:max-w-[480px]">
         <div className="max-w-4xl mx-auto">
-          {/* Success Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 dark:bg-green-900/20 rounded-full mb-6">
-              <CheckCircle size={40} className="text-green-600 dark:text-green-400" />
-            </div>
-            <h1 className="text-3xl lg:text-4xl font-bold text-green-800 dark:text-green-200 mb-3">
-              Order Confirmed!
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 text-lg">
-              Thank you for your purchase. Your order has been successfully placed.
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Order Details */}
-            <div className="space-y-6">
-              {/* Order Info */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Package size={20} />
-                    Order Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Order Number</p>
-                    <p className="font-mono font-semibold text-lg">{orderData.id}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Order Date</p>
-                      <p className="font-medium">{formattedDate}</p>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <Calendar size={20} className="text-blue-600 dark:text-blue-400" />
-                    <div>
-                      <p className="font-medium text-blue-800 dark:text-blue-200">Estimated Delivery</p>
-                      <p className="text-sm text-blue-600 dark:text-blue-400">{formattedDate}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Shipping Address */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Shipping Address</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-sm space-y-1">
-                    <p className="font-medium text-base">{orderData.shipping_address.name}</p>
-                    <p className="text-gray-600 dark:text-gray-400">{orderData.shipping_address.address}</p>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      {orderData.shipping_address.city}, {orderData.shipping_address.district}{" "}
-                      {orderData.shipping_address.zip}
-                    </p>
-                    <p className="text-gray-600 dark:text-gray-400">{orderData.shipping_address.phone}</p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Action Buttons */}
-              <div className="space-y-3">
-                <Link href="/products" className="block">
-                  <Button className="w-full" size="lg">
-                    Continue Shopping
-                    <ArrowRight size={16} className="ml-2" />
-                  </Button>
-                </Link>
-
-                <Link href="/orders" className="block">
-                  <Button variant="outline" className="w-full" size="lg">
-                    View All Orders
-                  </Button>
-                </Link>
+          {/* Success Modal Overlay for mobile */}
+          <div className="md:hidden fixed inset-0 flex items-center justify-center z-30 pointer-events-none">
+            <div className="bg-card rounded-2xl shadow-2xl p-6 w-[88%] text-center border border-border/60 pointer-events-auto">
+              <div className="mx-auto w-16 h-16 rounded-full bg-green-500/15 flex items-center justify-center mb-3">
+                <CheckCircle size={28} className="text-green-500" />
               </div>
-            </div>
-
-            {/* Order Summary */}
-            <div>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Order Summary</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Items */}
-                  <div className="space-y-4">
-                    {orderData.items.map((item) => (
-                      <div key={item.id} className="flex gap-3">
-                        <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0 bg-gray-100">
-                          <Image
-                            src={item.image || "/placeholder.svg?height=64&width=64"}
-                            alt={item.name}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium">{item.name}</h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            ${item.price.toFixed(2)} × {item.quantity}
-                          </p>
-                        </div>
-                        <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Separator />
-
-                  {/* Total */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Subtotal</span>
-                      <span>${(orderData.total - orderData.shipping_method.cost).toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Shipping & Tax</span>
-                      <span>${orderData.shipping_method.cost.toFixed(2)}</span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between text-lg font-semibold">
-                      <span>Total</span>
-                      <span>${orderData.total.toFixed(2)}</span>
-                    </div>
-                  </div>
-
-                  {/* Order Status */}
-                  <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <h4 className="font-medium mb-2">What's Next?</h4>
-                    <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                      <li>• You'll receive an email confirmation shortly</li>
-                      <li>• We'll send tracking information when your order ships</li>
-                      <li>• Estimated delivery: {formattedDate}</li>
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
+              <h3 className="text-xl font-semibold mb-1">Order Successful!</h3>
+              <p className="text-sm text-muted-foreground mb-4">You have successfully made order</p>
+              <div className="flex flex-col gap-2">
+                <Link href="/orders"><Button className="rounded-full">View Order</Button></Link>
+                <Link href={`/orders/track/${orderData.id}`}><Button variant="outline" className="rounded-full">Track Order</Button></Link>
+              </div>
             </div>
           </div>
         </div>

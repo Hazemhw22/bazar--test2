@@ -16,18 +16,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu"
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "../../components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/popover"
-import { ChevronDown, SlidersHorizontal, X, Grid3X3, List } from "lucide-react"
+import { ChevronDown, SlidersHorizontal, Grid3X3, List } from "lucide-react"
 import SortIcon from "../../components/SortIcon"
-import { Category } from "../../lib/type" // عدّل المسار حسب مكان الملف
+import { Category } from "../../lib/type"
 
 export default function Products() {
   const [minPrice, setMinPrice] = useState(0)
@@ -37,7 +28,7 @@ export default function Products() {
   const [selectedBrand, setSelectedBrand] = useState("All")
   const [filterOpen, setFilterOpen] = useState(false)
   const [search, setSearch] = useState("")
-  const [categories, setCategories] = useState<string[]>(["All"])
+  const [categories, setCategories] = useState<Category[]>([{ id: "all", title: "All" }])
   const [brands, setBrands] = useState<string[]>(["All"])
   const [brandSearch, setBrandSearch] = useState("")
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
@@ -50,8 +41,10 @@ export default function Products() {
     queryFn: async () => {
       const { data: cats } = await supabase.from("categories").select("title, id, image_url")
       const { data: shops } = await supabase.from("shops").select("shop_name")
-      setCategories(["All", ...(cats?.map((c: any) => c) ?? [])])
+
+      setCategories([{ id: "all", title: "All" }, ...(cats ?? [])])
       setBrands(["All", ...(shops?.map((s: any) => s.shop_name).filter(Boolean) ?? [])])
+
       return null
     },
   })
@@ -103,8 +96,9 @@ export default function Products() {
     setRating((prev) => (prev.includes(star) ? prev.filter((r) => r !== star) : [...prev, star]))
   }
 
+
   return (
-    <div className="mx-auto w-full max-w-full px-4 sm:px-6 md:px-8 lg:px-12 py-6">
+    <div className="mx-auto w-full max-w-full px-4 sm:px-6 md:px-8 lg:px-12 py-6 mobile:max-w-[480px]">
       {/* Hero */}
       <div className="relative w-full h-64 md:h-80 lg:h-96 rounded-2xl overflow-hidden mb-8">
         <Image
@@ -139,46 +133,53 @@ export default function Products() {
             <ChevronDown className="rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
           </button>
 
-          {/* Scrollable Pills */}
-          <div
-            id="category-scroll"
-            className="flex overflow-x-auto gap-3 scrollbar-hide pb-2 scroll-smooth"
-          >
-            {categories.map((cat: Category | string) => {
-              const isCategoryObject = typeof cat !== "string"
-              const title = isCategoryObject ? cat.title : cat
+        {/* Scrollable Pills */}
+<div
+  id="category-scroll"
+  className="flex overflow-x-auto gap-3 scrollbar-hide pb-2 scroll-smooth"
+>
+  {categories.map((cat: Category | string) => {
+    const isCategoryObject = typeof cat !== "string"
+    const title = isCategoryObject ? cat.title : cat
 
-              return (
-                <button
-                  key={isCategoryObject ? cat.id : cat}
-                  onClick={() => setSelectedCategory(title)}
-                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl border whitespace-nowrap transition-all ${
-                    selectedCategory === title
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700"
-                  }`}
-                >
-                  {/* صورة الكاتيجوري */}
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 relative">
-                    {isCategoryObject && cat.image_url ? (
-                      <Image
-                        src={cat.image_url}
-                        alt={title}
-                        fill
-                        className="object-cover rounded-full"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold">
-                        {title[0]}
-                      </div>
-                    )}
-                  </div>
+    return (
+      <button
+        key={isCategoryObject ? cat.id : cat}
+        onClick={() => setSelectedCategory(title)}
+        className="flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all"
+      >
+        {/* صورة الكاتيجوري */}
+        <div
+          className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
+            selectedCategory === title ? "border-blue-600" : "border-transparent"
+          }`}
+        >
+          {isCategoryObject && cat.image_url ? (
+            <Image
+              src={cat.image_url}
+              alt={title}
+              fill
+              className="object-cover rounded-full"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold">
+              {title[0]}
+            </div>
+          )}
+        </div>
 
-                  <span className="text-sm font-medium mt-1">{title}</span>
-                </button>
-              )
-            })}
-          </div>
+        <span
+          className={`text-sm font-medium mt-1 ${
+            selectedCategory === title ? "text-blue-600" : ""
+          }`}
+        >
+          {title}
+        </span>
+      </button>
+    )
+  })}
+</div>
+
 
           {/* Right Arrow */}
           <button
@@ -215,47 +216,12 @@ export default function Products() {
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar filters */}
-        <aside className="hidden lg:block lg:w-1/5 sticky top-20 self-start bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-400 dark:border-blue-800">
+        <aside className="hidden lg:block lg:w-1/5 sticky top-20 self-start bg-card rounded-2xl p-6 shadow-sm border border-border/50">
           <h2 className="text-xl font-bold flex items-center gap-2 mb-6">
             <SlidersHorizontal size={20} />
             Filters
           </h2>
 
-          {/* Category */}
-          <div className="mb-6">
-            <label className="font-semibold block mb-1">Category</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  className="w-full justify-between text-sm bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100 hover:bg-white dark:hover:bg-gray-700 focus:outline-none"
-                >
-                  {selectedCategory}
-                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
-                <Command className="w-full">
-                  <CommandInput placeholder="Search categories..." className="w-full px-3 py-2" />
-                  <CommandList>
-                    <CommandEmpty>No categories found.</CommandEmpty>
-                    <CommandGroup className="w-full">
-                      {categories.map((option) => (
-                        <CommandItem
-                          key={option}
-                          onSelect={() => setSelectedCategory(option)}
-                          className="w-full text-sm text-gray-900 dark:text-gray-100 hover:bg-white dark:hover:bg-gray-700"
-                        >
-                          {option}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
 
           {/* Brands searchable */}
           <div className="mb-6">
@@ -451,52 +417,52 @@ export default function Products() {
       <Dialog
         open={filterOpen}
         onClose={() => setFilterOpen(false)}
-        className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black bg-opacity-50 p-4"
+        className="fixed inset-0 z-50 flex items-end justify-center bg-black/50"
       >
-        <Dialog.Panel className="bg-white dark:bg-gray-800 rounded-lg p-4 w-full max-w-sm text-sm relative">
-          <button
-            onClick={() => setFilterOpen(false)}
-            className="absolute top-4 right-4 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-            aria-label="Close filters"
-          >
-            <X size={20} />
-          </button>
+        <Dialog.Panel className="bg-card rounded-t-3xl p-5 w-full max-w-[520px] text-sm relative shadow-2xl">
+          <div className="mx-auto h-1 w-10 rounded-full bg-muted-foreground/40 mb-4" />
           <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
             <SlidersHorizontal size={20} />
             Filters
           </h2>
+          <div className="space-y-4 mb-4">
+                <label className="font-semibold block mb-1">Shops</label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between rounded-lg border px-3 py-2"
+                    >
+                      {selectedBrand}
+                      <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
+                    </Button>
+                  </DropdownMenuTrigger>
 
-          <div className="mb-6">
-            <label className="font-semibold block mb-1">Category</label>
-            <select
-              className="w-full rounded border px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-              {categories.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
+                  <DropdownMenuContent
+                    align="start"
+                    sideOffset={4}
+                    className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-60 overflow-y-auto rounded-lg border bg-card p-0"
+                    style={{ "--radix-dropdown-menu-trigger-width": "100%" } as any} // force full width
+                  >
+                    {brands.map((option) => (
+                      <DropdownMenuItem
+                        key={option}
+                        onClick={() => setSelectedBrand(option)}
+                        className={`flex justify-between px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                          selectedBrand === option ? "bg-blue-100 dark:bg-blue-900/40" : ""
+                        }`}
+                      >
+                        <span>{option}</span>
+                        {selectedBrand === option && <span className="text-blue-600">✓</span>}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+           </div>
 
-          <div className="mb-6">
-            <label className="font-semibold block mb-1">Shops</label>
-            <select
-              className="w-full rounded border px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-              value={selectedBrand}
-              onChange={(e) => setSelectedBrand(e.target.value)}
-            >
-              {brands.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          </div>
 
-          <div className="space-y-4 mb-6">
+
+          <div className="space-y-4 mb-4">
             <h3 className="font-medium">Price Range</h3>
             <div className="flex items-center gap-2">
               <input
@@ -505,7 +471,7 @@ export default function Products() {
                 max={10000}
                 value={minPrice}
                 onChange={(e) => setMinPrice(Number(e.target.value))}
-                className="w-1/2 rounded border px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-1/2  px-2 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg border"
                 placeholder="Min"
               />
               <span>-</span>
@@ -515,7 +481,7 @@ export default function Products() {
                 max={10000}
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-1/2 rounded border px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-1/2 rounded-lg border px-2 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                 placeholder="Max"
               />
               <span className="text-xs text-gray-500">₪</span>
@@ -536,6 +502,16 @@ export default function Products() {
                   <span className="text-yellow-400 text-lg">{"★".repeat(star)}</span>
                 </label>
               ))}
+            </div>
+          </div>
+          <div className="sticky bottom-0 pt-3">
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1 rounded-full" onClick={() => setFilterOpen(false)}>
+                Close
+              </Button>
+              <Button className="flex-1 rounded-full" onClick={() => setFilterOpen(false)}>
+                Apply
+              </Button>
             </div>
           </div>
         </Dialog.Panel>

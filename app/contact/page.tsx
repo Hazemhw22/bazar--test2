@@ -576,7 +576,7 @@ export default function InformationalPages() {
   }
 
   return (
-    <div className="page-background">
+    <div className="page-background mobile:max-w-[480px] mobile:mx-auto mobile:px-4">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-blue-800">
         <div className="container mx-auto px-4 py-12">
@@ -596,7 +596,7 @@ export default function InformationalPages() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-blue-800 sticky top-0 z-10">
+      <div className="bg-card border-b border-border/50 sticky top-0 z-10">
         <div className="container mx-auto px-4">
           <div className="flex overflow-x-auto">
             {tabs.map((tab) => {
@@ -621,7 +621,7 @@ export default function InformationalPages() {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 mobile:max-w-[480px]">
         <div className="w-full">{renderContent()}</div>
       </div>
     </div>

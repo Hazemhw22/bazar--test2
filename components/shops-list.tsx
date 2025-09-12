@@ -125,9 +125,9 @@ export default function ShopsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 mb-8">
+    <div className="min-h-screen bg-background mb-8">
       {/* Header Section */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div className="bg-card border-b border-border/50">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -186,7 +186,7 @@ export default function ShopsPage() {
       </div>
 
       {/* Shops Grid */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 mobile:max-w-[480px]">
         {loading ? (
           <div className="text-center py-12 text-lg text-gray-500">{t("common.loading")}</div>
         ) : paginatedShops.length === 0 ? (
@@ -202,7 +202,7 @@ export default function ShopsPage() {
             {paginatedShops.map((shop) => (
               <Card
                 key={shop.id}
-                className="overflow-hidden hover:shadow-lg transition-all duration-300 group"
+                className="overflow-hidden hover:shadow-lg transition-all duration-300 group rounded-2xl bg-card"
               >
                 <CardContent className="p-0">
                   {/* Shop Cover Image */}

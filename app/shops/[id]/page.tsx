@@ -214,81 +214,79 @@ export default function ShopDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full">
-      {/* Hero/Banner Section - 6am Mart Style */}
-      <div className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            {/* Left Side - Hero Content */}
-            <div className="text-center lg:text-left">
-              <div className="mb-6">
-               <div className="w-24 h-24 mx-auto lg:mx-0 bg-orange-200 dark:bg-orange-800 rounded-full flex items-center justify-center mb-4 overflow-hidden">
-                <Image
-                  src={shop.logo_url || "/placeholder.svg"}
-                  alt={shop.shop_name}
-                  width={96}
-                  height={96}
-                  className="object-cover w-full h-full rounded-full"
-                />
-              </div>
+{/* Hero/Banner Section - 6am Mart Style */}
+<div className="bg-white dark:bg-black">
+  <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 items-start relative">
 
-                <h1 className="text-sm sm:text-xs lg:text-sm font-bold text-gray-900 dark:text-white mb-4">
-                  {shop.shop_desc || "لا يوجد وصف متاح"}
-                </h1>
-              </div>
-            </div>
+      {/* Store Info Panel (Dark Grey) */}
+      <div className="bg-gray-800 dark:bg-gray-900 rounded-2xl p-6 text-white shadow-xl relative">
+        {/* Circle Image - Overlapping Top */}
+        <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full overflow-hidden border-4 border-gray-800">
+          <Image
+            src={shop.logo_url || "/placeholder.svg"}
+            alt={shop.shop_name}
+            width={96}
+            height={96}
+            className="object-cover w-full h-full"
+          />
+        </div>
 
-            {/* Right Side - Store Info Panel (Dark Grey) */}
-            <div className="bg-gray-800 dark:bg-gray-900 rounded-2xl p-6 text-white shadow-xl">
-              {/* Store Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">{shop.shop_name}</h2>
-                  <p className="text-gray-300 text-sm mb-2">{shop.address}</p>
-                  <p className="text-green-400 text-sm font-medium">Minimum ₪0.00</p>
-                </div>
-                <div className="flex gap-2">
-                  <button className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors">
-                    <Heart className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-300"}`} />
-                  </button>
-                  <button className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors">
-                    <Share2 className="w-5 h-5 text-gray-300" />
-                  </button>
-                </div>
-              </div>
+        {/* Store Header */}
+        <div className="flex justify-between items-start mt-12 mb-4">
+          {/* Left Side - Store Info */}
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">{shop.shop_name}</h2>
+            <p className="text-gray-300 text-sm mb-2">{shop.address}</p>
+            <p className="text-green-400 text-sm font-medium">Minimum ₪0.00</p>
+          </div>
 
-              {/* Store Metrics */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Star className="w-5 h-5 text-green-400" />
-                  <span className="text-green-400 font-medium">0.0</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <MapPin className="w-5 h-5 text-green-400" />
-                  <span className="text-gray-300 text-sm">{shop.address}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-green-400" />
-                  <span className="text-gray-300 text-sm">20-30 min</span>
-                </div>
-              </div>
+          {/* Right Side - Buttons */}
+          <div className="flex gap-2">
+            <button className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors">
+              <Heart className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : "text-gray-300"}`} />
+            </button>
+            <button className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors">
+              <Share2 className="w-5 h-5 text-gray-300" />
+            </button>
+          </div>
+        </div>
 
-              {/* Contact Info */}
-              <div className="mt-4 pt-4 border-t border-gray-700">
-                <div className="flex items-center gap-3 mb-2">
-                  <Phone className="w-4 h-4 text-green-400" />
-                  <span className="text-gray-300 text-sm">Contact for details</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Mail className="w-4 h-4 text-green-400" />
-                  <span className="text-gray-300 text-sm">info@store.com</span>
-                </div>
-              </div>
-            </div>
+        {/* Store Metrics */}
+        <div className="flex justify-between mt-4 mb-4 text-left">
+          <div className="flex items-center gap-3">
+            <Star className="w-5 h-5 text-green-400" />
+            <span className="text-green-400 font-medium">0.0</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <MapPin className="w-5 h-5 text-green-400" />
+            <span className="text-gray-300 text-sm">{shop.address}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Clock className="w-5 h-5 text-green-400" />
+            <span className="text-gray-300 text-sm">20-30 min</span>
+          </div>
+        </div>
+
+        {/* Contact Info */}
+        <div className="mt-4 pt-4 border-t border-gray-700 flex justify-between text-left">
+          <div className="flex items-center gap-3">
+            <Phone className="w-4 h-4 text-green-400" />
+            <span className="text-gray-300 text-sm">Contact for details</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Mail className="w-4 h-4 text-green-400" />
+            <span className="text-gray-300 text-sm">info@store.com</span>
           </div>
         </div>
       </div>
 
-      {/* Main Content Area - 6am Mart Style */}
+    </div>
+  </div>
+</div>
+
+
+      {/* Main Content Area  */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
           <HomeCategories />
