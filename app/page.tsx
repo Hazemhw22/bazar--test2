@@ -6,13 +6,12 @@ import { HeroSection } from "../components/hero-section";
 import { GiftSection } from "../components/gift-section";
 import { PopularStores } from "../components/popular-stores";
 import MainProductSection from "../components/MainProductSection";
-import AdBanner from "../components/AdBanner";
-import AutoCarousel from "../components/AutoCarousel"; // الهيرو الصغير الجديد
-import { HomeCategories } from "../components/home-categories";
 import { SpecialOffers } from "../components/special-offers";
 import { LocationModal } from "../components/location-modal";
 import { useLocation } from "../components/location-provider";
+import { HomeCategories } from "../components/home-categories";
 import type { Product } from "@/lib/type";
+import AdBanner from "../components/AdBanner";
 
 export default function Home() {
   const { showLocationModal, setShowLocationModal, selectedCity, setSelectedCity } = useLocation();

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Home, Heart, ShoppingBag, ClipboardList, Menu } from "lucide-react"
+import { Home, User, ShoppingBag, ClipboardList, Menu, Heart, Store, Phone, Package, ShoppingCart } from "lucide-react"
 import { useCart } from "./cart-provider"
 import { useState } from "react"
 import { useI18n } from "../lib/i18n"
@@ -17,51 +17,42 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-card border-t border-gray-200/60 dark:border-border/60 shadow-lg flex justify-around items-center py-2 md:hidden z-50 rounded-t-2xl">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200/60 dark:border-gray-800/60 shadow-lg flex justify-around items-center py-3 md:hidden z-50 rounded-t-2xl">
         <Link
           href="/"
           className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
-          <Home size={20} />
-          {t("nav.home")}
-        </Link>
-
-        <Link
-          href="/favourite"
-          className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-        >
-          <Heart size={20} />
-          {t("nav.favorites")}
+          <Home size={20} className="mb-1" />
+          <span>Home</span>
         </Link>
 
         <button
           onClick={onCartToggle}
-          aria-label={t("nav.cart")}
-          className="relative flex flex-col items-center text-xs text-blue-600 dark:text-blue-400 font-semibold hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+          className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
-          <ShoppingBag size={24} />
-          {t("nav.cart")}
+          <ShoppingCart size={20} className="mb-1" />
+          <span>Cart</span>
           {totalItems > 0 && (
-            <span className="absolute -top-1 -right-3 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white font-medium shadow-md">
+            <span className="absolute top-0 right-1/4 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white font-medium shadow-md">
               {totalItems > 9 ? "9+" : totalItems}
             </span>
           )}
         </button>
 
         <Link
-          href="/orders"
+          href="/account"
           className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
-          <ClipboardList size={20} />
-          {t("nav.orders")}
+          <User size={20} className="mb-1" />
+          <span>Profile</span>
         </Link>
 
         <button
           onClick={() => setShowMenu(!showMenu)}
           className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
-          <Menu size={20} />
-          {t("nav.menu")}
+          <Menu size={20} className="mb-1" />
+          <span>Menu</span>
         </button>
       </nav>
 
@@ -102,13 +93,14 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
                 <span className="text-2xl mb-2">📞</span>
                 <span className="text-sm font-medium">{t("nav.contact")}</span>
               </Link>
+              
               <Link
-                href="/account"
-                className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors col-span-2"
+                href="/orders"
+                className="flex flex-col items-center p-4 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 onClick={() => setShowMenu(false)}
               >
-                <span className="text-2xl mb-2">👤</span>
-                <span className="text-sm font-medium">{t("nav.account")}</span>
+                <span className="text-2xl mb-2">📦</span>
+                <span className="text-sm font-medium">{t("nav.orders")}</span>
               </Link>
             </div>
           </div>

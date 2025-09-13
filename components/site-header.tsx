@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { Profile } from "@/lib/type";
 import {
   Search,
-  User,
+  User as UserIcon,
   Bell,
   ShoppingCart,
   Home,
@@ -26,15 +27,38 @@ import { useI18n } from "../lib/i18n";
 import ThemeToggle from "./theme-toggle";
 import { CartSidebar } from "./cart-sidebar";
 import CategoryMenu from "./CategoryMenu";
+import { supabase } from "@/lib/supabase";
 
 export function SiteHeader() {
   const { t } = useI18n();
   const [mounted, setMounted] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [user, setUser] = useState<Profile | null>(null);
   const { totalItems } = useCart();
   const { selectedCity, setShowLocationModal } = useLocation();
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    
+    // Fetch user profile data
+    const fetchUserProfile = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+          
+        if (profileData) {
+          setUser(profileData);
+        }
+      }
+    };
+    
+    fetchUserProfile();
+  }, []);
 
   const handleCartToggle = () => setCartOpen(true);
   const handleLocationChange = () => setShowLocationModal(true);
@@ -83,7 +107,7 @@ export function SiteHeader() {
             {/* أيقونات الحساب والسلة */}
             <div className="flex items-center gap-1.5">
               <Link href="/account" className="p-1.5 rounded-full hover:bg-gray-200/60 dark:hover:bg-gray-700 transition-colors">
-                <User size={18} className="w-6 h-6 text-black dark:text-white group-hover:text-blue-600 transition-colors" />
+                <UserIcon size={18} className="w-6 h-6 text-black dark:text-white group-hover:text-blue-600 transition-colors" />
               </Link>
               <button
                 className="p-1.5 rounded-full hover:bg-gray-200/60 dark:hover:bg-gray-700 transition-colors relative"
@@ -104,39 +128,47 @@ export function SiteHeader() {
         <div className="mx-auto px-3 sm:px-4 py-1 md:py-1 flex justify-between items-center max-w-[1600px]">
 
           {/* Mobile Header */}
-          <div className="w-full flex md:hidden flex-col gap-3">
+          <div className="w-full flex md:hidden flex-col gap-2">
 
-            {/* اللوجو والموقع */}
+            {/* Header Top Row */}
             <div className="flex justify-between items-center">
-              <button
-                onClick={handleLocationChange}
-                className="flex items-center gap-1.5 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer group"
-              >
-                <MapPin className="w-5 h-5 text-white" />
-                <span className="text-sm text-gray-300">
-                  {selectedCity ? getCityDisplayName(selectedCity) : "Select Location"}
-                </span>
-              </button>
-               <div><VristoLogo size={56} /></div>
-              <button onClick={handleCartToggle} className="relative">
-                <ShoppingCart className="w-6 h-6" />
-                {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-2 text-[10px] bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center">
-                    {totalItems > 9 ? "9+" : totalItems}
-                  </span>
-                )}
-              </button>
+              {/* User greeting and profile */}
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full overflow-hidden">
+                  <img src="/AVATAR1.png" alt="User" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">Good Morning 👋</div>
+                      <h3 className="text-sm font-semibold">{user?.full_name || "Guest"}</h3>
+                </div>
+              </div>
+              
+              {/* Theme toggle, language selector and favorites */}
+              <div className="flex items-center gap-3">
+                {mounted && <ThemeToggle />}
+                {mounted && <LanguageSelector />}
+                <Link href="/favourite" className="relative">
+                  <Heart className="w-5 h-5" />
+                </Link>
+              </div>
             </div>
 
             {/* Search */}
             <div className="px-1">
-              <div className="relative flex items-center flex-1 rounded-full bg-card border border-border/50 overflow-hidden">
-                <Search size={16} className="mx-3 text-muted-foreground" />
+              <div className="relative flex items-center flex-1 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <Search size={16} className="mx-3 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Search"
-                  className="flex-1 bg-transparent py-3 pr-3 text-sm focus:outline-none"
+                  className="flex-1 bg-transparent py-2 pr-3 text-sm focus:outline-none"
                 />
+                <button className="p-2 bg-transparent">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 7H21" stroke="#64748B" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M6 12H18" stroke="#64748B" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M10 17H14" stroke="#64748B" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
@@ -197,17 +229,16 @@ export function SiteHeader() {
             {/* أيقونات اليمين للـ Desktop - جميع الأيقونات في اليمين */}
             <div className="flex items-center gap-1.5 lg:gap-2 ml-auto">
               {mounted && <ThemeToggle />}
+              {mounted && <LanguageSelector />}
+              <Link href="/favourite" className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <Heart size={16} />
+              </Link>
               <button className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Install App">
                 <Download size={16} />
               </button>
               <Link href="/orders" className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                 <Package size={16} />
               </Link>
-              {mounted && <LanguageSelector />}
-              <button className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative" aria-label="الإشعارات">
-                <Bell size={16} />
-                <span className="absolute -top-1 -right-1 flex h-2 w-2 rounded-full bg-red-500"></span>
-              </button>
             </div>
           </div>
         </div>

@@ -218,19 +218,16 @@ export function SpecialOffers() {
   }
 
   return (
-    <section className="w-full py-8 px-4 sm:px-6 lg:px-8">
+    <section className="w-full py-4 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-              Special Offer
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+              Special Offers
             </h2>
-            <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-              <span className="text-white text-xs font-bold">%</span>
-            </div>
           </div>
-          <Link href="/products?filter=special-offers" className="text-green-600 dark:text-green-400 font-medium hover:text-green-700 dark:hover:text-green-300 transition-colors">
+          <Link href="/products?filter=special-offers" className="text-sm text-gray-600 dark:text-gray-400 font-medium hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
             See All
           </Link>
         </div>
@@ -255,18 +252,42 @@ export function SpecialOffers() {
             </button>
           )}
 
+          {/* Special Offer Card - Based on the image */}
+          <div className="w-full bg-gray-800 dark:bg-gray-900 rounded-xl overflow-hidden">
+            <div className="flex flex-row">
+              <div className="w-1/2 p-6 flex flex-col justify-center">
+                <div className="text-5xl font-bold text-white mb-2">30%</div>
+                <div className="text-xl font-semibold text-white mb-4">Today's Special!</div>
+                <p className="text-sm text-gray-300 mb-4">Get discount for every order, only valid for today</p>
+                <div className="flex space-x-2">
+                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                  <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                </div>
+              </div>
+              <div className="w-1/2 relative">
+                <img 
+                  src="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg" 
+                  alt="Special Offer" 
+                  className="h-full w-full object-cover object-center"
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Regular Products */}
           <div
             id="special-offers-container"
-            className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
+            className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4 mt-4"
             onScroll={checkScrollPosition}
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {products.map((product) => (
               <div
                 key={product.id}
-                className="flex-shrink-0 w-64 sm:w-72 md:w-80"
+                className="flex-shrink-0 w-40 sm:w-48 md:w-56"
               >
-                <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="relative aspect-square bg-gray-100 dark:bg-gray-800">
                     {product.images && product.images.length > 0 ? (
                       <img
@@ -281,42 +302,32 @@ export function SpecialOffers() {
                     )}
 
                     {getDiscountText(product) && (
-                      <div className="absolute top-3 left-3 px-3 py-1.5 bg-red-500 text-white text-sm font-medium rounded-full">
+                      <div className="absolute top-2 left-2 px-2 py-1 bg-red-500 text-white text-xs font-medium rounded-full">
                         {getDiscountText(product)}
                       </div>
                     )}
 
-                    <div className="absolute top-3 right-3 flex flex-col gap-2">
-                      <button className="w-8 h-8 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                        <Heart className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                      </button>
-                      <button className="w-8 h-8 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                        <Plus className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                    <div className="absolute top-2 right-2">
+                      <button className="w-6 h-6 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <Heart className="w-3 h-3 text-gray-500 dark:text-gray-400" />
                       </button>
                     </div>
                   </div>
 
-                  <div className="p-4">
-                    <h3 className="font-medium text-gray-900 dark:text-white mb-2 line-clamp-2">
+                  <div className="p-3">
+                    <h3 className="font-medium text-sm text-gray-900 dark:text-white mb-1 line-clamp-1">
                       {product.title}
                     </h3>
 
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-lg font-bold text-gray-900 dark:text-white">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-gray-900 dark:text-white">
                         ${getDisplayPrice(product).toFixed(2)}
                       </span>
                       {getOriginalPrice(product) && (
-                        <span className="text-sm text-gray-500 dark:text-gray-400 line-through">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 line-through">
                           ${getOriginalPrice(product)?.toFixed(2)}
                         </span>
                       )}
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {product.view_count || 0}
-                      </span>
                     </div>
                   </div>
                 </div>

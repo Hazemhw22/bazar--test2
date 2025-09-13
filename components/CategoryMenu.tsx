@@ -9,41 +9,38 @@ export default function CategoryMenu() {
   const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
-    supabase
-      .from("categories")
-      .select("*")
-      .then(({ data }) => {
+    const fetchCategories = async () => {
+      const { data, error } = await supabase.from("categories").select("*");
+      if (error) {
+        console.error("Error fetching categories:", error);
+      } else {
         setCategories(data || []);
-      });
+      }
+    };
+    fetchCategories();
   }, []);
 
   return (
-    <div
-      className="flex flex-row-reverse gap-2 overflow-x-auto py-2 scrollbar-hide"
-      dir="rtl"
-    >
-      {categories.map((cat) => (
-        <button
-          key={cat.id}
-          className="flex flex-row-reverse items-center gap-2 text-sm whitespace-nowrap px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 border-0 flex-shrink-0"
-        >
-          {/* صورة التصنيف */}
-          {cat.image_url ? (
-            <Image
-              src={cat.image_url}
-              alt={cat.title}
-              width={24}
-              height={24}
-              className="rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600" />
-          )}
-
-          {/* اسم التصنيف */}
-          <span>{cat.title}</span>
-        </button>
-      ))}
+    <div className="overflow-x-auto snap-x scrollbar-hide">
+      <div className="flex flex-wrap gap-4 py-4 px-2 w-max">
+        {categories.map((cat) => (
+          <button
+            key={cat.id}
+            className="flex flex-col items-center gap-2 snap-start"
+          >
+            <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
+              <Image
+                src={cat.image_url || "/fallback.png"}
+                alt={cat.title}
+                width={32}
+                height={32}
+                className="object-cover"
+              />
+            </div>
+            <span className="text-xs font-medium">{cat.title}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

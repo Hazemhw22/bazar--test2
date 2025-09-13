@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Package, CheckCircle, Truck, Clock, XCircle, AlertCircle } from "lucide-react";
@@ -14,6 +15,7 @@ export default function OrdersPage() {
   const [ordersData, setOrdersData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [activeTab, setActiveTab] = useState<'ongoing' | 'completed'>('ongoing');
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -82,16 +84,56 @@ export default function OrdersPage() {
 
   if (loading) return <div className="text-center py-12 text-gray-600 dark:text-gray-400">Loading orders...</div>;
 
+  // Filter orders based on active tab
+  const filteredOrders = ordersData.filter(order => {
+    if (activeTab === 'ongoing') {
+      return ['processing', 'shipped', 'in_transit'].includes(order.status);
+    } else {
+      return ['delivered', 'cancelled'].includes(order.status);
+    }
+  });
+
   return (
     <div className="space-y-6 mobile:max-w-[480px] mobile:mx-auto mobile:px-4">
-      {ordersData.length > 0 ? (
-        <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:gap-6">
-          {ordersData.map((order) => (
-            <Card key={order.id} className="overflow-hidden">
-                {/* Mobile Layout: Card Style */}
-                <div className="lg:hidden flex flex-col h-full">
+      {/* Header with logo and search */}
+      <div className="flex justify-between items-center pt-4">
+        <h1 className="text-xl font-bold">My Orders</h1>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </Button>
+          <Button variant="ghost" size="icon" className="rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-more-vertical"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+          </Button>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200 dark:border-gray-700">
+        <button
+          className={`flex-1 py-3 text-center font-medium ${activeTab === 'ongoing' ? 'text-gray-900 dark:text-white border-b-2 border-gray-900 dark:border-white' : 'text-gray-500 dark:text-gray-400'}`}
+          onClick={() => setActiveTab('ongoing')}
+        >
+          Ongoing
+        </button>
+        <button
+          className={`flex-1 py-3 text-center font-medium ${activeTab === 'completed' ? 'text-gray-900 dark:text-white border-b-2 border-gray-900 dark:border-white' : 'text-gray-500 dark:text-gray-400'}`}
+          onClick={() => setActiveTab('completed')}
+        >
+          Completed
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="text-center py-12 text-gray-600 dark:text-gray-400">Loading orders...</div>
+      ) : filteredOrders.length > 0 ? (
+        <div className="space-y-4">
+          {filteredOrders.map((order) => (
+            <Card key={order.id} className="overflow-hidden rounded-xl">
+              <div className="flex flex-col">
+                <div className="flex p-4 gap-4">
                   {/* Product Image */}
-                  <div className="relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-800">
+                  <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 flex-shrink-0">
                     {order.products?.images?.length > 0 ? (
                       <Image
                         src={order.products.images[0]}
@@ -101,131 +143,41 @@ export default function OrdersPage() {
                       />
                     ) : (
                       <div className="flex items-center justify-center w-full h-full bg-gray-100 dark:bg-gray-800">
-                        <Package size={32} className="text-gray-400" />
+                        <Package size={24} className="text-gray-400" />
                       </div>
                     )}
                   </div>
 
-                  {/* Order Details - Mobile Optimized */}
-                  <CardContent className="flex-1 flex flex-col justify-between p-3 space-y-2">
-                    {/* Product Name */}
-                    <h4 className="text-sm font-medium line-clamp-2">{order.products?.title || "Product"}</h4>
-
-                    {/* Order ID */}
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Order #{order.id}</p>
-
-                    {/* Status */}
-                    <Badge className={`${getStatusColor(order.status)} text-xs px-1 py-1 flex items-center gap-1 w-max`}>
-                      {getStatusIcon(order.status)} {order.status}
-                    </Badge>
-
-                    {/* Other Info */}
-                    <div className="space-y-1 text-xs mt-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0"></div>
-                        <span className="text-gray-600 dark:text-gray-400 truncate">{order.payment_method?.type || "Credit Card"}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0"></div>
-                        <span className="text-gray-600 dark:text-gray-400 truncate">{order.shipping_method?.type || "Standard"}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-purple-500 rounded-full flex-shrink-0"></div>
-                        <span className="text-gray-600 dark:text-gray-400">{new Date(order.created_at).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex flex-col gap-2 mt-3">
-                      <div className="flex justify-between items-center">
-                        <span className="font-bold text-sm">${order.products?.price || "0.00"}</span>
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <Button size="sm" onClick={() => setSelectedOrder(order)} className="w-full text-xs py-1">
-                          View Details
-                        </Button>
-                        <PDFDownloadLink
-                          document={generatePDF(order)}
-                          fileName={`order_${order.id}.pdf`}
-                          className="inline-flex items-center justify-center px-2 py-1 rounded bg-blue-600 text-white text-xs hover:bg-blue-700 w-full"
-                        >
-                          Download PDF
-                        </PDFDownloadLink>
-                      </div>
-                    </div>
-                  </CardContent>
-                </div>
-
-              {/* Desktop Layout: Original Style with Fixed Image */}
-              <div className="hidden lg:flex flex-row">
-                {/* Product Image - Fixed aspect ratio */}
-                <div className="w-1/4 relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-800">
-                  {order.products?.images?.length > 0 ? (
-                    <Image
-                      src={order.products.images[0]}
-                      alt={order.products.title || "Product"}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center w-full h-full bg-gray-100 dark:bg-gray-800">
-                      <Package size={32} className="text-gray-400" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Order Details - Desktop */}
-                <CardContent className="flex-1 flex flex-col justify-between p-4">
-                  <div className="flex justify-between flex-col sm:flex-row sm:items-center">
+                  {/* Order Details */}
+                  <div className="flex-1 flex flex-col justify-between">
                     <div>
-                      <h4 className="font-semibold text-lg">{order.products?.title || "Product"}</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Order #{order.id}</p>
-                    </div>
-                    <Badge className={`${getStatusColor(order.status)} flex items-center gap-1 mt-2 sm:mt-0`}>
-                      {getStatusIcon(order.status)} {order.status}
-                    </Badge>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <div>
-                        <p className="font-medium">Payment</p>
-                        <p className="text-gray-600 dark:text-gray-400">{order.payment_method?.type || "Credit Card"}</p>
+                      <h3 className="font-medium text-base">{order.products?.title || "Product"}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: order.products?.color || '#8B4513' }}></div>
+                        </div>
+                        <span className="text-xs text-gray-600 dark:text-gray-400">Color</span>
+                        <span className="text-xs">|</span>
+                        <span className="text-xs text-gray-600 dark:text-gray-400">Size = {order.products?.size || '40'}</span>
+                        <span className="text-xs">|</span>
+                        <span className="text-xs text-gray-600 dark:text-gray-400">Qty = 1</span>
+                      </div>
+                      <div className="mt-2">
+                        <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 font-normal text-xs px-2 py-1">
+                          In Delivery
+                        </Badge>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <div>
-                        <p className="font-medium">Delivery</p>
-                        <p className="text-gray-600 dark:text-gray-400">{order.shipping_method?.type || "Standard"}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                      <div>
-                        <p className="font-medium">Date</p>
-                        <p className="text-gray-600 dark:text-gray-400">{new Date(order.created_at).toLocaleDateString()}</p>
-                      </div>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="font-bold">${order.products?.price || "0.00"}</span>
+                      <Link href={`/orders/track/${order.id}`}>
+                        <Button variant="secondary" size="sm" className="text-xs rounded-full px-4">
+                          Track Order
+                        </Button>
+                      </Link>
                     </div>
                   </div>
-
-                  <div className="flex justify-between items-center mt-4">
-                    <span className="font-bold text-lg">${order.products?.price || "0.00"}</span>
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={() => setSelectedOrder(order)}>View Details</Button>
-                      <PDFDownloadLink
-                        document={generatePDF(order)}
-                        fileName={`order_${order.id}.pdf`}
-                        className="inline-flex items-center justify-center px-3 py-1 rounded bg-blue-600 text-white text-sm hover:bg-blue-700"
-                      >
-                        Download PDF
-                      </PDFDownloadLink>
-                    </div>
-                  </div>
-                </CardContent>
+                </div>
               </div>
             </Card>
           ))}
@@ -233,8 +185,8 @@ export default function OrdersPage() {
       ) : (
         <div className="text-center py-12">
           <Package size={48} className="mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Orders Yet</h3>
-          <p className="text-gray-600 dark:text-gray-400">You haven't placed any orders yet.</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No {activeTab === 'ongoing' ? 'Ongoing' : 'Completed'} Orders</h3>
+          <p className="text-gray-600 dark:text-gray-400">You don't have any {activeTab === 'ongoing' ? 'ongoing' : 'completed'} orders at the moment.</p>
         </div>
       )}
 
