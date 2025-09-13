@@ -10,7 +10,6 @@
   "nav.products": "المنتجات",
   "nav.shops": "المتاجر",
   "nav.contact": "اتصل بنا",
-  "nav.cart": "السلة",
   "nav.menu": "القائمة",
   "nav.account": "الحساب",
   "actions.addToCart": "أضف إلى السلة",
@@ -67,7 +66,9 @@
   "shops.delivery": "التوصيل",
   "common.loading": "جاري التحميل...",
   "common.prev": "السابق",
-  "common.next": "التالي"
+  "common.next": "التالي",
+    "suggestedCategories": "الفئات المقترحة"
+
 }
 
 

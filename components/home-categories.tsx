@@ -1,18 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronRight, ChevronLeft } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Category } from "@/lib/type";
 import Link from "next/link";
 import Image from "next/image";
+import { ChevronRight } from "lucide-react";
+import { useI18n } from "../lib/i18n"
+
 
 export function HomeCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(true);
+  const { t } = useI18n()
 
   useEffect(() => {
     fetchCategories();
@@ -43,30 +44,6 @@ export function HomeCategories() {
     }
   };
 
-  const handleScroll = (direction: "left" | "right") => {
-    const container = document.getElementById("categories-container");
-    if (container) {
-      const scrollAmount = 300;
-      const newScrollLeft =
-        direction === "left"
-          ? container.scrollLeft - scrollAmount
-          : container.scrollLeft + scrollAmount;
-
-      container.scrollTo({ left: newScrollLeft, behavior: "smooth" });
-      setTimeout(checkScrollPosition, 300);
-    }
-  };
-
-  const checkScrollPosition = () => {
-    const container = document.getElementById("categories-container");
-    if (container) {
-      setShowLeftArrow(container.scrollLeft > 0);
-      setShowRightArrow(
-        container.scrollLeft < container.scrollWidth - container.clientWidth - 10
-      );
-    }
-  };
-
   if (loading) {
     return <p className="p-6 text-center">جارٍ تحميل التصنيفات...</p>;
   }
@@ -89,73 +66,57 @@ export function HomeCategories() {
     return <p className="p-6 text-center">لا يوجد تصنيفات حالياً.</p>;
   }
 
+  // أول 5 تصنيفات فقط
+  const displayedCategories = categories.slice(0, 5);
+
   return (
     <section className="w-full py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* العنوان + عرض الكل */}
+        {/* العنوان */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-            الفئات المقترحة
+             {t("suggestedCategories")}
           </h2>
-          <Link
-            href="/categories"
-            className="text-green-600 hover:text-green-700 font-medium"
-          >
-            عرض الكل
-          </Link>
         </div>
 
-        <div className="relative group">
-          {showLeftArrow && (
-            <button
-              onClick={() => handleScroll("left")}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow flex items-center justify-center"
+        {/* شبكة من صفين × 3 أعمدة */}
+        <div className="grid grid-cols-3 gap-6">
+          {displayedCategories.map((category) => (
+            <div
+              key={category.id}
+              className="flex flex-col items-center text-center cursor-pointer hover:scale-105 transition-transform duration-200"
             >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-          )}
-
-          {showRightArrow && (
-            <button
-              onClick={() => handleScroll("right")}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white dark:bg-gray-800 rounded-full shadow flex items-center justify-center"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          )}
-
-          <div
-            id="categories-container"
-            className="flex gap-4 overflow-x-auto scrollbar-hide pb-4"
-            onScroll={checkScrollPosition}
-          >
-            {categories.map((category) => (
-              <div
-                key={category.id}
-                className="flex-shrink-0 w-32 sm:w-36 md:w-40 lg:w-44"
-              >
-                <div className="w-full aspect-square rounded-2xl p-4 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform duration-200 cursor-pointer">
-                  {/* صورة التصنيف */}
-                  {category.image_url ? (
-                    <Image
-                      src={category.image_url}
-                      alt={category.title}
-                      width={64}
-                      height={64}
-                      className="object-contain mb-3"
-                    />
-                  ) : (
-                    <div className="w-16 h-16 mb-3 bg-gray-200 dark:bg-gray-700 rounded-full" />
-                  )}
-
-                  {/* اسم التصنيف */}
-                  <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100">
-                    {category.title}
-                  </h3>
-                </div>
+              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden mb-2">
+                {category.image_url ? (
+                  <Image
+                    src={category.image_url}
+                    alt={category.title}
+                    width={48}
+                    height={48}
+                    className="object-contain"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-gray-300 dark:bg-gray-700 rounded-full" />
+                )}
               </div>
-            ))}
-          </div>
+              <h3 className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                {category.title}
+              </h3>
+            </div>
+          ))}
+
+          {/* العنصر السادس: See All */}
+          <Link
+            href="/categories"
+            className="flex flex-col items-center text-center cursor-pointer hover:scale-105 transition-transform duration-200"
+          >
+            <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center mb-2">
+              <ChevronRight className="w-6 h-6 text-white" />
+            </div>
+            <h3 className="text-xs sm:text-sm font-medium text-blue-600">
+              See All
+            </h3>
+          </Link>
         </div>
       </div>
     </section>
