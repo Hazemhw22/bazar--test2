@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -83,6 +83,47 @@ export default function CheckoutPage() {
     billingState: "",
     billingZipCode: "",
   });
+  
+  // Auto-fill user data if logged in
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (profileData) {
+            // Split full name into first and last name
+            const nameParts = profileData.full_name?.split(' ') || ['', ''];
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+            
+            setFormData(prev => ({
+              ...prev,
+              email: profileData.email || prev.email,
+              firstName: firstName,
+              lastName: lastName,
+              phone: profileData.phone || prev.phone,
+              address: profileData.address || prev.address,
+              city: profileData.city || prev.city,
+              state: profileData.state || prev.state,
+              zipCode: profileData.zip_code || prev.zipCode,
+              country: profileData.country || prev.country,
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
+    };
+    
+    fetchUserProfile();
+  }, []);
 
   const subtotal = totalPrice;
   const shippingCost =

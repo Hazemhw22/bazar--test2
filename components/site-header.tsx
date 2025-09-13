@@ -178,53 +178,53 @@ export function SiteHeader() {
 
             {/* اللوجو والعناوين */}
             <div className="flex items-center gap-3 lg:gap-4 text-[15px] lg:text-[16px]">
-              <VristoLogo size={60} />
+                <VristoLogo size={60} />
 
-              <nav className="flex gap-4 lg:gap-6 font-medium font-sans">
-                <Link
-                  href="/"
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-                >
-                  <Home size={14} className="lg:w-4 lg:h-4" /> {t("nav.home")}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/categories"
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-                >
-                  <List size={14} className="lg:w-4 lg:h-4" /> {t("nav.categories")}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/favourite"
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-                >
-                  <Heart size={14} className="lg:w-4 lg:h-4" /> {t("nav.favorites")}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/shops"
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-                >
-                  <Store size={14} className="lg:w-4 lg:h-4" /> {t("nav.shops")}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/products"
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-                >
-                  <ShoppingBag size={14} className="lg:w-4 lg:h-4" /> {t("nav.products")}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/contact"
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-                >
-                  <Phone size={14} className="lg:w-4 lg:h-4" /> {t("nav.contact")}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-                </Link>
-              </nav>
-            </div>
+                <nav className="flex gap-4 lg:gap-6 font-medium font-sans">
+                  <Link
+                    href="/"
+                    className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
+                  >
+                    <Home size={14} className="lg:w-4 lg:h-4" /> {t("nav.home")}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
+                  </Link>
+                  <Link
+                    href="/categories"
+                    className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
+                  >
+                    <List size={14} className="lg:w-4 lg:h-4" /> {t("nav.categories")}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
+                  </Link>
+                  <Link
+                    href="/favourite"
+                    className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
+                  >
+                    <Heart size={14} className="lg:w-4 lg:h-4" /> {t("nav.favorites")}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
+                  </Link>
+                  <Link
+                    href="/shops"
+                    className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
+                  >
+                    <Store size={14} className="lg:w-4 lg:h-4" /> {t("nav.shops")}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
+                  </Link>
+                  <Link
+                    href="/products"
+                    className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
+                  >
+                    <ShoppingBag size={14} className="lg:w-4 lg:h-4" /> {t("nav.products")}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
+                  >
+                    <Phone size={14} className="lg:w-4 lg:h-4" /> {t("nav.contact")}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
+                  </Link>
+                </nav>
+              </div>
 
             {/* أيقونات اليمين للـ Desktop - جميع الأيقونات في اليمين */}
             <div className="flex items-center gap-1.5 lg:gap-2 ml-auto">
