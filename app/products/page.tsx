@@ -375,7 +375,7 @@ export default function Products() {
               </DropdownMenuContent>
             </DropdownMenu>
             
-            <div className="flex border border-gray-300 dark:border-gray-600 rounded-md">
+            <div className="flex   rounded-md">
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
