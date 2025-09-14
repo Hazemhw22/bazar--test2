@@ -9,10 +9,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import { VristoLogo } from "@/components/vristo-logo"
-import { supabase } from "@/lib/supabase" 
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { FcGoogle } from "react-icons/fc"
+import { FaFacebook } from "react-icons/fa6"
+import { AiFillApple } from "react-icons/ai"
 
 export default function AuthPage() {
+  const supabase = createClientComponentClient()
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -103,6 +106,11 @@ export default function AuthPage() {
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
+          options: {
+            data: {
+              full_name: formData.fullName,
+            },
+          },
         })
 
         if (signUpError || !signUpData.user?.id) {
@@ -129,10 +137,35 @@ export default function AuthPage() {
         setIsSignUp(false)
         setFormData((prev) => ({ ...prev, password: "", confirmPassword: "" }))
       }
-    } catch {
+    } catch (error) {
+      console.error("Authentication error:", error)
       setGeneralError("An unexpected error occurred. Please try again.")
     }
 
+    setIsLoading(false)
+  }
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true)
+    setGeneralError("")
+    setSuccessMessage("")
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+      
+      if (error) {
+        setGeneralError(error.message)
+      }
+      // No need to handle success case as the OAuth flow will redirect the user
+    } catch (error) {
+      setGeneralError("An unexpected error occurred with Google sign-in. Please try again.")
+    }
+    
     setIsLoading(false)
   }
 
@@ -316,9 +349,28 @@ export default function AuthPage() {
                 <div className="flex-1 h-px bg-border" />
               </div>
               <div className="flex items-center justify-center gap-4">
-                <button className="w-14 h-14 rounded-2xl bg-card border border-border/60">💙</button>
-                <button className="w-14 h-14 rounded-2xl bg-card border border-border/60">🟢</button>
-                <button className="w-14 h-14 rounded-2xl bg-card border border-border/60">🍎</button>
+                <button 
+                  type="button"
+                  onClick={() => {}} 
+                  className="w-14 h-14 rounded-2xl bg-card border border-border/60 flex items-center justify-center text-blue-600"
+                >
+                  <FaFacebook size={24} />
+                </button>
+                <button 
+                  type="button"
+                  onClick={handleGoogleSignIn} 
+                  className="w-14 h-14 rounded-2xl bg-card border border-border/60 flex items-center justify-center"
+                  disabled={isLoading}
+                >
+                  <FcGoogle size={24} />
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => {}} 
+                  className="w-14 h-14 rounded-2xl bg-card border border-border/60 flex items-center justify-center"
+                >
+                  <AiFillApple size={24} />
+                </button>
               </div>
               <div className="text-center text-sm text-muted-foreground">
                 {isSignUp ? (

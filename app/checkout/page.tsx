@@ -153,7 +153,6 @@ export default function CheckoutPage() {
       setFormData((prev) => ({ ...prev, [field]: value as string, shippingMethod: 'instore' }));
     } else if (field === 'paymentMethod' && formData.shippingMethod === 'instore' && value !== 'instore') {
       // Prevent changing payment method if shipping method is in-store
-      // Keep the payment method as in-store
       return;
     } else {
       setFormData((prev) => ({ ...prev, [field]: value as string }));
