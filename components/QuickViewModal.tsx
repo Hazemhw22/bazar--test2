@@ -110,7 +110,7 @@ export default function QuickViewModal({ order, onClose }: QuickViewModalProps) 
             <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
               <div className="flex justify-between items-center">
                 <span className="text-lg font-medium text-gray-900 dark:text-white">Total Amount</span>
-                <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">${order.products?.price || "0.00"}</span>
+                <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">₪{order.products?.price || "0.00"}</span>
               </div>
             </div>
           </div>
@@ -188,7 +188,7 @@ export default function QuickViewModal({ order, onClose }: QuickViewModalProps) 
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-medium text-gray-900 dark:text-white">Total Amount</span>
-                  <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">${order.products?.price || "0.00"}</span>
+                  <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">₪{order.products?.price || "0.00"}</span>
                 </div>
               </div>
               

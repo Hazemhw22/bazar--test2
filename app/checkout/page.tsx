@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -128,9 +129,11 @@ export default function CheckoutPage() {
   const subtotal = totalPrice;
   const shippingCost =
     formData.shippingMethod === "express"
-      ? 15
+      ? 30
       : formData.shippingMethod === "overnight"
-      ? 25
+      ? 50
+      : formData.shippingMethod === "instore"
+      ? 0
       : 10;
   const tax = subtotal * 0.08;
   const total = subtotal + shippingCost + tax;
@@ -139,7 +142,22 @@ export default function CheckoutPage() {
     field: keyof FormData,
     value: string | boolean
   ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (field === 'shippingMethod' && value === 'instore') {
+      // If shipping method is set to in-store, automatically set payment method to in-store
+      setFormData((prev) => ({ ...prev, [field]: value as string, paymentMethod: 'instore' }));
+    } else if (field === 'shippingMethod' && formData.paymentMethod === 'instore') {
+      // If changing from in-store shipping to another method, reset payment method to default
+      setFormData((prev) => ({ ...prev, [field]: value as string, paymentMethod: 'card' }));
+    } else if (field === 'paymentMethod' && value === 'instore' && formData.shippingMethod !== 'instore') {
+      // If payment method is set to in-store, automatically set shipping method to in-store
+      setFormData((prev) => ({ ...prev, [field]: value as string, shippingMethod: 'instore' }));
+    } else if (field === 'paymentMethod' && formData.shippingMethod === 'instore' && value !== 'instore') {
+      // Prevent changing payment method if shipping method is in-store
+      // Keep the payment method as in-store
+      return;
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value as string }));
+    }
   };
 
   const validate = () => {
@@ -514,7 +532,7 @@ export default function CheckoutPage() {
                             5-7 business days
                           </p>
                         </div>
-                        <span className="font-medium mt-1 sm:mt-0">$10.00</span>
+                        <span className="font-medium mt-1 sm:mt-0">₪10.00</span>
                       </div>
                     </Label>
                   </div>
@@ -535,7 +553,7 @@ export default function CheckoutPage() {
                             2-3 business days
                           </p>
                         </div>
-                        <span className="font-medium mt-1 sm:mt-0">$15.00</span>
+                        <span className="font-medium mt-1 sm:mt-0">₪30.00</span>
                       </div>
                     </Label>
                   </div>
@@ -559,9 +577,63 @@ export default function CheckoutPage() {
                             Next business day
                           </p>
                         </div>
-                        <span className="font-medium mt-1 sm:mt-0">$25.00</span>
+                        <span className="font-medium mt-1 sm:mt-0">₪50.00</span>
                       </div>
                     </Label>
+                  </div>
+
+                  {/* Pick Up In-Store */}
+                  <div
+                    className={`flex flex-col border rounded-2xl transition-colors ${
+                      formData.shippingMethod === "instore"
+                        ? "border-blue-600 bg-blue-600/10"
+                        : "border-border/60 hover:bg-muted/30"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 p-4">
+                      <RadioGroupItem value="instore" id="instore" />
+                      <Label
+                        htmlFor="instore"
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <Building2 size={18} />
+                        Pick Up In-Store
+                        <Badge className="ml-auto bg-green-600">Free</Badge>
+                      </Label>
+                    </div>
+                    {formData.shippingMethod === "instore" && (
+                      <div className="space-y-4 px-4 pb-4">
+                        <div className="flex items-center gap-2">
+                          <Building2 size={20} className="text-green-600" />
+                          <h4 className="font-medium text-sm">
+                            Store Location
+                          </h4>
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          <p className="font-medium">Main Store Location:</p>
+                          <div className="text-gray-600 dark:text-gray-400">
+                            <p>123 Commerce Street</p>
+                            <p>Arad, Israel 8920435</p>
+                            <p>Phone: +972-8-123-4567</p>
+                          </div>
+                          <div className="mt-3 p-3 bg-white dark:bg-gray-800 rounded border">
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              <strong>Store Hours:</strong>
+                              <br />
+                              Sunday - Thursday: 9:00 AM - 8:00 PM
+                              <br />
+                              Friday: 9:00 AM - 2:00 PM
+                              <br />
+                              Saturday: Closed
+                            </p>
+                          </div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                            Please bring your order confirmation and a valid ID
+                            when visiting the store.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </RadioGroup>
               </CardContent>
@@ -576,18 +648,29 @@ export default function CheckoutPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {formData.shippingMethod === 'instore' && (
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg mb-4">
+                    <p className="text-sm text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                      <Building2 size={16} />
+                      When using in-store pickup, payment will be made at the store.
+                    </p>
+                  </div>
+                )}
                 <RadioGroup
                   value={formData.paymentMethod}
                   onValueChange={(value) =>
                     handleInputChange("paymentMethod", value)
                   }
                   className="space-y-3"
+                  disabled={formData.shippingMethod === 'instore'}
                 >
                   {/* Credit/Debit Card */}
                   <div
                     className={`flex flex-col border rounded-2xl transition-colors ${
                       formData.paymentMethod === "card"
                         ? "border-blue-600 bg-blue-600/10"
+                        : formData.shippingMethod === 'instore'
+                        ? "border-border/60 opacity-50 cursor-not-allowed"
                         : "border-border/60 hover:bg-muted/30"
                     }`}
                   >
@@ -684,6 +767,8 @@ export default function CheckoutPage() {
                     className={`flex flex-col border rounded-2xl transition-colors ${
                       formData.paymentMethod === "bank"
                         ? "border-blue-600 bg-blue-600/10"
+                        : formData.shippingMethod === 'instore'
+                        ? "border-border/60 opacity-50 cursor-not-allowed"
                         : "border-border/60 hover:bg-muted/30"
                     }`}
                   >
@@ -714,64 +799,15 @@ export default function CheckoutPage() {
                     )}
                   </div>
 
-                  {/* Pay In-Store */}
-                  <div
-                    className={`flex flex-col border rounded-2xl transition-colors ${
-                      formData.paymentMethod === "instore"
-                        ? "border-blue-600 bg-blue-600/10"
-                        : "border-border/60 hover:bg-muted/30"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 p-4">
-                      <RadioGroupItem value="instore" id="instore" />
-                      <Label
-                        htmlFor="instore"
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        <Building2 size={18} />
-                        Pay In-Store
-                      </Label>
-                    </div>
-                    {formData.paymentMethod === "instore" && (
-                      <div className="space-y-4 px-4 pb-4">
-                        <div className="flex items-center gap-2">
-                          <Building2 size={20} className="text-green-600" />
-                          <h4 className="font-medium text-sm">
-                            Store Location
-                          </h4>
-                        </div>
-                        <div className="space-y-2 text-sm">
-                          <p className="font-medium">Main Store Location:</p>
-                          <div className="text-gray-600 dark:text-gray-400">
-                            <p>123 Commerce Street</p>
-                            <p>Arad, Israel 8920435</p>
-                            <p>Phone: +972-8-123-4567</p>
-                          </div>
-                          <div className="mt-3 p-3 bg-white dark:bg-gray-800 rounded border">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              <strong>Store Hours:</strong>
-                              <br />
-                              Sunday - Thursday: 9:00 AM - 8:00 PM
-                              <br />
-                              Friday: 9:00 AM - 2:00 PM
-                              <br />
-                              Saturday: Closed
-                            </p>
-                          </div>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                            Please bring your order confirmation and a valid ID
-                            when visiting the store.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  
 
                   {/* PayPal */}
                   <div
                     className={`flex flex-col border rounded-2xl transition-colors ${
                       formData.paymentMethod === "paypal"
                         ? "border-blue-600 bg-blue-600/10"
+                        : formData.shippingMethod === 'instore'
+                        ? "border-border/60 opacity-50 cursor-not-allowed"
                         : "border-border/60 hover:bg-muted/30"
                     }`}
                   >
@@ -807,6 +843,8 @@ export default function CheckoutPage() {
                     className={`flex flex-col border rounded-2xl transition-colors ${
                       formData.paymentMethod === "cod"
                         ? "border-blue-600 bg-blue-600/10"
+                        : formData.shippingMethod === 'instore'
+                        ? "border-border/60 opacity-50 cursor-not-allowed"
                         : "border-border/60 hover:bg-muted/30"
                     }`}
                   >
@@ -835,6 +873,8 @@ export default function CheckoutPage() {
                       </div>
                     )}
                   </div>
+                  
+                  
                 </RadioGroup>
               </CardContent>
             </Card>
@@ -870,7 +910,7 @@ export default function CheckoutPage() {
                         </p>
                       </div>
                       <span className="font-medium text-sm">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        ₪{(item.price * item.quantity).toFixed(2)}
                       </span>
                     </div>
                   ))}
@@ -881,20 +921,20 @@ export default function CheckoutPage() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>₪{subtotal.toFixed()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Shipping</span>
-                    <span>${shippingCost.toFixed(2)}</span>
+                    <span>₪{shippingCost.toFixed()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Tax</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>₪{tax.toFixed(2)}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between text-base lg:text-lg font-semibold">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>₪{total.toFixed(2)}</span>
                   </div>
                 </div>
 
@@ -911,6 +951,6 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
-    </div>    
+    </div>
   );
 }

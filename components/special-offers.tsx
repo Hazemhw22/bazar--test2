@@ -136,7 +136,7 @@ export function SpecialOffers() {
 
   if (loading) {
     return (
-      <section className="w-full py-8 px-4 sm:px-6 lg:px-8">
+      <section className="w-full py-4 sm:py-8 px-2 sm:px-4 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
@@ -169,7 +169,7 @@ export function SpecialOffers() {
 
   if (error) {
     return (
-      <section className="w-full py-8 px-4 sm:px-6 lg:px-8">
+      <section className="w-full py-4 sm:py-8 px-2 sm:px-4 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
@@ -218,7 +218,7 @@ export function SpecialOffers() {
   }
 
   return (
-    <section className="w-full py-4 px-4 sm:px-6 lg:px-8">
+    <section className="w-full py-3 sm:py-4 px-2 sm:px-4 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="flex items-center justify-between mb-4">
@@ -321,11 +321,11 @@ export function SpecialOffers() {
 
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-bold text-gray-900 dark:text-white">
-                        ${getDisplayPrice(product).toFixed(2)}
+                        ₪{getDisplayPrice(product).toFixed(2)}
                       </span>
                       {getOriginalPrice(product) && (
                         <span className="text-xs text-gray-500 dark:text-gray-400 line-through">
-                          ${getOriginalPrice(product)?.toFixed(2)}
+                          ₪{getOriginalPrice(product)?.toFixed(2)}
                         </span>
                       )}
                     </div>

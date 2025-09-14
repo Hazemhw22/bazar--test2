@@ -4,17 +4,94 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Heart, Plus, ShoppingBag, Eye, XCircle } from "lucide-react";
+import { Heart, Plus, ShoppingBag, Eye, XCircle, Star, ChevronRight, ChevronLeft } from "lucide-react";
 import { useCart } from "./cart-provider";
 import { useFavorites } from "./favourite-items";
 import { Product } from "@/lib/type";
 import { incrementProductCartCount } from "@/lib/tracking";
+
+// Custom scrollbar and animation styles
+const customStyles = `
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 20px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(156, 163, 175, 0.7);
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Card hover animations */
+  .product-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .product-card:hover {
+    transform: translateY(-8px);
+  }
+  
+  .product-card:hover .card-image img {
+    transform: scale(1.08);
+  }
+  
+  .card-image img {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .price-tag {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 10% 100%);
+  }
+  
+  /* Slide animations */
+  @keyframes slideIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  .slide-in {
+    animation: slideIn 0.3s forwards;
+  }
+  
+  /* Pulse animation for buttons */
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  .pulse-on-hover:hover {
+    animation: pulse 0.6s infinite;
+  }
+`;
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  // Apply custom styles
+  useEffect(() => {
+    const styleElement = document.createElement('style');
+    styleElement.textContent = customStyles;
+    document.head.appendChild(styleElement);
+    
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
+  
   const [quantity, setQuantity] = useState(1);
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -117,14 +194,14 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Product Info */}
-        <div className="p-4 flex flex-col flex-1 justify-between">
+        <div className="p-2 sm:p-4 flex flex-col flex-1 justify-between">
           {/* Product Name */}
           <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight mb-2">
             {product.title}
           </h3>
 
           {/* Shop & Category فوق السعر مباشرة */}
-          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-2">
+          <div className="flex items-center gap-1 sm:gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1 sm:mb-2">
             {product.shops?.shop_name && (
               <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">
                 {product.shops.shop_name}
@@ -140,7 +217,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {/* Price & Add to Cart */}
           <div className="flex items-center justify-between mt-auto">
             <p className="text-lg font-bold text-gray-900 dark:text-white">
-              {discountedPrice.toFixed(2)} ₪
+              {discountedPrice.toFixed()} ₪
             </p>
             <button
               onClick={(e) => {
@@ -159,8 +236,8 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Product Modal */}
       <Dialog.Root open={isModalOpen} onOpenChange={setIsModalOpen}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" />
-          <Dialog.Content className="fixed z-50 top-1/2 left-1/2 max-w-6xl w-[95vw] max-h-[95vh] overflow-hidden rounded-3xl bg-white dark:bg-gray-900 shadow-2xl transform -translate-x-1/2 -translate-y-1/2 focus:outline-none border border-gray-200 dark:border-gray-700">
+          <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300" />
+          <Dialog.Content className="fixed z-50 top-1/2 left-1/2 max-w-5xl w-[90vw] max-h-[90vh] overflow-hidden rounded-xl bg-white dark:bg-gray-900 shadow-2xl transform -translate-x-1/2 -translate-y-1/2 focus:outline-none border border-gray-200 dark:border-gray-700 transition-all duration-300 scale-100 opacity-100 animate-in fade-in-90 zoom-in-90">
             <Dialog.Title className="sr-only">تفاصيل المنتج</Dialog.Title>
             
             {/* Mobile Layout */}
@@ -176,12 +253,12 @@ export function ProductCard({ product }: ProductCardProps) {
 
               {/* Mobile Image Section */}
               <div className="flex-1 overflow-y-auto">
-                <div className="relative aspect-square bg-gray-50 dark:bg-gray-800">
+                <div className="relative aspect-[4/3]">
                   <Image
                     src={activeImage}
                     alt={product.title}
                     fill
-                    className="object-cover"
+                    className="object-contain"
                   />
                 </div>
 
@@ -256,56 +333,59 @@ export function ProductCard({ product }: ProductCardProps) {
               </div>
 
               {/* Mobile Fixed Bottom Actions */}
-          <div className="border-t border-gray-200 dark:border-gray-700 p-3 bg-white dark:bg-gray-900">
-            <div className="flex items-center gap-2">
-              {/* Quantity Selector */}
-              <span className="text-sm font-medium text-gray-900 dark:text-white"> Quantity : </span>
-              <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-xl">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-3 py-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors rounded-l-xl"
-                >
-                  -
-                </button>
-                <span className="px-3 py-1 text-sm font-medium min-w-[2.5rem] text-center">
-                  {quantity}
-                </span>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="px-3 py-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors rounded-r-xl"
-                >
-                  +
-                </button>
+          <div className="border-t border-gray-200 dark:border-gray-700 p-2.5 bg-white dark:bg-gray-900 sticky bottom-0 shadow-md">
+            <div className="flex items-center justify-between mb-2">
+              {/* Compact Quantity Selector */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Qty:</span>
+                <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="px-3 py-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-l-lg"
+                  >
+                    -
+                  </button>
+                  <span className="px-3 py-1 text-sm font-medium min-w-[2rem] text-center">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="px-3 py-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-r-lg"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
-              {/* Favorite Button صغير */}
+              
+              {/* Favorite Button */}
               <button
                 onClick={handleToggleFavorite}
-                className={`flex items-center justify-center p-2 rounded-xl border text-sm transition-colors ${
+                className={`flex items-center justify-center p-2.5 rounded-lg text-sm transition-colors ${
                   isFavorite(Number(product.id))
-                    ? "bg-red-500 text-white border-red-500"
-                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600"
+                    ? "bg-red-500 text-white"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                 }`}
                 title={isFavorite(Number(product.id)) ? "Remove from Favorites" : "Add to Favorites"}
               >
                 <Heart
-                  size={16}
+                  size={18}
                   fill={isFavorite(Number(product.id)) ? "currentColor" : "none"}
                 />
               </button>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-2 mt-2">
+            <div className="flex gap-1.5">
               <button
                 onClick={handleAddToCart}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-xl text-sm font-medium flex items-center justify-center gap-1"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-1.5 shadow-sm"
               >
                 <ShoppingBag size={16} />
                 Add to Cart
               </button>
               <Link
                 href={`/products/${product.id}`}
-                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-medium flex items-center justify-center"
+                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium flex items-center justify-center shadow-sm"
               >
                 View Details
               </Link>
@@ -314,28 +394,33 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
 
             {/* Desktop Layout */}
-            <div className="hidden lg:grid lg:grid-cols-2 h-full">
-              {/* Desktop Product Images */}
-              <div className="p-6 space-y-4">
-                <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-800">
+            <div className="hidden lg:flex h-full">
+              {/* Desktop Product Images - Reduced padding */}
+              <div className="w-1/2 p-4 space-y-3 border-r border-gray-200 dark:border-gray-700">
+                <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-800 shadow-sm">
                   <Image
                     src={activeImage}
                     alt={product.title}
                     fill
                     className="object-cover"
                   />
+                  
+                  {/* Floating close button */}
+                  <Dialog.Close className="absolute top-3 right-3 p-1.5 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white rounded-full transition-colors shadow-sm">
+                    <XCircle size={18} />
+                  </Dialog.Close>
                 </div>
 
                 {additionalImages.length > 1 && (
-                  <div className="grid grid-cols-4 gap-3">
+                  <div className="grid grid-cols-5 gap-2">
                     {additionalImages.map((image, index) => (
                       <button
                         key={index}
                         onClick={() => setActiveImage(image || "/placeholder.svg")}
-                        className={`relative aspect-square rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 ring-2 transition-all ${
+                        className={`relative aspect-square rounded-md overflow-hidden bg-gray-50 dark:bg-gray-800 ring-1 transition-all ${
                           activeImage === image
-                            ? "ring-blue-500"
-                            : "ring-transparent hover:ring-gray-300 dark:hover:ring-gray-600"
+                            ? "ring-blue-500 scale-105 shadow-md z-10"
+                            : "ring-gray-200 dark:ring-gray-700 hover:ring-blue-300 dark:hover:ring-blue-700"
                         }`}
                       >
                         <Image
@@ -350,107 +435,109 @@ export function ProductCard({ product }: ProductCardProps) {
                 )}
               </div>
 
-              {/* Desktop Product Details */}
-              <div className="p-6 flex flex-col justify-between">
-                <div className="space-y-6">
+              {/* Desktop Product Details - Streamlined layout */}
+              <div className="w-1/2 p-4 flex flex-col">
+                <div className="flex-1 space-y-4 overflow-y-auto pr-1 custom-scrollbar">
                   <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                       {product.title}
                     </h2>
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                    
+                    {/* Shop & Category */}
+                    <div className="flex items-center gap-2 mb-3">
+                      {product.shops?.shop_name && (
+                        <span className="bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 px-2.5 py-0.5 rounded-md text-xs font-medium border border-blue-100 dark:border-blue-800">
+                          {product.shops.shop_name}
+                        </span>
+                      )}
+                      {category_name && (
+                        <span className="bg-green-50 dark:bg-green-900/40 text-green-600 dark:text-green-300 px-2.5 py-0.5 rounded-md text-xs font-medium border border-green-100 dark:border-green-800">
+                          {category_name}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">
                       {product.desc || "لا يوجد وصف"}
                     </p>
                   </div>
 
-                  {/* Shop & Category */}
-                  <div className="flex items-center gap-3">
-                    {product.shops?.shop_name && (
-                      <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-full text-sm font-medium">
-                        {product.shops.shop_name}
-                      </span>
-                    )}
-                    {category_name && (
-                      <span className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-3 py-1.5 rounded-full text-sm font-medium">
-                        {category_name}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Desktop Price */}
-                  <div className="flex flex-col space-y-2">
+                  {/* Desktop Price - Modern card style */}
+                  <div className="bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
                     <div className="flex items-center justify-between">
-                      {discountedPrice !== basePrice && (
-                        <p className="text-lg text-gray-500 dark:text-gray-400 line-through">
-                          ₪{basePrice.toFixed(2)}
+                      <div className="flex flex-col">
+                        {discountedPrice !== basePrice && (
+                          <p className="text-sm text-gray-500 dark:text-gray-400 line-through">
+                            {basePrice.toFixed()} ₪
+                          </p>
+                        )}
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                          {discountedPrice.toFixed()} ₪
                         </p>
+                      </div>
+                      {product.sale_price && discountedPrice < basePrice && (
+                        <span className="bg-green-100 dark:bg-green-900/60 text-green-700 dark:text-green-300 px-2.5 py-1 rounded-md text-sm font-medium">
+                          {Math.round(((basePrice - discountedPrice) / basePrice) * 100)}% OFF
+                        </span>
                       )}
-                      <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                        ₪{discountedPrice.toFixed(2)}
-                      </p>
                     </div>
-                    {product.sale_price && discountedPrice < basePrice && (
-                      <p className="text-green-600 dark:text-green-400 text-sm font-medium">
-                        You save ₪{(basePrice - discountedPrice).toFixed(2)} (
-                        {Math.round(((basePrice - discountedPrice) / basePrice) * 100)}% off)
-                      </p>
-                    )}
                   </div>
                 </div>
 
-                {/* Desktop Actions */}
-                <div className="space-y-4 pt-6 border-t border-gray-200 dark:border-gray-700">
-                  {/* Favorite Button */}
-                  <button
-                    onClick={handleToggleFavorite}
-                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border w-full text-sm font-medium ${
-                      isFavorite(Number(product.id))
-                        ? "bg-red-500 text-white border-red-500"
-                        : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600"
-                    } transition-colors`}
-                  >
-                    <Heart
-                      size={16}
-                      fill={isFavorite(Number(product.id)) ? "currentColor" : "none"}
-                    />
-                    {isFavorite(Number(product.id)) ? "Remove from Favorites" : "Add to Favorites"}
-                  </button>
-
-                  {/* Quantity Selector */}
+                {/* Desktop Actions - Compact layout */}
+                <div className="space-y-3 pt-3 mt-auto border-t border-gray-200 dark:border-gray-700">
+                  {/* Quantity and Favorite in one row */}
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">
-                      Quantity:
-                    </span>
-                    <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-xl">
-                      <button
-                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                        className="px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors rounded-l-xl"
-                      >
-                        -
-                      </button>
-                      <span className="px-4 py-2 text-sm font-medium min-w-[3rem] text-center">
-                        {quantity}
-                      </span>
-                      <button
-                        onClick={() => setQuantity(quantity + 1)}
-                        className="px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors rounded-r-xl"
-                      >
-                        +
-                      </button>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Quantity:</span>
+                      <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800">
+                        <button
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                          className="px-2 py-1 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-l-lg"
+                        >
+                          -
+                        </button>
+                        <span className="px-2 py-1 text-xs font-medium min-w-[2rem] text-center">
+                          {quantity}
+                        </span>
+                        <button
+                          onClick={() => setQuantity(quantity + 1)}
+                          className="px-2 py-1 text-xs hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-r-lg"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
+                    
+                    {/* Favorite Button */}
+                    <button
+                      onClick={handleToggleFavorite}
+                      className={`flex items-center justify-center gap-1 px-3 py-1 rounded-lg text-xs font-medium ${
+                        isFavorite(Number(product.id))
+                          ? "bg-red-500 text-white"
+                          : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+                      } transition-colors`}
+                    >
+                      <Heart
+                        size={14}
+                        fill={isFavorite(Number(product.id)) ? "currentColor" : "none"}
+                      />
+                      {isFavorite(Number(product.id)) ? "Remove" : "Favorite"}
+                    </button>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-3">
+                  <div className="flex gap-2">
                     <button
                       onClick={handleAddToCart}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5 shadow-sm"
                     >
-                      <ShoppingBag size={16} />
+                      <ShoppingBag size={15} />
                       Add to Cart
                     </button>
                     <Link
                       href={`/products/${product.id}`}
-                      className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-center"
+                      className="px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition-colors flex items-center justify-center shadow-sm"
                     >
                       View Details
                     </Link>
@@ -459,10 +546,7 @@ export function ProductCard({ product }: ProductCardProps) {
               </div>
             </div>
 
-            {/* Close Button */}
-            <Dialog.Close className="absolute top-4 right-4 p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors">
-              <XCircle size={20} />
-            </Dialog.Close>
+            {/* No need for additional close button as we have floating close buttons in both mobile and desktop views */}
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>

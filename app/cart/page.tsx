@@ -104,7 +104,7 @@ export default function CartPage() {
                         <div className="flex justify-between items-start mb-2">
                           <div className="flex-1 min-w-0 pr-2">
                             <h3 className="font-semibold text-base lg:text-lg truncate">{item.name}</h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">${item.price.toFixed(2)} each</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">₪{item.price.toFixed(2)} each</p>
                           </div>
 
                           {/* Remove button - Top right on mobile */}
@@ -144,7 +144,7 @@ export default function CartPage() {
 
                           {/* Item Total */}
                           <div className="text-right">
-                            <span className="font-bold text-lg">${(item.price * item.quantity).toFixed(2)}</span>
+                            <span className="font-bold text-lg">₪{(item.price * item.quantity).toFixed(2)}</span>
                           </div>
                         </div>
                       </div>
@@ -207,23 +207,23 @@ export default function CartPage() {
                 <div className="space-y-3 text-base">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span className="font-medium">${subtotal.toFixed(2)}</span>
+                    <span className="font-medium">₪{subtotal.toFixed(2)}</span>
                   </div>
 
                   <div className="flex justify-between">
                     <span>Shipping</span>
-                    <span className="font-medium">{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+                    <span className="font-medium">{shipping === 0 ? "Free" : `₪${shipping.toFixed(2)}`}</span>
                   </div>
 
                   <div className="flex justify-between">
                     <span>Tax</span>
-                    <span className="font-medium">${tax.toFixed(2)}</span>
+                    <span className="font-medium">₪{tax.toFixed(2)}</span>
                   </div>
 
                   {appliedPromo && (
                     <div className="flex justify-between text-green-600 dark:text-green-400">
                       <span>Discount ({appliedPromo.code})</span>
-                      <span className="font-medium">-${discount.toFixed(2)}</span>
+                      <span className="font-medium">-₪{discount.toFixed(2)}</span>
                     </div>
                   )}
 
@@ -231,13 +231,13 @@ export default function CartPage() {
 
                   <div className="flex justify-between text-xl font-bold">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>₪{total.toFixed(2)}</span>
                   </div>
                 </div>
 
                 {shipping > 0 && (
                   <p className="text-sm text-gray-600 dark:text-gray-400 text-center bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                    💡 Free shipping on orders over $100
+                    💡 Free shipping on orders over ₪350
                   </p>
                 )}
 

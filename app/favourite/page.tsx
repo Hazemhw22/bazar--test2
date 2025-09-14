@@ -328,11 +328,11 @@ export default function FavouritePage() {
                         <div className="flex items-center gap-2">
                           {item.price !== item.discountedPrice && (
                             <span className="text-sm text-gray-500 dark:text-gray-400 line-through">
-                              ${item.price.toFixed(2)}
+                              ₪{item.price.toFixed(2)}
                             </span>
                           )}
                           <span className="text-lg font-bold text-gray-900 dark:text-white">
-                            ${item.discountedPrice.toFixed(2)}
+                            ₪{item.discountedPrice.toFixed(2)}
                           </span>
                         </div>
 
@@ -437,11 +437,11 @@ export default function FavouritePage() {
                               <div className="flex items-center gap-2">
                                 {item.price !== item.discountedPrice && (
                                   <span className="text-sm text-gray-500 dark:text-gray-400 line-through">
-                                    ${item.price.toFixed(2)}
+                                    ₪{item.price.toFixed(2)}
                                   </span>
                                 )}
                                 <span className="text-lg font-bold text-gray-900 dark:text-white">
-                                  ${item.discountedPrice.toFixed(2)}
+                                  ₪{item.discountedPrice.toFixed(2)}
                                 </span>
                               </div>
                             </div>

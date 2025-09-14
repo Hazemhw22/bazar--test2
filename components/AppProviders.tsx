@@ -10,7 +10,8 @@ import SiteFooter from "./site-footer";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HtmlLangDirSync, I18nProvider } from "../lib/i18n";
 import { LocationProvider } from "./location-provider";
-import  BreadcrumbsNav  from "./BreadcrumbsNav";
+import BreadcrumbsNav from "./BreadcrumbsNav";
+import { Toaster } from "./ui/toaster";
 const queryClient = new QueryClient();
 
 export default function AppProviders({
@@ -29,10 +30,11 @@ export default function AppProviders({
                 <div className="min-h-screen flex flex-col page-background">
                   <SiteHeader />
                   <BreadcrumbsNav />
-                  <main className="flex-1 pb-28 page-container max-w-7xl mx-auto w-full m-4 p-4 sm:p-6 lg:p-8">
+                  <main className="flex-1 pb-28 page-container max-w-7xl mx-auto w-full m-4 p-1 sm:p-2 lg:p-4">
                     {children}
                   </main>
                   <SiteFooter />
+                  <Toaster />
                 </div>
               </FavoritesProvider>
             </CartProvider>

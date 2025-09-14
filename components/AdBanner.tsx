@@ -12,10 +12,10 @@ export interface AdBannerProps {
 
 export default function AdBanner({ imageSrc, href = "/products", title, subtitle }: AdBannerProps) {
   return (
-    <div className="col-span-2 md:col-span-4">
+    <div className="col-span-2 md:col-span-4 mt-2 sm:mt-4">
       <Link
         href={href}
-        className="block w-full overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow hover:shadow-lg transition-shadow"
+        className="block w-full overflow-hidden rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow hover:shadow-lg transition-shadow"
       >
        <div className="relative w-full h-48 sm:h-64 md:h-80 lg:h-96">
           <Image

@@ -23,7 +23,7 @@ type RowProduct = {
 
 function formatPrice(amount: number | null | undefined): string {
   if (amount == null) return "";
-  return `$${amount.toFixed(2)}`;
+  return `₪${amount.toFixed(2)}`;
 }
 
 export default function ProductRowCard({ product }: { product: RowProduct }) {

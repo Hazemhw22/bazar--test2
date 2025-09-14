@@ -35,7 +35,7 @@ export default function Home() {
 
   return (
     <>
-      <main className="flex flex-col gap-6 sm:p-2 bg-background min-h-screen transition-colors duration-300 mobile:max-w-[480px] mobile:mx-auto mobile:px-4">
+      <main className="flex flex-col gap-6 sm:p-2 bg-background min-h-screen transition-colors duration-300 mobile:max-w-[480px] mobile:mx-auto mobile:px-1 mobile:gap-3">
         
          {/* الهيرو الكبير والهيرو الصغير */}
         <section className="mobile:mt-2">

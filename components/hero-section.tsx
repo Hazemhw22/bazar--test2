@@ -68,7 +68,7 @@ export function HeroSection() {
       onTouchStart={handleInteractionStart}
       onTouchEnd={handleInteractionEnd}
       className={`mx-auto max-w-sm sm:max-w-2xl md:max-w-4xl lg:max-w-screen-2xl 2xl:max-w-[1600px]
-                  px-2 sm:px-6 md:px-8 rounded-2xl shadow-lg transition-all duration-500 
+                  px-1 sm:px-3 md:px-3 rounded-2xl shadow-lg transition-all duration-500 
                   bg-card`}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-center py-4 sm:py-10">

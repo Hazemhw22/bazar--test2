@@ -62,9 +62,9 @@ export default function MainProductSection({
   }, [initialProducts]);
 
   return (
-    <section className="py-6 px-2">
+    <section className="py-3 sm:py-6 px-2">
       {/* العنوان مع خط جانبي */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-3 sm:mb-6">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-6 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
@@ -80,7 +80,7 @@ export default function MainProductSection({
       </div>
 
       {/* شبكة الكروت */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-2 sm:gap-4">
         {loading ? (
           <div className="col-span-2 md:col-span-6 text-center py-10">
             جاري التحميل...

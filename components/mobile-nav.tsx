@@ -23,7 +23,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
           className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
           <Home size={20} className="mb-1" />
-          <span>{t("nav.home")}</span>
+          <span>Home</span>
         </Link>
 
         <button
@@ -31,7 +31,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
           className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
           <ShoppingCart size={20} className="mb-1" />
-          <span>{t("nav.cart")}</span>
+          <span>Cart</span>
           {totalItems > 0 && (
             <span className="absolute top-0 right-1/4 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white font-medium shadow-md">
               {totalItems > 9 ? "9+" : totalItems}
@@ -44,7 +44,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
           className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
           <User size={20} className="mb-1" />
-          <span>{t("nav.account")}</span>
+          <span>Profile</span>
         </Link>
 
         <button
@@ -52,7 +52,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
           className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
           <Menu size={20} className="mb-1" />
-          <span>{t("nav.menu")}</span>
+          <span>Menu</span>
         </button>
       </nav>
 

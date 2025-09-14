@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { useToast } from "@/hooks/use-toast"
 
 interface CartItem {
   id: number
@@ -26,6 +27,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const { toast } = useToast()
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -61,6 +63,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         )
       }
       return [...prevItems, { ...newItem, quantity: newItem.quantity || 1 }]
+    })
+    
+    // Show toast notification when product is added to cart
+    toast({
+      title: "Product added to cart",
+      description: `${newItem.name} has been added to your cart.`,
+      duration: 3000,
     })
   }
 

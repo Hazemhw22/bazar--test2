@@ -89,7 +89,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                             {item.name}
                           </h3>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            ${item.price.toFixed(2)} {t("cart.each")}
+                            ₪{item.price.toFixed(2)} {t("cart.each")}
                           </p>
 
                           {/* Quantity Controls */}
@@ -123,7 +123,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                             {/* Item Total & Remove */}
                             <div className="flex items-center gap-2">
                               <span className="font-semibold text-sm">
-                                ${(item.price * item.quantity).toFixed(2)}
+                                ₪{(item.price * item.quantity).toFixed(2)}
                               </span>
                               <button
                                 onClick={() => removeItem(item.id)}
@@ -151,19 +151,19 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">{t("cart.subtotal")}</span>
-                    <span className="font-medium">${subtotal.toFixed(2)}</span>
+                    <span className="font-medium">₪{subtotal.toFixed(2)}</span>
                   </div>
 
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">{t("cart.shipping")}</span>
                     <span className="font-medium">
-                      {shipping === 0 ? t("cart.free") : `$${shipping.toFixed(2)}`}
+                      {shipping === 0 ? t("cart.free") : `₪${shipping.toFixed(2)}`}
                     </span>
                   </div>
 
                   <div className="flex justify-between">
                     <span className="text-gray-600 dark:text-gray-400">{t("cart.tax")}</span>
-                    <span className="font-medium">${tax.toFixed(2)}</span>
+                    <span className="font-medium">₪{tax.toFixed(2)}</span>
                   </div>
 
                   <Separator />
@@ -171,7 +171,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                   <div className="flex justify-between text-base">
                     <span className="font-semibold">{t("cart.total")}</span>
                     <span className="font-bold text-lg">
-                      ${total.toFixed(2)}
+                      ₪{total.toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -191,7 +191,7 @@ export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
                     <Link href="/checkout" onClick={onClose}>
                       <Button className="w-full" size="lg">
-                        {t("cart.checkout")} (${total.toFixed(2)})
+                        {t("cart.checkout")} (₪{total.toFixed(2)})
                       </Button>
                     </Link>
                   </div>

@@ -70,7 +70,7 @@ export function HomeCategories() {
   const displayedCategories = categories.slice(0, 5);
 
   return (
-    <section className="w-full py-8 px-4 sm:px-6 lg:px-8">
+    <section className="w-full py-4 sm:py-8 px-2 sm:px-1 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* العنوان */}
         <div className="flex items-center justify-between mb-6">
@@ -80,7 +80,7 @@ export function HomeCategories() {
         </div>
 
         {/* شبكة من صفين × 3 أعمدة */}
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 gap-2 sm:gap-6">
           {displayedCategories.map((category) => (
             <div
               key={category.id}

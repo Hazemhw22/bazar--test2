@@ -75,7 +75,7 @@ export default function OrdersPage() {
             <Text>Payment: {order.payment_method?.type || "Credit Card"}</Text>
             <Text>Delivery: {order.shipping_method?.type || "Standard"}</Text>
             <Text>Date: {new Date(order.created_at).toLocaleDateString()}</Text>
-            <Text>Total: ${order.products?.price || "0.00"}</Text>
+            <Text>Total: ₪{order.products?.price || "0.00"}</Text>
           </View>
         </Page>
       </Document>
@@ -169,7 +169,7 @@ export default function OrdersPage() {
                       </div>
                     </div>
                     <div className="flex justify-between items-center mt-2">
-                      <span className="font-bold">${order.products?.price || "0.00"}</span>
+                      <span className="font-bold">₪{order.products?.price || "0.00"}</span>
                       <Link href={`/orders/track/${order.id}`}>
                         <Button variant="secondary" size="sm" className="text-xs rounded-full px-4">
                           Track Order

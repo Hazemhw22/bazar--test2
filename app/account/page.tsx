@@ -252,7 +252,7 @@ export default function EnhancedProfilePage() {
                           <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
                             <span className="text-sm text-gray-600 dark:text-gray-400">Total Amount</span>
                             <span className="font-bold text-lg">
-                              ${order.products?.price || "0.00"}
+                              ₪{order.products?.price || "0.00"}
                             </span>
                           </div>
                         </div>
@@ -419,7 +419,7 @@ export default function EnhancedProfilePage() {
                               </div>
                             )}
                             <p className="text-xl font-bold text-gray-900 dark:text-white">
-                              ${item.discountedPrice.toFixed(2)}
+                              ₪{item.discountedPrice.toFixed(2)}
                             </p>
                           </div>
 
