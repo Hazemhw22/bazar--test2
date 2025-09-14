@@ -19,6 +19,7 @@ type RowProduct = {
   shops?: { shop_name: string } | null;
   rating?: number | null;
   reviews?: number | null;
+  view_count?: number | null;
 };
 
 function formatPrice(amount: number | null | undefined): string {
@@ -111,7 +112,7 @@ export default function ProductRowCard({ product }: { product: RowProduct }) {
                 {"★".repeat(rating)}
                 <span className="text-gray-300 dark:text-gray-600">{"★".repeat(5 - rating)}</span>
               </div>
-              <span className="ml-1">({product.reviews ?? 0} reviews)</span>
+              <span className="ml-1">({product.view_count ?? 0} views)</span>
             </div>
             {product.shops?.shop_name && (
               <span className="text-blue-600 dark:text-blue-400">

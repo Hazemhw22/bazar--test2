@@ -1,10 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronRight, ChevronLeft, Heart, Plus, Star } from "lucide-react";
+import { ChevronRight, ChevronLeft, Heart, Plus, Star, Eye } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Product } from "@/lib/type";
+import { useFavorites } from "./favourite-items";
+import { useCart } from "./cart-provider";
+import Image from "next/image";
+import * as Dialog from "@radix-ui/react-dialog";
 
 export function SpecialOffers() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -12,6 +16,9 @@ export function SpecialOffers() {
   const [error, setError] = useState<string | null>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const { addItem } = useCart();
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     fetchSpecialOfferProducts();
@@ -287,13 +294,14 @@ export function SpecialOffers() {
                 key={product.id}
                 className="flex-shrink-0 w-40 sm:w-48 md:w-56"
               >
-                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-lg transition-shadow relative">
                   <div className="relative aspect-square bg-gray-100 dark:bg-gray-800">
                     {product.images && product.images.length > 0 ? (
-                      <img
+                      <Image
                         src={product.images[0]}
                         alt={product.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
@@ -307,18 +315,58 @@ export function SpecialOffers() {
                       </div>
                     )}
 
-                    <div className="absolute top-2 right-2">
-                      <button className="w-6 h-6 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                        <Heart className="w-3 h-3 text-gray-500 dark:text-gray-400" />
-                      </button>
-                    </div>
+                    {/* Favorite Button */}
+                    <button
+                      onClick={() => toggleFavorite({
+                        id: Number(product.id),
+                        name: product.title,
+                        price: Number(product.price),
+                        discountedPrice: product.sale_price ?? Number(product.price),
+                        image: product.images?.[0] || "",
+                        store: "",
+                        inStock: true,
+                        rating: product.rating ?? 0,
+                        reviews: product.reviews ?? 0,
+                      })}
+                      className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center shadow-sm transition-colors ${
+                        isFavorite(Number(product.id))
+                          ? "bg-red-500 text-white"
+                          : "bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      }`}
+                      title={isFavorite(Number(product.id)) ? "إزالة من المفضلة" : "إضافة إلى المفضلة"}
+                    >
+                      <Heart className="w-4 h-4" fill={isFavorite(Number(product.id)) ? "currentColor" : "none"} />
+                    </button>
+
+                    {/* Quick View Button */}
+                    <button
+                      onClick={() => setQuickViewProduct(product)}
+                      className="absolute bottom-2 left-2 w-7 h-7 rounded-full flex items-center justify-center bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      title="عرض سريع"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+
+                    {/* Add to Cart Button */}
+                    <button
+                      onClick={() => addItem({
+                        id: Number(product.id),
+                        name: product.title,
+                        price: product.sale_price ?? Number(product.price),
+                        image: product.images?.[0] || "",
+                        quantity: 1,
+                      })}
+                      className="absolute bottom-2 right-2 w-7 h-7 rounded-full flex items-center justify-center bg-blue-600 text-white shadow hover:bg-blue-700 transition-colors"
+                      title="إضافة للسلة"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
                   </div>
 
                   <div className="p-3">
                     <h3 className="font-medium text-sm text-gray-900 dark:text-white mb-1 line-clamp-1">
                       {product.title}
                     </h3>
-
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-bold text-gray-900 dark:text-white">
                         ₪{getDisplayPrice(product).toFixed(2)}
@@ -334,6 +382,43 @@ export function SpecialOffers() {
               </div>
             ))}
           </div>
+
+          {/* Quick Modal */}
+          <Dialog.Root open={!!quickViewProduct} onOpenChange={() => setQuickViewProduct(null)}>
+            <Dialog.Portal>
+              <Dialog.Overlay className="fixed inset-0 bg-black/60 z-50" />
+              <Dialog.Content className="fixed z-50 top-1/2 left-1/2 w-[90vw] max-w-md bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-6 transform -translate-x-1/2 -translate-y-1/2">
+                {quickViewProduct && (
+                  <>
+                    <div className="flex flex-col items-center">
+                      <Image
+                        src={quickViewProduct.images?.[0] || "/placeholder.svg"}
+                        alt={quickViewProduct.title}
+                        width={200}
+                        height={200}
+                        className="object-cover rounded-lg mb-4"
+                      />
+                      <h2 className="text-lg font-bold mb-2">{quickViewProduct.title}</h2>
+                      <p className="text-gray-700 dark:text-gray-300 mb-2">{quickViewProduct.desc}</p>
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="text-xl font-bold text-blue-600">
+                          ₪{getDisplayPrice(quickViewProduct).toFixed(2)}
+                        </span>
+                        {getOriginalPrice(quickViewProduct) && (
+                          <span className="text-xs text-gray-500 line-through">
+                            ₪{getOriginalPrice(quickViewProduct)?.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <Dialog.Close className="absolute top-2 right-2 p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700">
+                      إغلاق
+                    </Dialog.Close>
+                  </>
+                )}
+              </Dialog.Content>
+            </Dialog.Portal>
+          </Dialog.Root>
         </div>
 
         <style jsx>{`

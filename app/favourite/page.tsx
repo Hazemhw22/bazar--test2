@@ -189,7 +189,7 @@ export default function FavouritePage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Stores</SelectItem>
-                      {uniqueStores.map((store) => (
+                      {uniqueStores.filter(Boolean).map((store) => (
                         <SelectItem key={store} value={store}>
                           {store}
                         </SelectItem>

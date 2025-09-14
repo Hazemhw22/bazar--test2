@@ -28,7 +28,7 @@ export default function Products() {
   const [selectedBrand, setSelectedBrand] = useState("All")
   const [filterOpen, setFilterOpen] = useState(false)
   const [search, setSearch] = useState("")
-  const [categories, setCategories] = useState<Category[]>([{ id: "all", title: "All" }])
+  const [categories, setCategories] = useState<Category[]>([{ id: 0, title: "All", desc: "", created_at: "" }])
   const [brands, setBrands] = useState<string[]>(["All"])
   const [brandSearch, setBrandSearch] = useState("")
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
@@ -42,7 +42,16 @@ export default function Products() {
       const { data: cats } = await supabase.from("categories").select("title, id, image_url")
       const { data: shops } = await supabase.from("shops").select("shop_name")
 
-      setCategories([{ id: "all", title: "All" }, ...(cats ?? [])])
+      setCategories([
+        { id: 0, title: "All", desc: "", created_at: "" },
+        ...((cats ?? []).map((cat: any) => ({
+          id: cat.id,
+          title: cat.title,
+          image_url: cat.image_url,
+          desc: cat.desc ?? "",
+          created_at: cat.created_at ?? "",
+        })))
+      ])
       setBrands(["All", ...(shops?.map((s: any) => s.shop_name).filter(Boolean) ?? [])])
 
       return null
