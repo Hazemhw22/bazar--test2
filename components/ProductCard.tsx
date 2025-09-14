@@ -166,6 +166,12 @@ export function ProductCard({ product }: ProductCardProps) {
             />
           </button>
 
+          {/* View Count (Eye icon) */}
+          <div className="absolute top-3 left-3 z-10 flex items-center gap-1 bg-white/80 dark:bg-gray-800/80 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full pointer-events-none select-none shadow">
+            <Eye size={16} />
+            <span className="text-xs font-medium">{product.view_count ?? 0}</span>
+          </div>
+
           {/* Product Image */}
           <Image
             src={mainImage}
