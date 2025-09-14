@@ -23,17 +23,17 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
           className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
           <Home size={20} className="mb-1" />
-          <span>Home</span>
+          <span>{t("nav.home")}</span>
         </Link>
 
         <button
           onClick={onCartToggle}
-          className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+          className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors relative"
         >
           <ShoppingCart size={20} className="mb-1" />
-          <span>Cart</span>
+          <span>{t("nav.cart")}</span>
           {totalItems > 0 && (
-            <span className="absolute top-0 right-1/4 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white font-medium shadow-md">
+            <span className="absolute top-[-18px] right-[10px] flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white font-medium shadow-md z-10">
               {totalItems > 9 ? "9+" : totalItems}
             </span>
           )}
@@ -44,7 +44,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
           className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
           <User size={20} className="mb-1" />
-          <span>Profile</span>
+          <span>{t("nav.profile")}</span>
         </Link>
 
         <button
@@ -52,7 +52,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
           className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
           <Menu size={20} className="mb-1" />
-          <span>Menu</span>
+          <span>{t("nav.menu")}</span>
         </button>
       </nav>
 
