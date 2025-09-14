@@ -1,5 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import type { Product, Shop } from "./type";
+
+// Avoid direct import of next/headers to prevent issues with pages directory
+// We'll dynamically import it when needed in server component functions
 
 // For server components
 export const createServerSupabaseClient = () => {
@@ -11,6 +15,33 @@ export const createServerSupabaseClient = () => {
   }
   
   return createClient(supabaseUrl, supabaseKey);
+};
+
+// Create a server client that can be used in Server Components
+export const createServerComponentClient = async () => {
+  // Dynamically import cookies to avoid issues with pages directory
+  const { cookies } = await import('next/headers');
+  const cookieStore = await cookies();
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase environment variables');
+  }
+  
+  return createServerClient(supabaseUrl, supabaseKey, {
+    cookies: {
+      get(name: string) {
+        return cookieStore.get(name)?.value;
+      },
+      set(name: string, value: string, options: CookieOptions) {
+        cookieStore.set({ name, value, ...options });
+      },
+      remove(name: string, options: CookieOptions) {
+        cookieStore.set({ name, value: '', ...options });
+      },
+    },
+  });
 };
 
 // Singleton pattern for client-side
@@ -32,6 +63,7 @@ export const getSupabaseBrowserClient = () => {
 
 // Helper functions for common data fetching
 export const fetchProducts = async (category: string | null = null) => {
+  // Use createServerSupabaseClient for compatibility with both app and pages directories
   const supabase = createServerSupabaseClient();
   let query = supabase.from("products").select("*");
 
