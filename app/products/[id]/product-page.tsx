@@ -22,6 +22,7 @@ import {
   Package,
   Truck,
   Info,
+  Eye,
 } from "lucide-react";
 import SuggestedProductCard from "@/components/SuggestedProductCard";
 import { useEffect, useState } from "react";
@@ -124,13 +125,100 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       {/* Product Type Header */}
       {renderProductContent()}
 
-      {/* Main Product Layout - Nike Style */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Section - Product Images (2/3 width) */}
+      {/* Main Product Layout - Mobile First */}
+      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 lg:gap-8">
+        {/* Product Images Section - Full width on mobile */}
         <div className="lg:col-span-2">
-          <div className="flex gap-6">
-            {/* Thumbnail Gallery */}
-            <div className="hidden lg:flex flex-col gap-3">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+            {/* Main Product Image */}
+            <div className="flex-1 relative order-1 lg:order-2">
+              <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 lg:p-8">
+                <div className="relative aspect-square max-h-[600px] flex items-center justify-center">
+                  <ImageLightbox
+                    images={product.images}
+                    currentIndex={activeImage}
+                    isOpen={lightboxOpen}
+                    onClose={() => setLightboxOpen(false)}
+                    productName={product.title}
+                  />
+                  
+                  <div 
+                    className="w-full h-full cursor-grab active:cursor-grabbing"
+                    onMouseDown={(e) => {
+                      const startX = e.clientX;
+                      const handleMouseMove = (moveEvent: MouseEvent) => {
+                        const deltaX = moveEvent.clientX - startX;
+                        if (deltaX > 50) {
+                          setActiveImage(prev => prev > 0 ? prev - 1 : product.images.length - 1);
+                          document.removeEventListener('mousemove', handleMouseMove);
+                          document.removeEventListener('mouseup', handleMouseUp);
+                        } else if (deltaX < -50) {
+                          setActiveImage(prev => prev < product.images.length - 1 ? prev + 1 : 0);
+                          document.removeEventListener('mousemove', handleMouseMove);
+                          document.removeEventListener('mouseup', handleMouseUp);
+                        }
+                      };
+                      
+                      const handleMouseUp = () => {
+                        document.removeEventListener('mousemove', handleMouseMove);
+                        document.removeEventListener('mouseup', handleMouseUp);
+                      };
+                      
+                      document.addEventListener('mousemove', handleMouseMove);
+                      document.addEventListener('mouseup', handleMouseUp);
+                    }}
+                    onTouchStart={(e) => {
+                      const startX = e.touches[0].clientX;
+                      const handleTouchMove = (moveEvent: TouchEvent) => {
+                        const deltaX = moveEvent.touches[0].clientX - startX;
+                        if (deltaX > 50) {
+                          setActiveImage(prev => prev > 0 ? prev - 1 : product.images.length - 1);
+                          document.removeEventListener('touchmove', handleTouchMove);
+                          document.removeEventListener('touchend', handleTouchEnd);
+                        } else if (deltaX < -50) {
+                          setActiveImage(prev => prev < product.images.length - 1 ? prev + 1 : 0);
+                          document.removeEventListener('touchmove', handleTouchMove);
+                          document.removeEventListener('touchend', handleTouchEnd);
+                        }
+                      };
+                      
+                      const handleTouchEnd = () => {
+                        document.removeEventListener('touchmove', handleTouchMove);
+                        document.removeEventListener('touchend', handleTouchEnd);
+                      };
+                      
+                      document.addEventListener('touchmove', handleTouchMove);
+                      document.addEventListener('touchend', handleTouchEnd);
+                    }}
+                  >
+                    <img
+                      src={product.images[activeImage] || "/placeholder.svg"}
+                      alt={product.title}
+                      className="object-contain h-full w-full transition-transform duration-300 hover:scale-105"
+                      onClick={() => setLightboxOpen(true)}
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Mobile Image Indicator Dots */}
+              <div className="flex justify-center mt-4 gap-2 lg:hidden">
+                {product.images.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImage(idx)}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      activeImage === idx
+                        ? "bg-gray-900 dark:bg-white w-4"
+                        : "bg-gray-300 dark:bg-gray-600"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Thumbnail Gallery - Hidden on mobile */}
+            <div className="hidden lg:flex flex-col gap-3 order-1">
               {product.images.map((img, idx) => (
                 <button
                   key={idx}
@@ -143,96 +231,118 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 >
                   <img
                     src={img || "/placeholder.svg"}
-                    alt={`${product.title} - صورة ${idx + 1}`}
+                    alt={`${product.title} - Image ${idx + 1}`}
                     className="w-full h-full object-cover"
                   />
                 </button>
               ))}
             </div>
-
-            {/* Main Product Image */}
-            <div className="flex-1 relative">
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-2xl p-8">
-                <div className="relative aspect-square max-h-[600px] flex items-center justify-center">
-                  <ImageLightbox
-                    images={product.images}
-                    currentIndex={activeImage}
-                    isOpen={lightboxOpen}
-                    onClose={() => setLightboxOpen(false)}
-                    productName={product.title}
-                  />
-                  
-                  <img
-                    src={product.images[activeImage] || "/placeholder.svg"}
-                    alt={product.title}
-                    className="object-contain h-full w-full transition-transform duration-300 hover:scale-105 cursor-pointer"
-                    onClick={() => setLightboxOpen(true)}
-                  />
-
-                  {/* Navigation Arrows */}
-                  <div className="absolute inset-0 flex items-center justify-between px-4 pointer-events-none">
-                    <button
-                      onClick={() => setActiveImage(prev => prev > 0 ? prev - 1 : product.images.length - 1)}
-                      className="w-10 h-10 bg-white/80 dark:bg-gray-800/80 rounded-full flex items-center justify-center shadow-lg pointer-events-auto hover:bg-white dark:hover:bg-gray-800 transition-colors"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => setActiveImage(prev => prev < product.images.length - 1 ? prev + 1 : 0)}
-                      className="w-10 h-10 bg-white/80 dark:bg-gray-800/80 rounded-full flex items-center justify-center shadow-lg pointer-events-auto hover:bg-white dark:hover:bg-gray-800 transition-colors"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
-        {/* Right Section - Product Details (1/3 width) */}
+        {/* Product Details Section */}
         <div className="lg:col-span-1">
-          <div className="bg-card rounded-2xl p-6 shadow-lg">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 lg:p-6 shadow-sm lg:shadow-lg">
+            {/* Back Button - Mobile Only */}
+            <button className="flex items-center text-gray-500 dark:text-gray-400 mb-4 lg:hidden">
+              <ChevronLeft className="w-5 h-5 mr-1" />
+              <span>Back</span>
+            </button>
+            
             {/* Product Title & Rating */}
             <div className="mb-4">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                 {product.title}
               </h1>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                  <span className="ml-1 text-sm font-medium">5.0</span>
+  
+                  <div className="flex items-center">
+                    <Eye className="w-4 h-4 text-gray-500" />
+                    <span className="ml-1 text-xs text-gray-500">{product.view_count ?? 0} </span>
+                  </div>
                 </div>
-                <span className="text-sm text-gray-500">(0 reviews)</span>
+                {/* Favorite Button */} 
+                <button 
+                  onClick={() => toggleFavorite({
+                    id: Number(product.id),
+                    name: product.title,
+                    price: Number(product.price),
+                    discountedPrice: product.sale_price ?? Number(product.price),
+                    image: product.images?.[0] || "",
+                    store: product.shops?.shop_name || "",
+                    rating: product.rating ?? 0,
+                    reviews: product.reviews ?? 0,
+                    inStock: product.active
+                  })} 
+                  className={`p-2 rounded-full backdrop-blur-sm transition-all duration-200 ${ 
+                    isFavorite(Number(product.id)) 
+                      ? "bg-red-500 text-white shadow-lg" 
+                      : "bg-white/80 dark:bg-gray-800/80 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700" 
+                  }`} 
+                > 
+                  <Heart 
+                    size={16} 
+                    fill={isFavorite(Number(product.id)) ? "currentColor" : "none"} 
+                  /> 
+                </button>
               </div>
             </div>
 
             {/* Price */}
-            <div className="mb-6">
-              <div className="text-3xl font-bold text-gray-900 dark:text-white">
+            <div className="mb-5">
+              <div className="text-2xl font-bold text-gray-900 dark:text-white">
                 ₪{product.sale_price ?? product.price}
               </div>
               {product.sale_price && product.sale_price !== Number(product.price) && (
-                <div className="text-lg text-gray-500 line-through">
+                <div className="text-sm text-gray-500 line-through">
                   ₪{product.price}
                 </div>
               )}
             </div>
 
-            {/* Payment Information */}
-            <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                Pay in 4 interest-free installments for orders over ₪50.00 with{" "}
-                <span className="text-blue-600 dark:text-blue-400 font-medium">Shop Pay</span>{" "}
-                <span className="text-blue-600 dark:text-blue-400 underline cursor-pointer">Learn more</span>
+            {/* Description - Mobile Only */}
+            <div className="mb-5 lg:hidden">
+              <h3 className="text-lg font-medium mb-2">Description</h3>
+              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                {product.desc || "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna."}
               </p>
             </div>
 
+            {/* Size Selection */}
+            <div className="mb-5">
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Size
+                </label>
+                <button className="text-xs text-blue-600 dark:text-blue-400">
+                  Size Guide
+                </button>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {["S", "M", "L"].map((size) => (
+                  <button
+                    key={size}
+                    className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
+                      size === "M" 
+                        ? "border-gray-900 dark:border-white text-gray-900 dark:text-white" 
+                        : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500"
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Color Selection */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Select Color
-              </label>
+            <div className="mb-5">
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Color
+                </label>
+                <span className="text-xs text-gray-500">{selectedColor}</span>
+              </div>
               <div className="flex gap-3">
                 {["Purple", "Dark Green", "Black", "Pink"].map((color) => (
                   <button
@@ -253,26 +363,9 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               </div>
             </div>
 
-            {/* Size Selection */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Select Size
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {["S", "M", "L", "XL", "XXL", "3XL"].map((size) => (
-                  <button
-                    key={size}
-                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Quantity Selector */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <div className="mb-5">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Quantity
               </label>
               <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-md overflow-hidden w-max">
@@ -282,8 +375,8 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <div className="px-4 py-2 min-w-[60px] text-center font-medium">
-                  {quantity.toString().padStart(2, '0')}
+                <div className="px-4 py-2 min-w-[40px] text-center font-medium">
+                  {quantity}
                 </div>
                 <button
                   className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -294,8 +387,14 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               </div>
             </div>
 
+            {/* Total Price - Mobile Only */}
+            <div className="flex justify-between items-center mb-5 lg:hidden">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Total price</span>
+              <span className="text-lg font-bold text-gray-900 dark:text-white">₪{(product.sale_price ? Number(product.sale_price) : Number(product.price)) * quantity}.00</span>
+            </div>
+
             {/* Action Buttons */}
-            <div className="space-y-3 mb-6">
+            <div className="flex gap-3 mb-5">
               <button
                 onClick={async () => {
                   addToCart({
@@ -307,59 +406,20 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                   });
                   await incrementProductCartCount(product.id);
                 }}
-                className="w-full py-3 px-6 border-2 border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100 font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="flex-1 py-3 px-4 border-2 border-gray-900 dark:border-gray-100 text-gray-900 dark:text-gray-100 font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm"
               >
                 Add to cart
               </button>
-              <button className="w-full py-3 px-6 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-semibold rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
+              <button className="flex-1 py-3 px-4 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-semibold rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors text-sm">
                 Buy it now
               </button>
             </div>
 
-            {/* Product Description */}
-            <div className="mb-6">
+            {/* Product Description - Desktop Only */}
+            <div className="hidden lg:block mb-6">
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                 {product.desc || "Celebrate the power and simplicity of the Swoosh. This warm, brushed fleece hoodie is made with some extra room through the shoulder."}
               </p>
-            </div>
-
-            {/* Collapsible Sections */}
-            <div className="space-y-3">
-              {[
-                { key: 'description', title: 'Description', icon: Info },
-                { key: 'shipping', title: 'Shipping & Returns', icon: Truck },
-                { key: 'details', title: 'Details', icon: Package }
-              ].map(({ key, title, icon: Icon }) => (
-                <div key={key} className="border border-gray-200 dark:border-gray-700 rounded-lg">
-                  <button
-                    onClick={() => toggleSection(key as keyof typeof expandedSections)}
-                    className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Icon className="w-5 h-5 text-gray-500" />
-                      <span className="font-medium text-gray-900 dark:text-white">{title}</span>
-                    </div>
-                    <ChevronRight 
-                      className={`w-5 h-5 text-gray-500 transition-transform ${
-                        expandedSections[key as keyof typeof expandedSections] ? 'rotate-90' : ''
-                      }`} 
-                    />
-                  </button>
-                  {expandedSections[key as keyof typeof expandedSections] && (
-                    <div className="px-4 pb-3 text-sm text-gray-600 dark:text-gray-400">
-                      {key === 'description' && (
-                        <p>Detailed product description and features will be displayed here.</p>
-                      )}
-                      {key === 'shipping' && (
-                        <p>Shipping information, delivery times, and return policy details.</p>
-                      )}
-                      {key === 'details' && (
-                        <p>Product specifications, materials, care instructions, and other technical details.</p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
             </div>
           </div>
         </div>
@@ -388,16 +448,8 @@ interface ProductContentProps {
 // Default Product Content
 function DefaultProductContent({ product }: ProductContentProps) {
   return (
-    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mb-6">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-gray-500 rounded-full flex items-center justify-center">
-          <span className="text-white text-lg">🏪</span>
-        </div>
-        <div>
-          <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">منتج عام</h3>
-          <p className="text-gray-600 dark:text-gray-300 text-sm">منتج متنوع</p>
-        </div>
-      </div>
+    <div className="mb-8">
+     
     </div>
   );
 }

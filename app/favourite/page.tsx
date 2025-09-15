@@ -41,8 +41,11 @@ export default function FavouritePage() {
   // Filter and sort favorites
   const filteredAndSortedFavorites = favorites
     .filter((item) => {
-      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesFilter = filterBy === "all" || item.store === filterBy
+      // Add null checks to prevent errors with undefined properties
+      const itemName = item?.name || ''
+      const itemStore = item?.store || ''
+      const matchesSearch = itemName.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesFilter = filterBy === "all" || itemStore === filterBy
       return matchesSearch && matchesFilter
     })
     .sort((a, b) => {
