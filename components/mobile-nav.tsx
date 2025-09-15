@@ -44,7 +44,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
           className="flex flex-col items-center text-xs text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
           <User size={20} className="mb-1" />
-          <span>{t("nav.profile")}</span>
+          <span>{t("nav.account")}</span>
         </Link>
 
         <button
