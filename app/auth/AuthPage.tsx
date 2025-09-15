@@ -10,6 +10,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { supabase } from "@/lib/supabase" 
+import { FcGoogle } from "react-icons/fc"
+import { FaFacebook } from "react-icons/fa6"
+import { AiFillApple } from "react-icons/ai"
 
 export default function AuthPage() {
   const searchParams = useSearchParams()
@@ -307,7 +310,7 @@ export default function AuthPage() {
               </Button>
             </form>
 
-            {/* Social Auth */}
+              {/* Social Auth */}
             <div className="space-y-4">
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <div className="flex-1 h-px bg-border" />
@@ -315,9 +318,28 @@ export default function AuthPage() {
                 <div className="flex-1 h-px bg-border" />
               </div>
               <div className="flex items-center justify-center gap-4">
-                <button className="w-14 h-14 rounded-2xl bg-card border border-border/60">💙</button>
-                <button className="w-14 h-14 rounded-2xl bg-card border border-border/60">🟢</button>
-                <button className="w-14 h-14 rounded-2xl bg-card border border-border/60">🍎</button>
+                <button 
+                  type="button"
+                  onClick={() => {}} 
+                  className="w-14 h-14 rounded-2xl bg-card border border-border/60 flex items-center justify-center text-blue-600"
+                >
+                  <FaFacebook size={24} />
+                </button>
+                <button 
+                  type="button"
+                  onClick={handleGoogleSignIn} 
+                  className="w-14 h-14 rounded-2xl bg-card border border-border/60 flex items-center justify-center"
+                  disabled={isLoading}
+                >
+                  <FcGoogle size={24} />
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => {}} 
+                  className="w-14 h-14 rounded-2xl bg-card border border-border/60 flex items-center justify-center"
+                >
+                  <AiFillApple size={24} />
+                </button>
               </div>
               <div className="text-center text-sm text-muted-foreground">
                 {isSignUp ? (
