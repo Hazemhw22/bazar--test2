@@ -12,4 +12,5 @@ export interface LocationContextType {
   setSelectedCity: (city: City | null) => void;
   showLocationModal: boolean;
   setShowLocationModal: (show: boolean) => void;
+  mapPosition: [number, number] | null; // إضافة هذا السطر
 }

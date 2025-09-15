@@ -1,8 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, MapPin, Check } from "lucide-react";
+import { X, MapPin, Check, LocateFixed } from "lucide-react";
 import { City } from "../lib/location-types";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// أيقونة مخصصة للمدن
+const cityIcon = new L.DivIcon({
+  html: `<span style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:#2563eb;border-radius:50%;color:white;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin"><path d="M12 10a4 4 0 1 0-8 0c0 4 4 8 4 8s4-4 4-8z"/><circle cx="8" cy="10" r="1"/></svg></span>`,
+  className: "",
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+});
 
 const israelCities: City[] = [
   { id: "tel-aviv", name: "Tel Aviv", nameAr: "تل أبيب", nameHe: "תל אביב", coordinates: [32.0853, 34.7818], region: "Central" },
@@ -29,6 +40,7 @@ export function LocationModal({ isOpen, onClose, onLocationSelect }: LocationMod
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentLanguage, setCurrentLanguage] = useState<"en" | "ar" | "he">("en");
+  const [geoLoading, setGeoLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -54,6 +66,42 @@ export function LocationModal({ isOpen, onClose, onLocationSelect }: LocationMod
     }
   };
 
+  // دالة اختيار الموقع تلقائياً
+  const handleAutoLocation = () => {
+    setGeoLoading(true);
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          // ابحث عن أقرب مدينة
+          let closestCity = israelCities[0];
+          let minDist = Number.POSITIVE_INFINITY;
+          israelCities.forEach(city => {
+            const dist = Math.sqrt(
+              Math.pow(city.coordinates[0] - latitude, 2) +
+              Math.pow(city.coordinates[1] - longitude, 2)
+            );
+            if (dist < minDist) {
+              minDist = dist;
+              closestCity = city;
+            }
+          });
+          setSelectedCity(closestCity);
+          onLocationSelect(closestCity);
+          setGeoLoading(false);
+          onClose();
+        },
+        () => {
+          alert("تعذر الحصول على الموقع الحالي.");
+          setGeoLoading(false);
+        }
+      );
+    } else {
+      alert("المتصفح لا يدعم تحديد الموقع الجغرافي.");
+      setGeoLoading(false);
+    }
+  };
+
   const handleCitySelect = (city: City) => {
     setSelectedCity(city);
     onLocationSelect(city);
@@ -64,17 +112,21 @@ export function LocationModal({ isOpen, onClose, onLocationSelect }: LocationMod
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border-2 border-blue-600">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-950/30">
           <div className="flex items-center gap-3">
             <MapPin className="w-6 h-6 text-blue-600" />
             <div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                Select Your Location
+                {currentLanguage === "ar" ? "اختر موقعك" : currentLanguage === "he" ? "בחר מיקום" : "Select Your Location"}
               </h2>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Choose your city to see local offers and delivery options
+                {currentLanguage === "ar"
+                  ? "اختر مدينتك لرؤية العروض المحلية وخيارات التوصيل"
+                  : currentLanguage === "he"
+                  ? "בחר עיר להצגת מבצעים מקומיים ואפשרויות משלוח"
+                  : "Choose your city to see local offers and delivery options"}
               </p>
             </div>
           </div>
@@ -87,48 +139,67 @@ export function LocationModal({ isOpen, onClose, onLocationSelect }: LocationMod
         </div>
 
         <div className="flex flex-col lg:flex-row h-[70vh]">
+          {/* زر تحديد الموقع التلقائي (يظهر أعلى المودال في الجوال) */}
+          <div className="w-full px-6 pt-4 lg:hidden">
+            <button
+              onClick={handleAutoLocation}
+              disabled={geoLoading}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-colors mb-4"
+              title={currentLanguage === "ar" ? "تحديد الموقع تلقائيًا" : currentLanguage === "he" ? "בחירת מיקום אוטומטית" : "Auto detect location"}
+            >
+              <LocateFixed className="w-5 h-5" />
+              {geoLoading
+                ? (currentLanguage === "ar" ? "جاري تحديد الموقع..." : currentLanguage === "he" ? "מאתר מיקום..." : "Locating...")
+                : (currentLanguage === "ar" ? "تحديد الموقع تلقائيًا" : currentLanguage === "he" ? "אוטומטי" : "Auto")}
+            </button>
+          </div>
           {/* Map Section */}
-          <div className="lg:w-1/2 p-6 border-r border-gray-200 dark:border-gray-700">
-            <div className="h-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950 dark:to-indigo-900 rounded-xl p-4 relative overflow-hidden">
-              {/* Simplified Israel Map */}
-              <div className="relative w-full h-full">
-                {/* Israel outline */}
-                <div className="absolute inset-4 bg-gradient-to-br from-green-400 to-green-600 rounded-lg opacity-20"></div>
-                
-                {/* Major cities as dots */}
-                {israelCities.map((city) => (
-                  <button
+          <div className="w-full lg:w-1/2 p-6 border-r border-gray-200 dark:border-gray-700 flex-1 flex flex-col">
+            {/* زر التلقائي في الديسكتوب */}
+            <div className="hidden lg:block mb-2">
+              <button
+                onClick={handleAutoLocation}
+                disabled={geoLoading}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-colors"
+                title={currentLanguage === "ar" ? "تحديد الموقع تلقائيًا" : currentLanguage === "he" ? "בחירת מיקום אוטומטית" : "Auto detect location"}
+              >
+                <LocateFixed className="w-5 h-5" />
+                {geoLoading
+                  ? (currentLanguage === "ar" ? "جاري تحديد الموقع..." : currentLanguage === "he" ? "מאתר מיקום..." : "Locating...")
+                  : (currentLanguage === "ar" ? "تحديد الموقع تلقائيًا" : currentLanguage === "he" ? "אוטומטי" : "Auto")}
+              </button>
+            </div>
+            <div className="flex-1 rounded-xl overflow-hidden relative mt-2">
+              <MapContainer
+                center={[31.5, 34.75]}
+                zoom={8}
+                style={{ height: "100%", width: "100%" }}
+              >
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                {israelCities.map(city => (
+                  <Marker
                     key={city.id}
-                    onClick={() => setSelectedCity(city)}
-                    className={`absolute w-3 h-3 rounded-full transition-all duration-200 hover:scale-150 ${
-                      selectedCity?.id === city.id 
-                        ? "bg-red-500 shadow-lg shadow-red-500/50" 
-                        : "bg-blue-600 hover:bg-blue-700"
-                    }`}
-                    style={{
-                      left: `${((city.coordinates[1] - 34.5) / 2.5) * 100}%`,
-                      top: `${((city.coordinates[0] - 29.5) / 3.5) * 100}%`,
+                    position={city.coordinates}
+                    icon={cityIcon}
+                    eventHandlers={{
+                      click: () => setSelectedCity(city),
                     }}
-                    title={getCityName(city)}
-                  />
+                  >
+                    <Popup>
+                      {getCityName(city)}
+                    </Popup>
+                  </Marker>
                 ))}
-
-                {/* Decorative elements */}
-                <div className="absolute top-4 right-4 text-4xl">🇮🇱</div>
-                <div className="absolute bottom-4 left-4 text-sm text-gray-600 dark:text-gray-400">
-                  Israel
-                </div>
-              </div>
+              </MapContainer>
             </div>
           </div>
-
-          {/* Cities List Section */}
-          <div className="lg:w-1/2 p-6 flex flex-col">
+          {/* Cities List Section: تظهر فقط في الديسكتوب */}
+          <div className="hidden lg:flex lg:w-1/2 p-6 flex-col bg-blue-50 dark:bg-blue-950/10 flex-1">
             {/* Search */}
             <div className="mb-4">
               <input
                 type="text"
-                placeholder="Search cities..."
+                placeholder={currentLanguage === "ar" ? "ابحث عن مدينة..." : currentLanguage === "he" ? "חפש עיר..." : "Search cities..."}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -172,7 +243,7 @@ export function LocationModal({ isOpen, onClose, onLocationSelect }: LocationMod
                           {getCityName(city)}
                         </div>
                         <div className="text-sm text-gray-500 dark:text-gray-400">
-                          {city.region} Region
+                          {city.region} {currentLanguage === "ar" ? "منطقة" : currentLanguage === "he" ? "אזור" : "Region"}
                         </div>
                       </div>
                     </div>
@@ -191,10 +262,10 @@ export function LocationModal({ isOpen, onClose, onLocationSelect }: LocationMod
                   <MapPin className="w-5 h-5 text-blue-600" />
                   <div>
                     <div className="font-medium text-blue-900 dark:text-blue-100">
-                      Selected: {getCityName(selectedCity)}
+                      {currentLanguage === "ar" ? "تم اختيار:" : currentLanguage === "he" ? "נבחר:" : "Selected:"} {getCityName(selectedCity)}
                     </div>
                     <div className="text-sm text-blue-700 dark:text-blue-300">
-                      {selectedCity.region} Region
+                      {selectedCity.region} {currentLanguage === "ar" ? "منطقة" : currentLanguage === "he" ? "אזור" : "Region"}
                     </div>
                   </div>
                 </div>

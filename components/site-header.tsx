@@ -139,10 +139,20 @@ export function SiteHeader() {
                 </div>
                 <div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">Good Morning 👋</div>
-                      <h3 className="text-sm font-semibold">{user?.full_name || "Guest"}</h3>
+                  <h3 className="text-sm font-semibold">{user?.full_name || "Guest"}</h3>
                 </div>
               </div>
-              
+                {/* Location Button (Mobile) */}
+            <div className="flex items-center gap-2 px-1 mt-1">
+              <button
+                onClick={handleLocationChange}
+                className="flex items-center gap-1 text-[16px] text-gray-700 dark:text-gray-300 whitespace-nowrap hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer group"
+              >
+                <MapPin className="w-5 h-5 text-blue-600 group-hover:text-blue-700 transition-colors" />
+                {selectedCity ? getCityDisplayName(selectedCity) : "Select Location"}
+              </button>
+            </div>
+
               {/* Theme toggle, language selector and favorites */}
               <div className="flex items-center gap-3">
                 {mounted && <ThemeToggle />}
@@ -153,6 +163,7 @@ export function SiteHeader() {
               </div>
             </div>
 
+          
             {/* Search */}
             <div className="px-1">
               <div className="relative flex items-center flex-1 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden">
