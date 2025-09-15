@@ -3,17 +3,10 @@
 import { useState, useEffect } from "react";
 import { X, MapPin, Check, LocateFixed } from "lucide-react";
 import { City } from "../lib/location-types";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import dynamic from "next/dynamic";
 
-// أيقونة مخصصة للمدن
-const cityIcon = new L.DivIcon({
-  html: `<span style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;background:#2563eb;border-radius:50%;color:white;"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin"><path d="M12 10a4 4 0 1 0-8 0c0 4 4 8 4 8s4-4 4-8z"/><circle cx="8" cy="10" r="1"/></svg></span>`,
-  className: "",
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
-});
+// استيراد MapContainer ديناميكيًا بدون SSR
+const DynamicMap = dynamic(() => import("./LocationMap"), { ssr: false });
 
 const israelCities: City[] = [
   { id: "tel-aviv", name: "Tel Aviv", nameAr: "تل أبيب", nameHe: "תל אביב", coordinates: [32.0853, 34.7818], region: "Central" },
@@ -170,27 +163,11 @@ export function LocationModal({ isOpen, onClose, onLocationSelect }: LocationMod
               </button>
             </div>
             <div className="flex-1 rounded-xl overflow-hidden relative mt-2">
-              <MapContainer
-                center={[31.5, 34.75]}
-                zoom={8}
-                style={{ height: "100%", width: "100%" }}
-              >
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                {israelCities.map(city => (
-                  <Marker
-                    key={city.id}
-                    position={city.coordinates}
-                    icon={cityIcon}
-                    eventHandlers={{
-                      click: () => setSelectedCity(city),
-                    }}
-                  >
-                    <Popup>
-                      {getCityName(city)}
-                    </Popup>
-                  </Marker>
-                ))}
-              </MapContainer>
+              <DynamicMap
+                israelCities={israelCities}
+                selectedCity={selectedCity}
+                setSelectedCity={setSelectedCity}
+              />
             </div>
           </div>
           {/* Cities List Section: تظهر فقط في الديسكتوب */}
