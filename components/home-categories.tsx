@@ -82,8 +82,9 @@ export function HomeCategories() {
         {/* شبكة من صفين × 3 أعمدة */}
         <div className="grid grid-cols-3 gap-2 sm:gap-6">
           {displayedCategories.map((category) => (
-            <div
+            <Link
               key={category.id}
+              href={`/categories/${category.id}`}
               className="flex flex-col items-center text-center cursor-pointer hover:scale-105 transition-transform duration-200"
             >
               <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden mb-2">
@@ -102,7 +103,7 @@ export function HomeCategories() {
               <h3 className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                 {category.title}
               </h3>
-            </div>
+            </Link>
           ))}
 
           {/* العنصر السادس: See All */}

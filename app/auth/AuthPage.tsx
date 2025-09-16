@@ -138,6 +138,33 @@ export default function AuthPage() {
     setIsLoading(false)
   }
 
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true)
+    setGeneralError("")
+    setSuccessMessage("")
+
+    try {
+      const redirectTo =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/auth/callback`
+          : undefined
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+        },
+      })
+
+      if (error) setGeneralError(error.message)
+      // بعد نجاح العملية سيتم إعادة التوجيه تلقائياً من Supabase
+    } catch {
+      setGeneralError("An unexpected error occurred with Google sign-in. Please try again.")
+    }
+
+    setIsLoading(false)
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="flex flex-col lg:flex-row min-h-screen">

@@ -308,9 +308,9 @@ useEffect(() => {
       <div className="relative h-48 sm:h-64 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 opacity-80" />
         <div className="absolute inset-0 flex items-center">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center gap-4 sm:gap-6 justify-between">
-              <div className="flex items-center gap-2 sm:gap-4">
+          <div className="container mx-auto px-2">
+            <div className="flex items-center gap-2 sm:gap-6 justify-between">
+              <div className="flex items-center gap-2 sm:gap-6">
                 <Link href="/categories">
                   <Button
                     variant="ghost"
@@ -324,7 +324,7 @@ useEffect(() => {
                   <h1 className="text-2xl sm:text-4xl font-bold text-white mb-1 sm:mb-2">
                     {category.title}
                   </h1>
-                  <p className="text-white/90 text-sm sm:text-lg hidden sm:block">
+                  <p className="text-white/90 text-sm sm:text-base font-bold hidden sm:block">
                     {category.desc}
                   </p>
                   <Badge className="mt-1 sm:mt-2 bg-white/20 text-white border-white/30 text-xs sm:text-sm">
@@ -335,13 +335,13 @@ useEffect(() => {
 
               {/* صورة الكاتيجوري على يمين الهيدر */}
               {category.image_url && (
-                <div className="hidden sm:block w-32 h-32 sm:w-40 sm:h-40 rounded-lg overflow-hidden">
+                <div className="w-16 h-16 sm:w-40 sm:h-20 rounded-lg overflow-hidden">
                   <Image
                     src={category.image_url}
                     alt={category.title}
                     width={160}
                     height={160}
-                    className="object-cover w-full h-full"
+                    className="object-contain w-full h-full"
                   />
                 </div>
               )}
