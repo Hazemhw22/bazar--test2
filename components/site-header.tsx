@@ -78,53 +78,112 @@ export function SiteHeader() {
       <header className="w-full border-b bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-40">
 
         {/* Upper header - Desktop & Medium screens */}
-        <div className="bg-gray-50 dark:bg-gray-800 text-[12px] py-2 border-b border-gray-200 dark:border-gray-700 hidden md:flex items-center px-3 lg:px-4">
-          <div className="max-w-[1600px] mx-auto w-full flex items-center justify-center gap-3">
+        <div className="bg-blue-600 text-white py-2 border-b border-blue-700 dark:bg-gray-900 hidden md:block">
+          <div className="max-w-[1600px] mx-auto w-full flex items-center justify-between px-4">
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                <button
+                  onClick={handleLocationChange}
+                  className="text-sm hover:underline cursor-pointer flex items-center"
+                >
+                  <span>Your Location:</span>
+                  <span className="font-medium ml-1">{selectedCity ? getCityDisplayName(selectedCity) : "Select Location"}</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                 <Link href="/orders" className=" rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <Package size={20} />
+              </Link>
+                {mounted && <ThemeToggle />}
+              {mounted && <LanguageSelector />}
+              </div>
+              <div className="flex items-center gap-1">
+                <UserIcon className="w-5 h-5" />
+                <Link href="/auth" className="text-sm hover:underline">Join Us</Link>
+              </div>
+            </div>
+          </div>
+        </div>
 
-            {/* الموقع */}
-            <button
-              onClick={handleLocationChange}
-              className="flex items-center gap-1 text-[18px] text-gray-600 dark:text-gray-400 whitespace-nowrap hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer group"
-            >
-              <MapPin className="w-6 h-6 text-black dark:text-white group-hover:text-blue-600 transition-colors" />
-              {selectedCity ? getCityDisplayName(selectedCity) : "Select Location"}
-            </button>
+        {/* Main header - Desktop */}
+        <div className="hidden md:block bg-white dark:bg-gray-900 py-3">
+          <div className="max-w-[1600px] mx-auto w-full flex items-center justify-between px-4">
+            <div className="flex items-center gap-8">
+              <Link href="/">
+                <div className="flex items-center">
+                  <div className="rounded-md ">
+                      <VristoLogo size={60} />
+                  </div>
+                  <span className="text-xl font-bold text-gray-800 dark:text-white">PAZAR</span>
+                </div>
+              </Link>
+            </div>
+
             {/* Search */}
-            <div className="flex-1 max-w-[760px]">
-              <div className="relative flex items-center rounded-full border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+            <div className="flex-1 max-w-[600px] mx-8">
+              <div className="relative flex items-center rounded-lg border-2 border-blue-600 bg-white dark:bg-gray-800 overflow-hidden">
                 <span className="pl-2 text-purple-500">✨</span>
                 <input
                   type="text"
-                  placeholder="Search for brands or products"
+                  placeholder="Search for products..."
                   className="flex-1 bg-transparent py-1 px-2 text-[18px] focus:outline-none dark:text-white"
                 />
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded-full m-1 transition-colors">
-                  <Search size={18}  />
+                <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 transition-colors">
+                  <Search size={20} />
                 </button>
               </div>
             </div>
 
-            {/* أيقونات الحساب والسلة */}
-            <div className="flex items-center gap-1.5">
-              <Link href="/account" className="p-1.5 rounded-full hover:bg-gray-200/60 dark:hover:bg-gray-700 transition-colors">
-                <UserIcon size={18} className="w-6 h-6 text-black dark:text-white group-hover:text-blue-600 transition-colors" />
+            {/* Icons menu */}
+            <div className="flex items-center gap-6">
+              <Link href="/" className="flex flex-col items-center gap-1 group">
+                <Home className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors" />
+                <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-blue-600 transition-colors">Home</span>
               </Link>
+              
+              <Link href="/categories" className="flex flex-col items-center gap-1 group">
+                <List className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors" />
+                <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-blue-600 transition-colors">Categories</span>
+              </Link>
+              
+              <Link href="/shops" className="flex flex-col items-center gap-1 group">
+                <Store className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors" />
+                <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-blue-600 transition-colors">Shops</span>
+              </Link>
+              
+              <Link href="/favourite" className="flex flex-col items-center gap-1 group">
+                <Heart className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors" />
+                <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-blue-600 transition-colors">Wishlist</span>
+              </Link>
+              
+              <Link href="/account" className="flex flex-col items-center gap-1 group">
+                <UserIcon className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors" />
+                <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-blue-600 transition-colors">Account</span>
+              </Link>
+              
               <button
-                className="p-1.5 rounded-full hover:bg-gray-200/60 dark:hover:bg-gray-700 transition-colors relative"
+                className="flex flex-col items-center gap-1 group relative"
                 onClick={handleCartToggle}
               >
-                <ShoppingCart size={18} className="w-6 h-6 text-black dark:text-white group-hover:text-blue-600 transition-colors" />
+                <ShoppingCart className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors" />
                 {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 flex w-6 h-6 items-center justify-center rounded-full bg-red-500 text-[10px] text-white font-medium">
+                  <span className="absolute -top-2 -right-2 flex w-5 h-5 items-center justify-center rounded-full bg-red-500 text-[10px] text-white font-medium">
                     {totalItems}
                   </span>
                 )}
+                <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-blue-600 transition-colors">Cart</span>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Main header */}
+      
+
+        {/* Main header - Mobile */}
         <div className="mx-auto px-3 sm:px-4 py-1 md:py-1 flex justify-between items-center max-w-[1600px]">
 
           {/* Mobile Header */}
@@ -143,13 +202,15 @@ export function SiteHeader() {
                 </div>
               </div>
                 {/* Location Button (Mobile) */}
-            <div className="flex items-center gap-2 px-1 mt-1">
+            <div className="flex flex-col items-center gap-1 group">
               <button
                 onClick={handleLocationChange}
-                className="flex items-center gap-1 text-[16px] text-gray-700 dark:text-gray-300 whitespace-nowrap hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer group"
+                className="flex flex-col items-center justify-center"
               >
-                <MapPin className="w-5 h-5 text-blue-600 group-hover:text-blue-700 transition-colors" />
-                {selectedCity ? getCityDisplayName(selectedCity) : "Select Location"}
+                <MapPin className="w-6 h-6 text-blue-600 group-hover:text-blue-700 transition-colors" />
+                <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors font-medium mt-1">
+      {selectedCity ? getCityDisplayName(selectedCity) : "Location"}
+    </span>
               </button>
             </div>
 
@@ -184,74 +245,7 @@ export function SiteHeader() {
             </div>
           </div>
 
-          {/* Desktop Header */}
-          <div className="hidden md:flex items-center gap-4 lg:gap-5 w-full">
-
-            {/* اللوجو والعناوين */}
-            <div className="flex items-center gap-3 lg:gap-4 text-[15px] lg:text-[16px]">
-              <VristoLogo size={60} />
-
-              <nav className="flex gap-4 lg:gap-6 font-medium font-sans">
-                <Link
-                  href="/"
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-                >
-                  <Home size={14} className="lg:w-4 lg:h-4" /> {t("nav.home")}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/categories"
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-                >
-                  <List size={14} className="lg:w-4 lg:h-4" /> {t("nav.categories")}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/favourite"
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-                >
-                  <Heart size={14} className="lg:w-4 lg:h-4" /> {t("nav.favorites")}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/shops"
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-                >
-                  <Store size={14} className="lg:w-4 lg:h-4" /> {t("nav.shops")}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/products"
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-                >
-                  <ShoppingBag size={14} className="lg:w-4 lg:h-4" /> {t("nav.products")}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-                </Link>
-                <Link
-                  href="/contact"
-                  className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 relative group"
-                >
-                  <Phone size={14} className="lg:w-4 lg:h-4" /> {t("nav.contact")}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all group-hover:w-full"></span>
-                </Link>
-              </nav>
-            </div>
-
-            {/* أيقونات اليمين للـ Desktop - جميع الأيقونات في اليمين */}
-            <div className="flex items-center gap-1.5 lg:gap-2 ml-auto">
-              {mounted && <ThemeToggle />}
-              {mounted && <LanguageSelector />}
-              <Link href="/favourite" className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                <Heart size={16} />
-              </Link>
-              <button className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Install App">
-                <Download size={16} />
-              </button>
-              <Link href="/orders" className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                <Package size={16} />
-              </Link>
-            </div>
-          </div>
+        
         </div>
       </header>
 

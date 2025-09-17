@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { ProductCard } from "./ProductCard";
 import type { Product } from "@/lib/type";
 import { supabase } from "@/lib/supabase";
+import { ChevronRight } from "lucide-react";
 
 interface MainProductSectionProps {
   title: string;
@@ -66,17 +67,17 @@ export default function MainProductSection({
       {/* العنوان مع خط جانبي */}
       <div className="flex items-center justify-between mb-3 sm:mb-6">
         <div className="flex items-center gap-2">
-          <div className="w-1.5 h-6 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <div className="w-1 h-4 sm:w-1.5 sm:h-6 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
+          <h2 className="text-base sm:text-xl font-bold text-gray-900 dark:text-gray-100">
             {title}
           </h2>
         </div>
-        <Link
-          href={linkToAll}
-          className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline text-sm sm:text-base"
+         <Link
+          href="/products"
+          className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
         >
-          عرض الكل
-        </Link>
+          View All <ChevronRight className="h-4 w-4 ml-1" />
+      </Link>
       </div>
 
       {/* شبكة الكروت */}
