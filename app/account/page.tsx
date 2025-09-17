@@ -283,7 +283,7 @@ export default function EnhancedProfilePage() {
                           <div className="flex items-start gap-3">
                             <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
                             <div className="text-sm text-gray-600 dark:text-gray-400">
-                              <p className="font-medium text-gray-900 dark:text-white">{address.address}</p>
+                              <p className="font-medium text-gray-900 dark:text-white">{profileData?.address}</p>
                               {address.phone && <p className="mt-1 flex items-center gap-1"><Phone size={14} /> {address.phone}</p>}
                             </div>
                           </div>

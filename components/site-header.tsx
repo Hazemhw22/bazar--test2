@@ -154,7 +154,12 @@ export function SiteHeader() {
                 <Store className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors" />
                 <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-blue-600 transition-colors">Shops</span>
               </Link>
-              
+
+              <Link href="/products" className="flex flex-col items-center gap-1 group">
+                <ShoppingBag className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors" />
+                <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-blue-600 transition-colors">Products</span>
+              </Link>
+
               <Link href="/favourite" className="flex flex-col items-center gap-1 group">
                 <Heart className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors" />
                 <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-blue-600 transition-colors">Wishlist</span>
@@ -164,6 +169,8 @@ export function SiteHeader() {
                 <UserIcon className="w-6 h-6 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 transition-colors" />
                 <span className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-blue-600 transition-colors">Account</span>
               </Link>
+              
+          
               
               <button
                 className="flex flex-col items-center gap-1 group relative"
