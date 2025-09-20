@@ -30,6 +30,7 @@ export interface Product {
 }
 
 export interface Shop {
+  owner_name: string;
   id: string;
   shop_name: string;
   address: string;
