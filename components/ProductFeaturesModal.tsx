@@ -126,12 +126,16 @@ export default function ProductFeaturesModal({ product, onClose, isOpen }: Produ
         
         {/* Close button in top right */}
         <div className="w-full relative">
+          {/* السعر الإجمالي أعلى الصورة */}
+          <span className="absolute top-3 left-3 bg-white/90 dark:bg-gray-900 text-red-600 dark:text-red-400 font-bold rounded-full px-4 py-2 shadow-lg text-lg z-10">
+            ₪{(totalPrice * quantity).toFixed(2)}
+          </span>
           <Image
             src={mainImage}
             alt={product.title || "Product"}
             width={600}
             height={400}
-            className="w-full h-48 object-cover rounded-t-2xl"
+            className="w-full h-auto object-contain rounded-t-2xl"
             priority
           />
           <DialogClose className="absolute top-3 right-3 p-1 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-100 hover:text-gray-900 rounded-full shadow z-10">
