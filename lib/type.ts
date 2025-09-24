@@ -1,9 +1,9 @@
 export interface Category {
-id: number;
-title: string;
-desc: string;
-image_url?: string;
-created_at: string;
+  id: number;
+  title: string;
+  desc: string;
+  image_url?: string;
+  created_at: string;
 }
 
 export interface Product {
@@ -27,6 +27,8 @@ export interface Product {
   reviews?: number;
   view_count?: number; // عدد مشاهدات المنتج
   cart_count?: number; // عدد مرات إضافة المنتج للسلة
+  subcategory_id?: number | null;
+  feature_labels?: ProductFeatureLabel[];
 }
 
 export interface Shop {
@@ -63,7 +65,6 @@ export interface WorkHours {
   endTime: string;
 }
 
-
 export interface Profile {
   idx: number;
   id: string;
@@ -95,7 +96,6 @@ export interface Profile {
   role: string | null;
 }
 
-
 // New: Order JSON subtypes
 export interface ShippingMethodJson {
   type: string;
@@ -122,28 +122,53 @@ export interface PaymentMethodJson {
 }
 
 export interface OrderData {
+  id: string;
+  created_at: string;
+  buyer_id: string;
+  status: string;
+  product_id: number;
+  shipping_method: any;
+  shipping_address: any;
+  payment_method: any;
+  // Joined data
+  products?: {
+    id: number;
+    title: string;
+    price: number;
+    images: any[];
+    shop: number;
+    shops?: {
+      shop_name: string;
+    };
+  };
+  profiles?: {
     id: string;
-    created_at: string;
-    buyer_id: string;
-    status: string;
-    product_id: number;
-    shipping_method: any;
-    shipping_address: any;
-    payment_method: any;
-    // Joined data
-    products?: {
-        id: number;
-        title: string;
-        price: number;
-        images: any[];
-        shop: number;
-        shops?: {
-            shop_name: string;
-        };
-    };
-    profiles?: {
-        id: string;
-        full_name: string;
-        email: string;
-    };
+    full_name: string;
+    email: string;
+  };
+}
+export interface CategorySub {
+  id: number;
+  title: string;
+  desc: string;
+  image: string;
+  created_at: string;
+}
+
+export interface ProductFeatureLabel {
+  id: number;
+  product_id: number;
+  label: string;
+  created_at: string;
+  values?: ProductFeatureValue[]; // سيتم تعبئتها ديناميكياً
+}
+
+export interface ProductFeatureValue {
+  id: number;
+  feature_label_id: number;
+  value: string;
+  price_addition: number;
+  image?: string;
+  created_at: string;
+  available?: boolean; // لإظهار "Not Available"
 }

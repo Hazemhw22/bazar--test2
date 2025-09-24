@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
 import Image from "next/image"
 import { Dialog } from "@headlessui/react"
@@ -25,6 +25,7 @@ export default function Products() {
   const [maxPrice, setMaxPrice] = useState(1000)
   const [rating, setRating] = useState<number[]>([])
   const [selectedCategory, setSelectedCategory] = useState("All")
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null)
   const [selectedBrand, setSelectedBrand] = useState("All")
   const [filterOpen, setFilterOpen] = useState(false)
   const [search, setSearch] = useState("")
@@ -34,6 +35,7 @@ export default function Products() {
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
   const [selectedColors, setSelectedColors] = useState<string[]>([])
   const [viewMode, setViewMode] = useState<"grid" | "list">("list")
+  const [subcategories, setSubcategories] = useState<{ id: number; title: string }[]>([])
 
   // Fetch categories and brands
   useQuery({
@@ -58,6 +60,23 @@ export default function Products() {
     },
   })
 
+  // Fetch subcategories when category changes
+  useEffect(() => {
+    if (selectedCategory !== "All") {
+      const catObj = categories.find((cat) => cat.title === selectedCategory)
+      if (catObj) {
+        supabase
+          .from("categories_sub")
+          .select("id, title")
+          .eq("category_id", catObj.id)
+          .then(({ data }) => setSubcategories(data ?? []))
+      }
+    } else {
+      setSubcategories([])
+      setSelectedSubcategory(null)
+    }
+  }, [selectedCategory, categories])
+
   // Fetch products
   const {
     data: products = [],
@@ -68,7 +87,7 @@ export default function Products() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("*, shops:shops(shop_name), categories:categories(title)")
+        .select("*, shops:shops(shop_name), categories:categories(title), categories_sub:categories_sub(title)")
         .order("created_at", { ascending: false })
       if (error) throw error
       return (data ?? []).map((product: any) => ({
@@ -76,6 +95,8 @@ export default function Products() {
         shops: product.shops && Array.isArray(product.shops) ? product.shops[0] : product.shops,
         categories:
           product.categories && Array.isArray(product.categories) ? product.categories[0] : product.categories,
+        categories_sub:
+          product.categories_sub && Array.isArray(product.categories_sub) ? product.categories_sub[0] : product.categories_sub,
       }))
     },
     refetchInterval: 5000,
@@ -90,6 +111,7 @@ export default function Products() {
           : true,
       )
       .filter((product: any) => (selectedCategory !== "All" ? product.categories?.title === selectedCategory : true))
+      .filter((product: any) => (selectedSubcategory ? product.categories_sub?.title === selectedSubcategory : true))
       .filter((product: any) => (selectedBrand !== "All" ? product.shops?.shop_name === selectedBrand : true))
       .filter((product: any) => Number(product.price) >= minPrice && Number(product.price) <= maxPrice)
       .filter((product: any) => (rating.length > 0 ? rating.includes(Math.round(product.rating || 0)) : true))
@@ -99,7 +121,7 @@ export default function Products() {
       .filter((product: any) =>
         selectedColors.length > 0 && product.color ? selectedColors.includes(String(product.color)) : true,
       )
-  }, [products, search, selectedCategory, selectedBrand, minPrice, maxPrice, rating, selectedSizes, selectedColors])
+  }, [products, search, selectedCategory, selectedSubcategory, selectedBrand, minPrice, maxPrice, rating, selectedSizes, selectedColors])
 
   const toggleRating = (star: number) => {
     setRating((prev) => (prev.includes(star) ? prev.filter((r) => r !== star) : [...prev, star]))
@@ -142,53 +164,55 @@ export default function Products() {
             <ChevronDown className="rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
           </button>
 
-        {/* Scrollable Pills */}
-<div
-  id="category-scroll"
-  className="flex overflow-x-auto gap-3 scrollbar-hide pb-2 scroll-smooth"
->
-  {categories.map((cat: Category | string) => {
-    const isCategoryObject = typeof cat !== "string"
-    const title = isCategoryObject ? cat.title : cat
+          {/* Scrollable Pills */}
+          <div
+            id="category-scroll"
+            className="flex overflow-x-auto gap-3 scrollbar-hide pb-2 scroll-smooth"
+          >
+            {categories.map((cat: Category | string) => {
+              const isCategoryObject = typeof cat !== "string"
+              const title = isCategoryObject ? cat.title : cat
 
-    return (
-      <button
-        key={isCategoryObject ? cat.id : cat}
-        onClick={() => setSelectedCategory(title)}
-        className="flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all"
-      >
-        {/* صورة الكاتيجوري */}
-        <div
-          className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
-            selectedCategory === title ? "border-blue-600" : "border-transparent"
-          }`}
-        >
-          {isCategoryObject && cat.image_url ? (
-            <Image
-              src={cat.image_url}
-              alt={title}
-              fill
-              className="object-cover rounded-full"
-            />
-          ) : (
-            <div className="w-full h-full bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold">
-              {title[0]}
-            </div>
-          )}
-        </div>
+              return (
+                <button
+                  key={isCategoryObject ? cat.id : cat}
+                  onClick={() => {
+                    setSelectedCategory(title)
+                    setSelectedSubcategory(null)
+                  }}
+                  className="flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all"
+                >
+                  {/* صورة الكاتيجوري */}
+                  <div
+                    className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
+                      selectedCategory === title ? "border-blue-600" : "border-transparent"
+                    }`}
+                  >
+                    {isCategoryObject && cat.image_url ? (
+                      <Image
+                        src={cat.image_url}
+                        alt={title}
+                        fill
+                        className="object-cover rounded-full"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold">
+                        {title[0]}
+                      </div>
+                    )}
+                  </div>
 
-        <span
-          className={`text-sm font-medium mt-1 ${
-            selectedCategory === title ? "text-blue-600" : ""
-          }`}
-        >
-          {title}
-        </span>
-      </button>
-    )
-  })}
-</div>
-
+                  <span
+                    className={`text-sm font-medium mt-1 ${
+                      selectedCategory === title ? "text-blue-600" : ""
+                    }`}
+                  >
+                    {title}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
 
           {/* Right Arrow */}
           <button
@@ -202,6 +226,35 @@ export default function Products() {
             <ChevronDown className="-rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
           </button>
         </div>
+
+        {/* Subcategory Pills */}
+        {subcategories.length > 0 && (
+          <div className="flex overflow-x-auto gap-2 mt-3 pb-2 scrollbar-hide">
+            <button
+              onClick={() => setSelectedSubcategory(null)}
+              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                !selectedSubcategory
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700"
+              }`}
+            >
+              All
+            </button>
+            {subcategories.map((sub) => (
+              <button
+                key={sub.id}
+                onClick={() => setSelectedSubcategory(sub.title)}
+                className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                  selectedSubcategory === sub.title
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700"
+                }`}
+              >
+                {sub.title}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Custom scrollbar hide */}
         <style jsx>{`
@@ -230,7 +283,6 @@ export default function Products() {
             <SlidersHorizontal size={20} />
             Filters
           </h2>
-
 
           {/* Brands searchable */}
           <div className="mb-6">
@@ -375,7 +427,7 @@ export default function Products() {
               </DropdownMenuContent>
             </DropdownMenu>
             
-            <div className="flex   rounded-md">
+            <div className="flex rounded-md">
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
