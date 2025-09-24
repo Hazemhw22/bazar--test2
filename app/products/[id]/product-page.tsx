@@ -1,6 +1,6 @@
 "use client";
 
-import type { Product } from "../../../lib/type";
+import type { Product, ProductFeatureLabel, ProductFeatureValue } from "../../../lib/type";
 import { useCart } from "../../../components/cart-provider";
 import { useFavorites } from "../../../components/favourite-items";
 import { ImageLightbox } from "@/components/image-lightbox";
@@ -64,6 +64,9 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     shipping: false,
     details: false,
   });
+  const [featureLabels, setFeatureLabels] = useState<ProductFeatureLabel[]>([]);
+  const [selectedFeatures, setSelectedFeatures] = useState<Record<number, number[]>>({});
+  const [featuresPrice, setFeaturesPrice] = useState(0);
 
   // Function to render product content based on type
   const renderProductContent = () => {
@@ -83,6 +86,56 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       .limit(8)
       .then(({ data }) => setSimilarProducts(data || []));
   }, [product.category, product.id]);
+
+  // جلب الميزات من Supabase
+  useEffect(() => {
+    async function fetchFeatures() {
+      const { data: labels } = await supabase
+        .from("products_features_labels")
+        .select("*")
+        .eq("product_id", product.id);
+
+      if (labels) {
+        const labelsWithValues = await Promise.all(
+          labels.map(async (label: ProductFeatureLabel) => {
+            const { data: values } = await supabase
+              .from("products_features_values")
+              .select("*")
+              .eq("feature_label_id", label.id);
+            return { ...label, values: values || [] };
+          })
+        );
+        setFeatureLabels(labelsWithValues);
+      }
+    }
+    if (product?.id) fetchFeatures();
+  }, [product?.id]);
+
+  // حساب سعر الميزات المختارة
+  useEffect(() => {
+    let sum = 0;
+    featureLabels.forEach(label => {
+      const valueIds = selectedFeatures[label.id] || [];
+      valueIds.forEach(valueId => {
+        const value = label.values?.find(v => v.id === valueId);
+        if (value) sum += value.price_addition;
+      });
+    });
+    setFeaturesPrice(sum);
+  }, [selectedFeatures, featureLabels]);
+
+  const handleSelectFeature = (labelId: number, valueId: number) => {
+    setSelectedFeatures(prev => {
+      const current = prev[labelId] || [];
+      if (current.includes(valueId)) {
+        return { ...prev, [labelId]: current.filter(id => id !== valueId) };
+      } else {
+        return { ...prev, [labelId]: [...current, valueId] };
+      }
+    });
+  };
+
+  const totalPrice = (Number(product.sale_price ?? product.price) + featuresPrice) * quantity;
 
   const handleShare = (type: string) => {
     const url = typeof window !== "undefined" ? window.location.href : "";
@@ -309,59 +362,49 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               </p>
             </div>
 
-            {/* Size Selection */}
-            <div className="mb-5">
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Size
-                </label>
-                <button className="text-xs text-blue-600 dark:text-blue-400">
-                  Size Guide
-                </button>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                {["S", "M", "L"].map((size) => (
-                  <button
-                    key={size}
-                    className={`px-4 py-2 border rounded-md text-sm font-medium transition-colors ${
-                      size === "M" 
-                        ? "border-gray-900 dark:border-white text-gray-900 dark:text-white" 
-                        : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500"
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
+           
 
-            {/* Color Selection */}
-            <div className="mb-5">
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Color
-                </label>
-                <span className="text-xs text-gray-500">{selectedColor}</span>
-              </div>
-              <div className="flex gap-3">
-                {["Purple", "Dark Green", "Black", "Pink"].map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`w-8 h-8 rounded-full border-2 transition-all ${
-                      selectedColor === color
-                        ? "border-blue-600 scale-110 shadow-lg"
-                        : "border-gray-300 dark:border-gray-600 hover:border-gray-400"
-                    }`}
-                    style={{
-                      backgroundColor: color === "Purple" ? "#8b5cf6" : 
-                                   color === "Dark Green" ? "#059669" : 
-                                   color === "Black" ? "#000000" : "#ec4899"
-                    }}
-                  />
+            {/* Feature Selection */}
+            {featureLabels.length > 0 && (
+              <div className="mb-5">
+                {featureLabels.map(label => (
+                  <div key={label.id} className="mb-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {label.label}
+                      </label>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {label.values?.map(value => {
+                        const isSelected = (selectedFeatures[label.id] || []).includes(value.id);
+                        return (
+                          <button
+                            key={value.id}
+                            onClick={() => (value.available === false ? null : handleSelectFeature(label.id, value.id))}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-md border transition-all
+                              ${isSelected ? "border-blue-600 bg-blue-50 dark:bg-blue-900/30 font-bold" : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"}
+                              ${!value.available ? "opacity-60 cursor-not-allowed" : ""}
+                            `}
+                            disabled={value.available === false}
+                          >
+                            {value.image && (
+                              <img src={value.image} alt={value.value} className="w-6 h-6 rounded-full" />
+                            )}
+                            <span>{value.value}</span>
+                            {value.price_addition > 0 && (
+                              <span className="text-xs text-gray-500">+₪{value.price_addition}</span>
+                            )}
+                            {value.available === false && (
+                              <span className="ml-2 px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs">Not Available</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 ))}
               </div>
-            </div>
+            )}
 
             {/* Quantity Selector */}
             <div className="mb-5">
@@ -390,7 +433,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             {/* Total Price - Mobile Only */}
             <div className="flex justify-between items-center mb-5 lg:hidden">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Total price</span>
-              <span className="text-lg font-bold text-gray-900 dark:text-white">₪{(product.sale_price ? Number(product.sale_price) : Number(product.price)) * quantity}.00</span>
+              <span className="text-lg font-bold text-gray-900 dark:text-white">₪{totalPrice.toFixed(2)}</span>
             </div>
 
             {/* Action Buttons */}

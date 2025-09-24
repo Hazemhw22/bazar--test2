@@ -121,140 +121,129 @@ export default function ProductFeaturesModal({ product, onClose, isOpen }: Produ
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md w-[95vw] max-h-[90vh] p-0 overflow-hidden rounded-xl">
+      <DialogContent className="max-w-md w-full max-h-[95vh] p-0 overflow-hidden rounded-xl mobile:rounded-lg mobile:max-w-full mobile:w-full mobile:p-0 dark:bg-gray-900">
         <DialogTitle className="sr-only">{product.title}</DialogTitle>
         
         {/* Close button in top right */}
-        <DialogClose className="absolute top-3 right-3 p-1.5 bg-white text-gray-700 hover:text-gray-900 rounded-full transition-colors z-10">
-          <XCircle size={24} />
-        </DialogClose>
-        
-        {/* Product Image */}
-        <div className="relative aspect-[4/3] w-full">
-          {product.images?.length > 0 ? (
-            <Image
-              src={mainImage}
-              alt={product.title || "Product"}
-              fill
-              className="object-cover"
-            />
-          ) : (
-            <div className="flex items-center justify-center w-full h-full bg-gray-100">
-              <Package size={48} className="text-gray-400" />
-            </div>
-          )}
+        <div className="w-full relative">
+          <Image
+            src={mainImage}
+            alt={product.title || "Product"}
+            width={600}
+            height={400}
+            className="w-full h-48 object-cover rounded-t-2xl"
+            priority
+          />
+          <DialogClose className="absolute top-3 right-3 p-1 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-100 hover:text-gray-900 rounded-full shadow z-10">
+            <XCircle size={24} />
+          </DialogClose>
         </div>
 
         {/* Product Content */}
         <div className="flex flex-col p-0">
           {/* Product Title and Price Bar */}
-          <div className="bg-red-600 text-white p-4">
-            <h2 className="text-xl font-bold">
-              {product.title}
-            </h2>
-          
-          </div>
-
-          {/* Quantity Selector & Price */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <div className="flex items-center bg-gray-100 rounded-md">
-              <button
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="px-3 py-2 text-gray-700"
-                aria-label="Decrease quantity"
-              >
-                <Minus size={20} />
-              </button>
-              <span className="px-4 py-2 text-lg font-medium min-w-[2rem] text-center text-gray-700">
-                {quantity}
-              </span>
-              <button
-                onClick={() => setQuantity(quantity + 1)}
-                className="px-3 py-2 text-gray-700"
-                aria-label="Increase quantity"
-              >
-                <Plus size={20} />
-              </button>
-            </div>
-            {/* السعر الإجمالي */}
-            <div className="text-xl font-bold text-red-600">
-              ₪{(totalPrice * quantity).toFixed(2)}
-            </div>
-          </div>
-
-          {/* Toppings Section */}
-          {featureLabels.length > 0 ? (
-            <div className="p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold">{featureLabels[step].label}</h3>
-                <span className="text-gray-500">{step + 1}/{featureLabels.length}</span>
+          <div className="bg-red-600 dark:bg-red-800 rounded-b-2xl px-4 pt-4 pb-2 text-white">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold truncate">{product.title}</h2>
+              <div className="flex items-center bg-white/90 dark:bg-gray-900 rounded-md overflow-hidden">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="px-2 py-1 text-red-600"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus size={18} />
+                </button>
+                <span className="px-3 py-1 text-base font-bold min-w-[2rem] text-center text-red-600 bg-white">
+                  {quantity}
+                </span>
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="px-2 py-1 text-red-600"
+                  aria-label="Increase quantity"
+                >
+                  <Plus size={18} />
+                </button>
               </div>
-              <div className="space-y-4">
-                {featureLabels[step].values?.map((value) => {
-                  const isSelected = (selectedFeatures[featureLabels[step].id] || []).includes(value.id);
-                  return (
-                    <div
-                      key={value.id}
-                      className={`flex items-center justify-between cursor-pointer ${!value.available ? "opacity-60" : ""}`}
-                      onClick={() => value.available !== false && handleSelectFeature(featureLabels[step].id, value.id)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 relative">
+            </div>
+            <div className="mt-1 text-sm opacity-90">{product.desc}</div>
+          </div>
+
+          {/* Features Section */}
+          {featureLabels.length > 0 ? (
+            <div className="px-3 py-3 mobile:px-2 mobile:py-2">
+              <div className="bg-white dark:bg-gray-900 px-4 py-4 rounded-b-2xl">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{featureLabels[step].label}</h3>
+                  <span className="text-gray-500 dark:text-gray-400 text-base">{step + 1}/{featureLabels.length}</span>
+                </div>
+                <div className="space-y-3">
+                  {featureLabels[step].values?.map((value) => {
+                    const isSelected = (selectedFeatures[featureLabels[step].id] || []).includes(value.id);
+                    return (
+                      <div
+                        key={value.id}
+                        className={`flex items-center justify-between py-2 ${!value.available ? "opacity-60" : ""}`}
+                        onClick={() => value.available !== false && handleSelectFeature(featureLabels[step].id, value.id)}
+                      >
+                        <div className="flex items-center gap-3">
                           <Image
                             src={value.image || "/placeholder.svg"}
                             alt={value.value}
-                            fill
-                            className="object-cover rounded-md"
+                            width={36}
+                            height={36}
+                            className="rounded-md"
+                          />
+                          <span className="font-semibold text-base text-gray-900 dark:text-gray-100">{value.value}</span>
+                          {value.price_addition > 0 && (
+                            <span className="text-base text-gray-500 font-bold">₪{value.price_addition}</span>
+                          )}
+                          {!value.available && (
+                          <span className="ml-2 px-2 py-1 bg-green-200 text-green-800 font-bold rounded text-xs shadow">Available</span> )}
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            readOnly
+                            className="w-6 h-6 accent-red-600 rounded-md border-2 border-gray-300"
                           />
                         </div>
-                        <span className="font-medium">{value.value}</span>
-                        {value.price_addition > 0 && (
-                          <span className="text-sm text-gray-500">
-                            +₪{value.price_addition}
-                          </span>
-                        )}
-                        {!value.available && (
-                          <span className="ml-2 px-2 py-1 bg-green-200 text-green-800 font-bold rounded text-xs shadow">
-                            Available
-                          </span>
-                        )}
                       </div>
-                      <div className={`w-6 h-6 ${isSelected ? 'bg-red-600' : 'border border-gray-300'} rounded-md flex items-center justify-center`}>
-                        {isSelected && <Check size={16} className="text-white" />}
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
               {/* Stepper Buttons */}
-              <div className="flex items-center gap-3 mt-6">
+              <div className="flex items-center justify-between px-4 py-4 bg-white dark:bg-gray-900 rounded-b-2xl">
                 <Button
                   onClick={() => setStep((s) => Math.max(0, s - 1))}
                   disabled={step === 0}
-                  className="flex-1 py-3 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center gap-2"
+                  className="flex items-center gap-2 bg-red-600 dark:bg-red-800 text-white rounded-full px-6 py-3 text-base font-bold"
                 >
-                  <span className="font-medium text-lg">Back</span>
+                  <span>Back</span>
+                  <span className="text-xl">←</span>
                 </Button>
                 {step < featureLabels.length - 1 ? (
                   <Button
                     onClick={() => setStep((s) => Math.min(featureLabels.length - 1, s + 1))}
-                    className="flex-1 py-3 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center gap-2"
+                    className="flex items-center gap-2 bg-red-600 dark:bg-red-800 text-white rounded-full px-6 py-3 text-base font-bold"
                   >
-                    <span className="font-medium text-lg">Next</span>
+                    <span>Next</span>
+                    <span className="text-xl">→</span>
                   </Button>
                 ) : (
                   <Button
                     onClick={handleAddToCart}
-                    className="flex-1 py-3 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center gap-2"
+                    className="flex items-center gap-2 bg-red-600 dark:bg-red-800 text-white rounded-full px-6 py-3 text-base font-bold"
                   >
-                    <span className="font-medium text-lg">Add To Cart</span>
+                    <span>Add To Cart</span>
                     <ShoppingBag size={20} />
                   </Button>
                 )}
               </div>
             </div>
           ) : (
-            <div className="text-center py-4 text-gray-500">
+            <div className="text-center py-4 text-gray-500 text-sm">
               No customization options available for this product.
             </div>
           )}

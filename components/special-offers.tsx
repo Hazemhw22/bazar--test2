@@ -9,6 +9,7 @@ import { useFavorites } from "./favourite-items";
 import { useCart } from "./cart-provider";
 import Image from "next/image";
 import * as Dialog from "@radix-ui/react-dialog";
+import ProductFeaturesModal from "./ProductFeaturesModal";
 
 export function SpecialOffers() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -349,80 +350,11 @@ export function SpecialOffers() {
       
       {/* Quick View Modal */}
       {quickViewProduct && (
-        <Dialog.Root open={!!quickViewProduct} onOpenChange={() => setQuickViewProduct(null)}>
-          <Dialog.Portal>
-            <Dialog.Overlay className="fixed inset-0 bg-black/50 z-50" />
-            <Dialog.Content className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl z-50 w-11/12 max-w-2xl max-h-[90vh] overflow-y-auto">
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="md:w-1/2">
-                  {quickViewProduct.images && quickViewProduct.images.length > 0 ? (
-                    <img 
-                      src={quickViewProduct.images[0]} 
-                      alt={quickViewProduct.title} 
-                      className="w-full h-auto object-cover rounded-md"
-                    />
-                  ) : (
-                    <div className="bg-gray-200 dark:bg-gray-700 w-full h-64 flex items-center justify-center rounded-md">
-                      <span className="text-gray-500 dark:text-gray-400">No image</span>
-                    </div>
-                  )}
-                </div>
-                <div className="md:w-1/2">
-                  <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">{quickViewProduct.title}</h2>
-                  <div className="flex items-center mb-3">
-                    <div className="flex text-yellow-400">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star key={star} size={14} className="fill-current" />
-                      ))}
-                    </div>
-                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
-                      ({quickViewProduct.view_count || 0} reviews)
-                    </span>
-                  </div>
-                  <div className="mb-4">
-                    <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      ${getDisplayPrice(quickViewProduct).toFixed(2)}
-                    </span>
-                    {quickViewProduct.sale_price && quickViewProduct.price && quickViewProduct.sale_price < parseFloat(quickViewProduct.price) && (
-                      <span className="text-sm text-gray-500 dark:text-gray-400 line-through ml-2">
-                        ${parseFloat(quickViewProduct.price).toFixed(2)}
-                      </span>
-                    )}
-                    {getDiscountText(quickViewProduct) && (
-                      <span className="ml-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">
-                        {getDiscountText(quickViewProduct)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex gap-3 mt-6">
-                    <button 
-                      onClick={() => {
-                        addItem(quickViewProduct);
-                        setQuickViewProduct(null);
-                      }}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-2 transition-colors"
-                    >
-                      <Plus size={16} />
-                      Add to Cart
-                    </button>
-                    <Link 
-                      href={`/products/${quickViewProduct.id}`}
-                      className="border border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-4 py-2 rounded-md transition-colors"
-                    >
-                      View Details
-                    </Link>
-                  </div>
-                </div>
-              </div>
-              <Dialog.Close className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500 dark:text-gray-400">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </Dialog.Close>
-            </Dialog.Content>
-          </Dialog.Portal>
-        </Dialog.Root>
+        <ProductFeaturesModal
+          product={quickViewProduct}
+          isOpen={!!quickViewProduct}
+          onClose={() => setQuickViewProduct(null)}
+        />
       )}
     </div>
   );
