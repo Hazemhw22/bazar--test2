@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Category, CategorySub } from "@/lib/type";
 import Link from "next/link";
@@ -16,6 +16,7 @@ export function HomeCategories() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { t } = useI18n();
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -62,6 +63,49 @@ export function HomeCategories() {
     else setSubcategories([]);
   };
 
+  // Mouse drag scroll for desktop
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    let isDown = false;
+    let startX = 0;
+    let scrollLeft = 0;
+
+    const handleDown = (e: MouseEvent) => {
+      isDown = true;
+      el.classList.add("cursor-grabbing");
+      startX = e.pageX - el.offsetLeft;
+      scrollLeft = el.scrollLeft;
+    };
+    const handleLeave = () => {
+      isDown = false;
+      el.classList.remove("cursor-grabbing");
+    };
+    const handleUp = () => {
+      isDown = false;
+      el.classList.remove("cursor-grabbing");
+    };
+    const handleMove = (e: MouseEvent) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - el.offsetLeft;
+      const walk = (x - startX) * 1.5; // سرعة السحب
+      el.scrollLeft = scrollLeft - walk;
+    };
+
+    el.addEventListener("mousedown", handleDown);
+    el.addEventListener("mouseleave", handleLeave);
+    el.addEventListener("mouseup", handleUp);
+    el.addEventListener("mousemove", handleMove);
+
+    return () => {
+      el.removeEventListener("mousedown", handleDown);
+      el.removeEventListener("mouseleave", handleLeave);
+      el.removeEventListener("mouseup", handleUp);
+      el.removeEventListener("mousemove", handleMove);
+    };
+  }, []);
+
   if (loading) {
     return <p className="p-6 text-center">جارٍ تحميل التصنيفات...</p>;
   }
@@ -97,68 +141,64 @@ export function HomeCategories() {
           </h2>
         </div>
 
-        {/* ديسكتوب: سطر أفقي لجميع الكاتيجوري مع هوفر واختيار */}
+        {/* ديسكتوب: سطر أفقي لجميع الكاتيجوري بشكل كروت */}
         <div className="hidden md:block">
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div
+            ref={scrollRef}
+            className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide scroll-smooth cursor-grab"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
             {categories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`relative flex flex-col items-center px-4 py-2 transition-colors duration-150
-                  ${
-                    selectedCategory === category.id
-                      ? "text-blue-600 font-bold"
-                      : "text-gray-700 dark:text-gray-200 hover:text-blue-600"
-                  }
-                `}
-                style={{ background: "none", border: "none" }}
+                className={`
+          flex flex-col items-center min-w-[140px] max-w-[160px] bg-white dark:bg-gray-900 rounded-2xl shadow
+          border-2 transition-all duration-150 px-3 pt-3 pb-2
+          ${selectedCategory === category.id
+            ? "border-red-500 shadow-lg"
+            : "border-transparent hover:border-gray-300"}`}
+                style={{ background: "none" }}
               >
-                <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden mb-1">
+                <div className="w-20 h-20 rounded-xl overflow-hidden mb-2 bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                   {category.image_url ? (
                     <Image
                       src={category.image_url}
                       alt={category.title}
-                      width={40}
-                      height={40}
+                      width={80}
+                      height={80}
                       className="object-contain"
                     />
                   ) : (
-                    <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full" />
+                    <div className="w-16 h-16 bg-gray-300 dark:bg-gray-700 rounded-xl" />
                   )}
                 </div>
-                <span className="text-xs font-medium truncate">{category.title}</span>
+                <span className={`text-base font-semibold truncate text-center ${selectedCategory === category.id ? "text-red-600" : "text-gray-900 dark:text-gray-100"}`}>
+                  {category.title}
+                </span>
               </button>
             ))}
             {/* زر عرض الكل */}
             <Link
               href="/categories"
-              className="flex flex-col items-center px-4 py-2 text-blue-600 hover:text-blue-800 transition-colors"
+              className="flex flex-col items-center min-w-[140px] max-w-[160px] bg-blue-50 dark:bg-blue-900 rounded-2xl shadow px-3 pt-3 pb-2 border-2 border-blue-600 text-blue-700 dark:text-blue-200 font-semibold hover:bg-blue-100 transition-all"
             >
-              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center mb-1">
-                <ChevronRight className="w-5 h-5 text-white" />
+              <div className="w-20 h-20 rounded-xl bg-blue-600 flex items-center justify-center mb-2">
+                <ChevronRight className="w-8 h-8 text-white" />
               </div>
-              <span className="text-xs font-medium">See All</span>
+              <span className="text-base font-semibold text-center">See All</span>
             </Link>
           </div>
           {/* subcategory كبطاقات أو pills واضحة */}
           {selectedCategory && subcategories.length > 0 && (
-            <div className="flex flex-wrap gap-3 mt-5">
+            <div className="flex gap-2 mt-5">
               {subcategories.map((sub) => (
                 <Link
                   key={sub.id}
                   href={`/categories/${selectedCategory}?sub=${sub.id}`}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-blue-600 hover:text-white transition-colors shadow-sm border border-gray-200 dark:border-gray-700"
+                  className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-blue-600 hover:text-white transition-colors shadow-sm border border-gray-200 dark:border-gray-700 text-sm font-medium"
                 >
-                  {sub.image && (
-                    <Image
-                      src={sub.image}
-                      alt={sub.title}
-                      width={28}
-                      height={28}
-                      className="rounded-full object-cover"
-                    />
-                  )}
-                  <span className="text-sm font-medium">{sub.title}</span>
+                  {sub.title}
                 </Link>
               ))}
             </div>

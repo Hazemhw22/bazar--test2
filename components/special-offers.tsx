@@ -314,10 +314,9 @@ export function SpecialOffers() {
                 </Link>
                 
                 <div className="flex items-center mb-1.5">
-                  <div className="flex text-yellow-400">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} size={12} className="fill-current" />
-                    ))}
+                  <div className="flex ">
+                               <Eye size={18} />
+                    <span className="ml-1 text-sm text-gray-600 dark:text-gray-400">Views</span>
                   </div>
                   <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
                     ({product.view_count || 0})
@@ -327,11 +326,11 @@ export function SpecialOffers() {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-semibold text-blue-600 dark:text-blue-400">
-                      ${getDisplayPrice(product).toFixed(2)}
+                      {getDisplayPrice(product).toFixed(2)} ₪
                     </span>
                     {product.sale_price && product.price && product.sale_price < parseFloat(product.price) && (
                       <span className="text-xs text-gray-500 dark:text-gray-400 line-through ml-1">
-                        ${parseFloat(product.price).toFixed(2)}
+                        {parseFloat(product.price).toFixed(2)} ₪
                       </span>
                     )}
                   </div>
