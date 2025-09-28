@@ -4,7 +4,7 @@
   "nav.home": "الرئيسية",
   "nav.categories": "التصنيفات",
   "nav.cart": "السلة",
-  "nav.favorites": "المفضلة",
+  "nav.wishlist": "المفضلة",
   "nav.orders": "الطلبات",
   "nav.searchPlaceholder": "ابحث عن المنتجات...",
   "nav.products": "المنتجات",
@@ -12,6 +12,7 @@
   "nav.contact": "اتصل بنا",
   "nav.menu": "القائمة",
   "nav.account": "الحساب",
+  "nav.sales": "العروض",
   "actions.addToCart": "أضف إلى السلة",
   "actions.buyNow": "اشتري الآن"
   ,"cart.title": "سلة التسوق",
@@ -67,7 +68,7 @@
   "common.loading": "جاري التحميل...",
   "common.prev": "السابق",
   "common.next": "التالي",
-    "suggestedCategories": "الفئات المقترحة"
+  "suggestedCategories": "الفئات المقترحة"
 
 }
 

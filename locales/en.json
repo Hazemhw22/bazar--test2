@@ -3,7 +3,7 @@
   "app.description": "A platform for buying and selling products",
   "nav.home": "Home",
   "nav.categories": "Categories",
-  "nav.favorites": "Favorites",
+  "nav.wishlist": "Wishlist",
   "nav.orders": "Orders",
   "nav.searchPlaceholder": "Search products...",
   "nav.products": "Products",
@@ -12,6 +12,7 @@
   "nav.cart": "Cart",
   "nav.menu": "Menu",
   "nav.account": "Account",
+  "nav.sales": "Sales",
   "actions.addToCart": "Add to cart",
   "actions.buyNow": "Buy now"
   ,"cart.title": "Shopping Cart",

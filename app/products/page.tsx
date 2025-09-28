@@ -380,7 +380,7 @@ export default function Products() {
         {/* Products content */}
         <section className="w-full lg:w-4/5">
           <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
-            <h1 className="text-3xl lg:text-4xl font-bold flex items-center gap-2">Products Page</h1>
+            <h1 className="text-3xl lg:text-4xl font-bold flex items-center gap-2">Sales Page</h1>
             <div className="flex items-center gap-6 w-full md:w-auto">
               <Input
                 type="text"

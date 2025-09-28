@@ -83,7 +83,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
                 onClick={() => setShowMenu(false)}
               >
                 <span className="text-2xl mb-2">🛍️</span>
-                <span className="text-sm font-medium">{t("nav.products")}</span>
+                <span className="text-sm font-medium">{t("nav.sales")}</span>
               </Link>
               <Link
                 href="/contact"

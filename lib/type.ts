@@ -172,3 +172,20 @@ export interface ProductFeatureValue {
   created_at: string;
   available?: boolean; // لإظهار "Not Available"
 }
+
+export interface CategoryShop {
+  id: number;
+  title: string;
+  description: string;
+  image_url: string;
+  created_at: string;
+}
+
+export interface CategorySubShop {
+  id: number;
+  title: string;
+  description: string;
+  category_id: number;
+  image_url: string;
+  created_at: string;
+}
