@@ -78,7 +78,7 @@ export function SiteHeader() {
       <header className="w-full border-b bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-40">
 
         {/* Upper header - Desktop & Medium screens */}
-        <div className="bg-blue-600 text-white py-2 border-b border-blue-700 dark:bg-gray-900 hidden md:block">
+        <div className="bg-gradient-to-r from-purple-900 to-indigo-900 text-white py-2 border-b border-purple-800 dark:border-purple-900 hidden md:block">
           <div className="max-w-[1600px] mx-auto w-full flex items-center justify-between px-4">
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
@@ -94,12 +94,15 @@ export function SiteHeader() {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                 <Link href="/orders" className=" rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                <Package size={20} />
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link href="/orders" className="rounded-full hover:bg-purple-800 p-1 transition-colors">
+                  <Package size={18} />
+                </Link>
                 {mounted && <ThemeToggle />}
-              {mounted && <LanguageSelector />}
+                {mounted && <LanguageSelector />}
+                <Link href="/favourite" className="rounded-full hover:bg-purple-800 p-1 transition-colors">
+                  <Heart size={18} />
+                </Link>
               </div>
               <div className="flex items-center gap-1">
                 <UserIcon className="w-5 h-5" />
@@ -125,14 +128,14 @@ export function SiteHeader() {
 
             {/* Search */}
             <div className="flex-1 max-w-[600px] mx-8">
-              <div className="relative flex items-center rounded-lg border-2 border-blue-600 bg-white dark:bg-gray-800 overflow-hidden">
+              <div className="relative flex items-center rounded-lg border-2 border-purple-600 bg-white dark:bg-gray-800 overflow-hidden">
                 <span className="pl-2 text-purple-500">✨</span>
                 <input
                   type="text"
                   placeholder="Search for products..."
                   className="flex-1 bg-transparent py-1 px-2 text-[18px] focus:outline-none dark:text-white"
                 />
-                <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 transition-colors">
+                <button className="bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-800 hover:to-indigo-800 text-white px-5 py-2 transition-colors">
                   <Search size={20} />
                 </button>
               </div>

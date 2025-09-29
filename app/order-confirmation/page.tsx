@@ -152,85 +152,92 @@ export default function OrderConfirmationPage() {
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-purple-900 to-gray-900 text-white">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-purple-900 to-indigo-900 shadow-lg p-4 sticky top-0 z-10">
+        <div className="container mx-auto flex justify-center items-center">
+          <h1 className="text-2xl font-bold text-center">Order Confirmation</h1>
+        </div>
+      </div>
+      
       <div className="container mx-auto px-4 py-8 mobile:max-w-[480px]">
         <div className="max-w-4xl mx-auto">
-          {/* Success message for mobile (داخل الصفحة وليس مودال) */}
+          {/* Success message for mobile */}
           <div className="md:hidden w-full flex items-center justify-center mb-6">
-            <div className="bg-card rounded-2xl shadow-2xl p-6 w-full text-center border border-border/60">
-              <div className="mx-auto w-16 h-16 rounded-full bg-green-500/15 flex items-center justify-center mb-3">
-                <CheckCircle size={28} className="text-green-500" />
+            <div className="bg-gradient-to-b from-purple-800/80 to-indigo-900/80 rounded-2xl shadow-2xl p-6 w-full text-center border border-purple-700/50">
+              <div className="mx-auto w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mb-3">
+                <CheckCircle size={28} className="text-green-400" />
               </div>
-              <h3 className="text-xl font-semibold mb-1">Order Successful!</h3>
-              <p className="text-sm text-muted-foreground mb-4">You have successfully made order</p>
+              <h3 className="text-xl font-semibold mb-1 text-white">Order Successful!</h3>
+              <p className="text-sm text-gray-300 mb-4">You have successfully placed your order</p>
               <div className="flex flex-col gap-2">
-                <Link href="/orders"><Button className="rounded-full">View Order</Button></Link>
-                <Link href={`/orders/track/${orderData.id}`}><Button variant="outline" className="rounded-full">Track Order</Button></Link>
+                <Link href="/orders"><Button className="rounded-full bg-blue-600 hover:bg-blue-700 text-white">View Order</Button></Link>
+                <Link href={`/orders/track/${orderData.id}`}><Button variant="outline" className="rounded-full border-purple-500 text-purple-200 hover:bg-purple-800/50">Track Order</Button></Link>
               </div>
             </div>
           </div>
 
           {/* Desktop Card */}
           <div className="hidden md:block">
-            <Card className="mx-auto max-w-2xl mt-8">
+            <Card className="mx-auto max-w-2xl mt-8 bg-gradient-to-b from-purple-800/80 to-indigo-900/80 border border-purple-700/50 text-white shadow-xl">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <CheckCircle size={32} className="text-green-500" />
-                  <CardTitle>Order Confirmed</CardTitle>
+                  <CheckCircle size={32} className="text-green-400" />
+                  <CardTitle className="text-white">Order Confirmed</CardTitle>
                 </div>
-                <div className="text-sm text-muted-foreground mt-2">
+                <div className="text-sm text-gray-300 mt-2">
                   Order #{orderData.id} • {formattedDate}
                 </div>
               </CardHeader>
               <CardContent>
-                <Separator className="my-4" />
+                <Separator className="my-4 bg-purple-600/50" />
                 <div className="mb-4">
-                  <div className="font-semibold mb-2">Order Items</div>
+                  <div className="font-semibold mb-2 text-white">Order Items</div>
                   <div className="flex flex-col gap-3">
                     {orderData.items.map((item) => (
-                      <div key={item.id} className="flex items-center gap-3">
-                        <div className="w-14 h-14 rounded-lg overflow-hidden border border-border/60 bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                      <div key={item.id} className="flex items-center gap-3 bg-purple-900/30 p-3 rounded-lg">
+                        <div className="w-14 h-14 rounded-lg overflow-hidden border border-purple-700/50 bg-purple-800/50 flex items-center justify-center">
                           {item.image ? (
-                            <Image src={item.image} alt={item.name} width={56} height={56} />
+                            <Image src={item.image} alt={item.name} width={56} height={56} className="object-cover" />
                           ) : (
-                            <Package size={32} className="text-gray-400" />
+                            <Package size={32} className="text-gray-300" />
                           )}
                         </div>
                         <div className="flex-1">
-                          <div className="font-medium">{item.name}</div>
-                          <div className="text-xs text-muted-foreground">Qty: {item.quantity}</div>
+                          <div className="font-medium text-white">{item.name}</div>
+                          <div className="text-xs text-gray-300">Qty: {item.quantity}</div>
                         </div>
-                        <div className="font-semibold text-blue-600">₪{item.price}</div>
+                        <div className="font-semibold text-blue-400">₪{item.price}</div>
                       </div>
                     ))}
                   </div>
                 </div>
-                <Separator className="my-4" />
+                <Separator className="my-4 bg-purple-600/50" />
                 <div className="mb-4">
-                  <div className="font-semibold mb-2">Shipping</div>
-                  <div className="text-sm">
+                  <div className="font-semibold mb-2 text-white">Shipping</div>
+                  <div className="text-sm text-gray-300">
                     {orderData.shipping_method.type} • {orderData.shipping_method.duration} • ₪{orderData.shipping_method.cost}
                   </div>
-                  <div className="text-sm mt-1">
-                    <span className="font-medium">Address:</span> {orderData.shipping_address.address}, {orderData.shipping_address.city}
+                  <div className="text-sm mt-1 text-gray-300">
+                    <span className="font-medium text-white">Address:</span> {orderData.shipping_address.address}, {orderData.shipping_address.city}
                   </div>
                 </div>
-                <Separator className="my-4" />
+                <Separator className="my-4 bg-purple-600/50" />
                 <div className="mb-4">
-                  <div className="font-semibold mb-2">Payment</div>
-                  <div className="text-sm">
+                  <div className="font-semibold mb-2 text-white">Payment</div>
+                  <div className="text-sm text-gray-300">
                     {orderData.payment_method.type}
                     {orderData.payment_method.provider && <> • {orderData.payment_method.provider}</>}
                   </div>
                 </div>
-                <Separator className="my-4" />
+                <Separator className="my-4 bg-purple-600/50" />
                 <div className="flex items-center justify-between font-bold text-lg">
-                  <span>Total</span>
-                  <span>₪{orderData.total}</span>
+                  <span className="text-white">Total</span>
+                  <span className="text-blue-400">₪{orderData.total}</span>
                 </div>
                 <div className="flex gap-3 mt-6">
-                  <Link href="/orders"><Button className="rounded-full flex-1">View Orders</Button></Link>
-                  <Link href={`/orders/track/${orderData.id}`}><Button variant="outline" className="rounded-full flex-1">Track Order</Button></Link>
+                  <Link href="/orders"><Button className="rounded-full flex-1 bg-blue-600 hover:bg-blue-700 text-white">View Orders</Button></Link>
+                  <Link href={`/orders/track/${orderData.id}`}><Button variant="outline" className="rounded-full flex-1 border-purple-500 text-purple-200 hover:bg-purple-800/50">Track Order</Button></Link>
                 </div>
               </CardContent>
             </Card>

@@ -331,21 +331,25 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-2 py-2 lg:py-8 mobile:max-w-[480px]">
-        <div className="mb-4 lg:mb-6">
-          <Link
-            href="/cart"
-            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <ArrowLeft size={16} className="mr-1" />
-            Back to Cart
-          </Link>
-          <h1 className="text-2xl lg:text-3xl font-bold">Checkout</h1>
-          {errorMsg && (
-            <p className="mt-2 text-sm text-red-600">{errorMsg}</p>
-          )}
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-purple-900 to-gray-900 text-white">
+      {/* Header with back button and cart */}
+      <div className="sticky top-0 z-10 bg-gradient-to-r from-purple-900 to-indigo-900 p-4 flex justify-between items-center shadow-lg">
+        <button 
+          onClick={() => router.back()} 
+          className="p-2 rounded-lg bg-purple-800 hover:bg-purple-700"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <h1 className="text-xl font-semibold">Checkout</h1>
+        <div className="w-5"></div> {/* Empty div for spacing */}
+      </div>
+
+      <div className="container mx-auto px-4 py-6 pb-24 mobile:max-w-[480px]">
+        {errorMsg && (
+          <div className="mb-4 p-3 bg-red-900/30 border border-red-800 rounded-lg text-red-300">
+            {errorMsg}
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
           {/* Checkout Form */}
@@ -500,11 +504,11 @@ export default function CheckoutPage() {
             </Card>
 
             {/* Shipping Method */}
-            <Card className="bg-card rounded-2xl">
+            <Card className="bg-gradient-to-r from-purple-800/50 to-indigo-800/50 rounded-2xl shadow-lg">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Truck size={20} />
-                  Shipping Method
+                  Delivery Options
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -516,52 +520,52 @@ export default function CheckoutPage() {
                   className="space-y-3"
                 >
                   <div
-                    className={`flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
                       formData.shippingMethod === "standard"
-                        ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
-                        : "border-gray-300 dark:border-gray-600"
+                        ? "bg-blue-600"
+                        : "bg-purple-700/50"
                     }`}
                   >
                     <RadioGroupItem value="standard" id="standard" />
                     <Label htmlFor="standard" className="flex-1 cursor-pointer">
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
                         <div>
-                          <p className="font-medium">Standard Shipping</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <p className="font-medium">Standard Delivery</p>
+                          <p className="text-sm text-gray-300">
                             5-7 business days
                           </p>
                         </div>
-                        <span className="font-medium mt-1 sm:mt-0">₪10.00</span>
+                        <span className="font-bold mt-1 sm:mt-0">₪10.00</span>
                       </div>
                     </Label>
                   </div>
 
                   <div
-                    className={`flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
                       formData.shippingMethod === "express"
-                        ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
-                        : "border-gray-300 dark:border-gray-600"
+                        ? "bg-blue-600"
+                        : "bg-purple-700/50"
                     }`}
                   >
                     <RadioGroupItem value="express" id="express" />
                     <Label htmlFor="express" className="flex-1 cursor-pointer">
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
                         <div>
-                          <p className="font-medium">Express Shipping</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                          <p className="font-medium">Express Delivery</p>
+                          <p className="text-sm text-gray-300">
                             2-3 business days
                           </p>
                         </div>
-                        <span className="font-medium mt-1 sm:mt-0">₪30.00</span>
+                        <span className="font-bold mt-1 sm:mt-0">₪30.00</span>
                       </div>
                     </Label>
                   </div>
 
                   <div
-                    className={`flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
+                    className={`flex items-center space-x-3 p-3 rounded-lg transition-colors ${
                       formData.shippingMethod === "overnight"
-                        ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
-                        : "border-gray-300 dark:border-gray-600"
+                        ? "bg-blue-600"
+                        : "bg-purple-700/50"
                     }`}
                   >
                     <RadioGroupItem value="overnight" id="overnight" />
@@ -571,12 +575,12 @@ export default function CheckoutPage() {
                     >
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
                         <div>
-                          <p className="font-medium">Overnight Shipping</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Next business day
+                          <p className="font-medium">Same Day Delivery</p>
+                          <p className="text-sm text-gray-300">
+                            Today, before 8PM
                           </p>
                         </div>
-                        <span className="font-medium mt-1 sm:mt-0">₪50.00</span>
+                        <span className="font-bold mt-1 sm:mt-0">₪50.00</span>
                       </div>
                     </Label>
                   </div>
@@ -639,7 +643,7 @@ export default function CheckoutPage() {
             </Card>
 
             {/* Payment Method */}
-            <Card className="bg-card rounded-2xl">
+            <Card className="bg-gradient-to-r from-purple-800/50 to-indigo-800/50 rounded-2xl shadow-lg">
               <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <CreditCard size={20} />
@@ -881,7 +885,7 @@ export default function CheckoutPage() {
 
           {/* Order Summary - Mobile: Shows at bottom, Desktop: Shows on right */}
           <div className="lg:sticky lg:top-8 lg:h-fit">
-            <Card className="bg-card rounded-2xl">
+            <Card className="bg-gradient-to-r from-purple-800/50 to-indigo-800/50 rounded-2xl shadow-lg">
               <CardHeader className="pb-4">
                 <CardTitle className="text-lg">Order Summary</CardTitle>
               </CardHeader>
@@ -890,7 +894,7 @@ export default function CheckoutPage() {
                 <div className="space-y-3 max-h-64 lg:max-h-96 overflow-y-auto">
                   {items.map((item) => (
                     <div key={item.id} className="flex gap-3">
-                      <div className="relative w-12 h-12 lg:w-16 lg:h-16 rounded-md overflow-hidden flex-shrink-0">
+                      <div className="relative w-12 h-12 lg:w-16 lg:h-16 rounded-lg overflow-hidden flex-shrink-0 bg-purple-700/50">
                         <Image
                           src={
                             item.image || "/placeholder.svg?height=64&width=64"
@@ -904,11 +908,11 @@ export default function CheckoutPage() {
                         <h4 className="font-medium text-sm truncate">
                           {item.name}
                         </h4>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                        <p className="text-xs text-gray-300">
                           Qty: {item.quantity}
                         </p>
                       </div>
-                      <span className="font-medium text-sm">
+                      <span className="font-bold text-sm">
                         ₪{(item.price * item.quantity).toFixed(2)}
                       </span>
                     </div>
@@ -919,15 +923,15 @@ export default function CheckoutPage() {
 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span>Subtotal</span>
+                    <span className="text-gray-300">Subtotal</span>
                     <span>₪{subtotal.toFixed()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Shipping</span>
+                    <span className="text-gray-300">Shipping</span>
                     <span>₪{shippingCost.toFixed()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Tax</span>
+                    <span className="text-gray-300">Tax</span>
                     <span>₪{tax.toFixed(2)}</span>
                   </div>
                   <Separator />
@@ -938,7 +942,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <Button
-                  className="w-full mt-4"
+                  className="w-full mt-4 bg-blue-600 hover:bg-blue-700"
                   size="lg"
                   onClick={handlePlaceOrder}
                   disabled={isLoading}
