@@ -1,4 +1,3 @@
-// ClientCancelOrder.tsx
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
@@ -33,6 +32,8 @@ export default function ClientCancelOrder() {
   };
 
   return (
-    <div>{/* محتوى الصفحة كما لديك */}</div>
+    <div className="min-h-screen bg-gradient-to-b from-purple-900 to-gray-900 text-white">
+      {/* ...بقية JSX كما في كودك الحالي */}
+    </div>
   );
 }
