@@ -1,4 +1,5 @@
-// app/orders/cancel/page.tsx
+"use client";
+
 import ClientCancelOrder from "@/components/ClientCancelOrder";
 
 export default function CancelOrderPage() {
