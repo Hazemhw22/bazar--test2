@@ -280,3 +280,16 @@ body {
 .dark .site-header-dark {
   background-color: hsl(var(--card));
 }
+
+/* Create a stable viewport */
+html, body, #__next {
+  height: 100%;
+  overflow: hidden;
+}
+
+body > div {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
