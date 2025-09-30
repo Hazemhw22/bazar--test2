@@ -27,13 +27,12 @@ export default function AppProviders({
           <LocationProvider>
             <CartProvider>
               <FavoritesProvider>
-                <div className="min-h-screen flex flex-col page-background">
+                <div className="min-h-screen flex flex-col">
                   <SiteHeader />
                   <BreadcrumbsNav />
-                  <main className="flex-1 pb-28 page-container max-w-7xl mx-auto w-full m-4 p-1 sm:p-2 lg:p-4">
+                  <main className="flex-1 w-full">
                     {children}
                   </main>
-                  <SiteFooter />
                   <Toaster />
                 </div>
               </FavoritesProvider>

@@ -52,6 +52,23 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Pazar theme colors based on Figma design
+        pazar: {
+          // Light mode colors
+          primary: "#6366F1", // Main purple/indigo color
+          secondary: "#F472B6", // Pink accent
+          light: "#F5F3FF", // Light purple background
+          dark: "#1E1B4B", // Dark purple/indigo
+          // Dark mode colors
+          "dark-bg": "#0F121A", // Dark background from cart page
+          "dark-card": "#1A1D29", // Dark card background
+          "dark-accent": "#2A2F42", // Slightly lighter dark for accents
+          gradient: {
+            from: "#6366F1", // Start of gradient
+            via: "#8B5CF6", // Middle of gradient
+            to: "#EC4899", // End of gradient
+          },
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

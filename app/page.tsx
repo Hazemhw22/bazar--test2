@@ -35,47 +35,64 @@ export default function Home() {
 
   return (
     <>
-      <main className="flex flex-col gap-6 sm:p-2 bg-background min-h-screen transition-colors duration-300 mobile:max-w-[480px] mobile:mx-auto mobile:px-1 mobile:gap-3">
+      <main className="flex flex-col gap-4 sm:p-2 min-h-screen transition-colors duration-300 mobile:max-w-[480px] mobile:mx-auto mobile:px-2 mobile:gap-3">
         
-         {/* الهيرو الكبير والهيرو الصغير */}
+         {/* Hero Section */}
         <section className="mobile:mt-2">
           <HeroSection />
         </section>
 
         {/* Home Categories Section */}
-        <HomeCategories />
+        <div className="px-1">
+          <HomeCategories />
+        </div>
 
         {/* Special Offers Section */}
-        <SpecialOffers />
+        <div className="px-1">
+          <SpecialOffers />
+        </div>
 
-        {/* عروض المنتجات مع بانر بعد كل قسم */}
-        <MainProductSection title="Todays Best Deals For You!" products={offers} linkToAll="/products?filter=offers" />
+        {/* Product Sections with Banners */}
+        <div className="px-1">
+          <MainProductSection title="Todays Best Deals For You!" products={offers} linkToAll="/products?filter=offers" />
+        </div>
         <AdBanner
           imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
           href="/products?filter=deals"
           title="Special Offers"
           subtitle="Up to 50% off"
+          className="bg-gradient-to-r from-pazar-primary/10 to-pazar-secondary/10"
         />
 
-        <MainProductSection title="Top Deals In" products={bestSellers} linkToAll="/products?filter=best" />
+        <div className="px-1">
+          <MainProductSection title="Top Deals In" products={bestSellers} linkToAll="/products?filter=best" />
+        </div>
         <AdBanner
           imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
           href="/products?filter=deals"
           title="Special Offers"
           subtitle="Up to 50% off"
+          className="bg-gradient-to-r from-pazar-primary/10 to-pazar-secondary/10"
         />
 
-        <MainProductSection title="Best Sellers In Beauty & Health" products={selected} linkToAll="/products?filter=selected" />
+        <div className="px-1">
+          <MainProductSection title="Best Sellers In Beauty & Health" products={selected} linkToAll="/products?filter=selected" />
+        </div>
         <AdBanner
           imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
           href="/products?filter=deals"
           title="Special Offers"
           subtitle="Up to 50% off"
+          className="bg-gradient-to-r from-pazar-primary/10 to-pazar-secondary/10"
         />
 
-        {/* متاجر وعروض الهدايا */}
-        <PopularStores />
-        <GiftSection />
+        {/* Stores and Gift Section */}
+        <div className="px-1">
+          <PopularStores />
+        </div>
+        <div className="px-1 pb-24">
+          <GiftSection />
+        </div>
       </main>
 
       {/* Location Selection Modal */}

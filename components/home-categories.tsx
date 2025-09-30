@@ -132,118 +132,44 @@ export function HomeCategories() {
   const displayedCategories = categories.slice(0, 5);
 
   return (
-    <section className="w-full py-4 sm:py-8 px-2 sm:px-1 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <section className="w-full py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* العنوان */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">
             {t("suggestedCategories")}
           </h2>
+          <Link href="/categories" className="text-sm font-medium text-primary hover:underline">
+            See All
+          </Link>
         </div>
 
-        {/* ديسكتوب: سطر أفقي لجميع الكاتيجوري بشكل كروت */}
-        <div className="hidden md:block">
-          <div
-            ref={scrollRef}
-            className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide scroll-smooth cursor-grab"
-            style={{ WebkitOverflowScrolling: "touch" }}
-          >
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`
-          flex flex-col items-center min-w-[140px] max-w-[160px] bg-white dark:bg-gray-900 rounded-2xl shadow
-          border-2 transition-all duration-150 px-3 pt-3 pb-2
-          ${selectedCategory === category.id
-            ? "border-red-500 shadow-lg"
-            : "border-transparent hover:border-gray-300"}`}
-                style={{ background: "none" }}
-              >
-                <div className="w-20 h-20 rounded-xl overflow-hidden mb-2 bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                  {category.image_url ? (
-                    <Image
-                      src={category.image_url}
-                      alt={category.title}
-                      width={80}
-                      height={80}
-                      className="object-contain"
-                    />
-                  ) : (
-                    <div className="w-16 h-16 bg-gray-300 dark:bg-gray-700 rounded-xl" />
-                  )}
-                </div>
-                <span className={`text-base font-semibold truncate text-center ${selectedCategory === category.id ? "text-red-600" : "text-gray-900 dark:text-gray-100"}`}>
-                  {category.title}
-                </span>
-              </button>
-            ))}
-            {/* زر عرض الكل */}
-            <Link
-              href="/categories"
-              className="flex flex-col items-center min-w-[140px] max-w-[160px] bg-blue-50 dark:bg-blue-900 rounded-2xl shadow px-3 pt-3 pb-2 border-2 border-blue-600 text-blue-700 dark:text-blue-200 font-semibold hover:bg-blue-100 transition-all"
-            >
-              <div className="w-20 h-20 rounded-xl bg-blue-600 flex items-center justify-center mb-2">
-                <ChevronRight className="w-8 h-8 text-white" />
-              </div>
-              <span className="text-base font-semibold text-center">See All</span>
-            </Link>
-          </div>
-          {/* subcategory كبطاقات أو pills واضحة */}
-          {selectedCategory && subcategories.length > 0 && (
-            <div className="flex gap-2 mt-5">
-              {subcategories.map((sub) => (
-                <Link
-                  key={sub.id}
-                  href={`/categories/${selectedCategory}?sub=${sub.id}`}
-                  className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-blue-600 hover:text-white transition-colors shadow-sm border border-gray-200 dark:border-gray-700 text-sm font-medium"
-                >
-                  {sub.title}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* موبايل: شبكة كما هي */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-6 md:hidden">
-          {displayedCategories.map((category) => (
+        {/* Categories Grid */}
+        <div className="grid grid-cols-4 gap-4">
+          {categories.slice(0, 8).map((category) => (
             <Link
               key={category.id}
               href={`/categories/${category.id}`}
-              className="flex flex-col items-center text-center cursor-pointer hover:scale-105 transition-transform duration-200"
+              className="flex flex-col items-center text-center cursor-pointer group"
             >
-              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden mb-2">
+              <div className="w-20 h-20 p-4 rounded-2xl bg-card flex items-center justify-center overflow-hidden mb-2 transition-all duration-300 group-hover:shadow-lg group-hover:bg-primary/10">
                 {category.image_url ? (
                   <Image
                     src={category.image_url}
                     alt={category.title}
-                    width={48}
-                    height={48}
-                    className="object-contain"
+                    width={64}
+                    height={64}
+                    className="object-contain transition-transform duration-300 group-hover:scale-110"
                   />
                 ) : (
-                  <div className="w-12 h-12 bg-gray-300 dark:bg-gray-700 rounded-full" />
+                  <div className="w-16 h-16 bg-muted rounded-full" />
                 )}
               </div>
-              <h3 className="text-xs sm:text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+              <h3 className="text-sm font-medium text-foreground truncate w-full">
                 {category.title}
               </h3>
             </Link>
           ))}
-
-          {/* العنصر السادس: See All */}
-          <Link
-            href="/categories"
-            className="flex flex-col items-center text-center cursor-pointer hover:scale-105 transition-transform duration-200"
-          >
-            <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center mb-2">
-              <ChevronRight className="w-6 h-6 text-white" />
-            </div>
-            <h3 className="text-xs sm:text-sm font-medium text-blue-600">
-              See All
-            </h3>
-          </Link>
         </div>
       </div>
     </section>

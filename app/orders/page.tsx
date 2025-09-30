@@ -8,7 +8,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Package, CheckCircle, Truck, Clock, XCircle, AlertCircle } from "lucide-react";
-import { pdf, Document, Page, Text, View, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
 import QuickViewModal from "../../components/QuickViewModal";
 
 export default function OrdersPage() {
@@ -58,29 +57,6 @@ export default function OrdersPage() {
 
     fetchOrders();
   }, []);
-
-  const generatePDF = (order: any) => {
-    const styles = StyleSheet.create({
-      page: { padding: 20, fontSize: 12 },
-      section: { marginBottom: 10 },
-      title: { fontSize: 16, fontWeight: 'bold', marginBottom: 5 },
-    });
-
-    return (
-      <Document>
-        <Page style={styles.page}>
-          <View style={styles.section}>
-            <Text style={styles.title}>Order #{order.id}</Text>
-            <Text>Status: {order.status}</Text>
-            <Text>Payment: {order.payment_method?.type || "Credit Card"}</Text>
-            <Text>Delivery: {order.shipping_method?.type || "Standard"}</Text>
-            <Text>Date: {new Date(order.created_at).toLocaleDateString()}</Text>
-            <Text>Total: ₪{order.products?.price || "0.00"}</Text>
-          </View>
-        </Page>
-      </Document>
-    );
-  };
 
   if (loading) return <div className="text-center py-12 text-gray-600 dark:text-gray-400">Loading orders...</div>;
 

@@ -1,120 +1,64 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Home, User, ShoppingBag, ClipboardList, Menu, Heart, Store, Phone, Package, ShoppingCart } from "lucide-react"
-import { useCart } from "./cart-provider"
-import { useState } from "react"
-import { useI18n } from "../lib/i18n"
+import Link from "next/link";
+import { Home, ShoppingCart, ClipboardList, ShoppingBag, Store } from "lucide-react";
+import { useCart } from "./cart-provider";
+import { useI18n } from "../lib/i18n";
+import { usePathname } from "next/navigation";
 
 interface MobileNavProps {
-  onCartToggle: () => void
+  onCartToggle: () => void;
 }
 
 export function MobileNav({ onCartToggle }: MobileNavProps) {
-  const { totalItems } = useCart()
-  const [showMenu, setShowMenu] = useState(false)
-  const { t } = useI18n()
+  const { totalItems } = useCart();
+  const { t } = useI18n();
+  const pathname = usePathname();
+
+  const navItems = [
+    { href: "/", label: t("nav.home"), icon: Home },
+    { href: "/products", label: t("nav.sales"), icon: ShoppingBag },
+    { href: "/cart", label: t("nav.cart"), icon: ShoppingCart, isCart: true },
+    { href: "/shops", label: t("nav.shops"), icon: Store },
+    { href: "/orders", label: t("nav.orders"), icon: ClipboardList },
+  ];
 
   return (
-    <>
-      <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-purple-900 to-indigo-900 border-t border-purple-800/60 shadow-lg flex justify-around items-center py-3 md:hidden z-50 rounded-t-2xl">
-        <Link
-          href="/"
-          className="flex flex-col items-center text-xs text-white hover:text-purple-300 transition-colors"
-        >
-          <Home size={20} className="mb-1" />
-          <span>{t("nav.home")}</span>
-        </Link>
-
-        <button
-          onClick={onCartToggle}
-          className="flex flex-col items-center text-xs text-white hover:text-purple-300 transition-colors relative"
-        >
-          <ShoppingCart size={20} className="mb-1" />
-          <span>{t("nav.cart")}</span>
-          {totalItems > 0 && (
-            <span className="absolute top-[-18px] right-[10px] flex h-5 w-5 items-center justify-center rounded-full bg-pink-500 text-[10px] text-white font-medium shadow-md z-10">
-              {totalItems > 9 ? "9+" : totalItems}
-            </span>
-          )}
-        </button>
-
-        <Link
-          href="/account"
-          className="flex flex-col items-center text-xs text-white hover:text-purple-300 transition-colors"
-        >
-          <User size={20} className="mb-1" />
-          <span>{t("nav.account")}</span>
-        </Link>
-
-        <button
-          onClick={() => setShowMenu(!showMenu)}
-          className="flex flex-col items-center text-xs text-white hover:text-purple-300 transition-colors"
-        >
-          <Menu size={20} className="mb-1" />
-          <span>{t("nav.menu")}</span>
-        </button>
-      </nav>
-
-      {/* Mobile Menu Overlay */}
-      {showMenu && (
-        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setShowMenu(false)}>
-          <div className="fixed bottom-16 left-4 right-4 bg-gradient-to-r from-purple-900 to-indigo-900 rounded-lg shadow-xl p-4 border border-purple-800">
-            <div className="grid grid-cols-2 gap-4">
-              <Link
-                href="/categories"
-                className="flex flex-col items-center p-4 rounded-lg hover:bg-purple-800/50 transition-colors"
-                onClick={() => setShowMenu(false)}
-              >
-                <span className="text-2xl mb-2">📱</span>
-                <span className="text-sm font-medium text-white">{t("nav.categories")}</span>
+    <nav className="fixed bottom-1 left-1/2 -translate-x-1/2 w-[95%] max-w-md mx-auto bg-card/80 backdrop-blur-lg border border-white/10 shadow-2xl flex justify-around items-center py-2.5 md:hidden z-50 rounded-full">
+      {navItems.map((item) => {
+        const isActive = pathname === item.href;
+        return (
+          <button
+            key={item.href}
+            onClick={item.isCart ? onCartToggle : undefined}
+            className={`flex flex-col items-center text-xs transition-colors w-16 ${
+              isActive ? "text-primary" : "text-muted-foreground hover:text-primary"
+            }`}
+          >
+            {item.isCart ? (
+              <div className="relative">
+                <item.icon
+                  size={22}
+                  className={`mb-1 transition-all ${isActive ? "text-primary drop-shadow-[0_0_8px_hsl(var(--primary))]" : ""}`}
+                />
+                {totalItems > 0 && (
+                  <span className="absolute top-[-5px] right-[-8px] flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground font-medium shadow-md">
+                    {totalItems > 9 ? "9+" : totalItems}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <Link href={item.href} className="flex flex-col items-center">
+                <item.icon
+                  size={22}
+                  className={`mb-1 transition-all ${isActive ? "text-primary drop-shadow-[0_0_8px_hsl(var(--primary))]" : ""}`}
+                />
               </Link>
-              <Link
-                href="/shops"
-                className="flex flex-col items-center p-4 rounded-lg hover:bg-purple-800/50 transition-colors"
-                onClick={() => setShowMenu(false)}
-              >
-                <span className="text-2xl mb-2">🏪</span>
-                <span className="text-sm font-medium text-white">{t("nav.shops")}</span>
-              </Link>
-              <Link
-                href="/products"
-                className="flex flex-col items-center p-4 rounded-lg hover:bg-purple-800/50 transition-colors"
-                onClick={() => setShowMenu(false)}
-              >
-                <span className="text-2xl mb-2">🛍️</span>
-                <span className="text-sm font-medium text-white">{t("nav.sales")}</span>
-              </Link>
-              <Link
-                href="/contact"
-                className="flex flex-col items-center p-4 rounded-lg hover:bg-purple-800/50 transition-colors"
-                onClick={() => setShowMenu(false)}
-              >
-                <span className="text-2xl mb-2">📞</span>
-                <span className="text-sm font-medium text-white">{t("nav.contact")}</span>
-              </Link>
-              
-              <Link
-                href="/orders"
-                className="flex flex-col items-center p-4 rounded-lg hover:bg-purple-800/50 transition-colors"
-                onClick={() => setShowMenu(false)}
-              >
-                <span className="text-2xl mb-2">📦</span>
-                <span className="text-sm font-medium text-white">{t("nav.orders")}</span>
-              </Link>
-              
-              <Link
-                href="/favourite"
-                className="flex flex-col items-center p-4 rounded-lg hover:bg-purple-800/50 transition-colors"
-                onClick={() => setShowMenu(false)}
-              >
-                <span className="text-2xl mb-2">❤️</span>
-                <span className="text-sm font-medium text-white">{t("nav.wishlist")}</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  )
+            )}
+            <span className="text-[11px]">{item.label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
 }

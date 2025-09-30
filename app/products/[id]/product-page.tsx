@@ -174,7 +174,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     return <div className="p-4 text-red-500">المنتج غير موجود أو حدث خطأ.</div>;
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto py-8 px-4 sm:px-6 lg:px-8 mobile:max-w-[480px]">
+    <div className="w-full max-w-[1400px] mx-auto py-8 px-4 sm:px-6 lg:px-8 mobile:max-w-[480px] page-background text-foreground">
       {/* Product Type Header */}
       {renderProductContent()}
 

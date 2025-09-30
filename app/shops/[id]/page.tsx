@@ -2,33 +2,29 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import {
-  ArrowLeft,
-  Search,
+  ChevronLeft,
   Heart,
-  Share2,
-  Clock,
-  MapPin,
-  ShoppingBag,
-  LayoutGrid,
+  MoreHorizontal,
+  ChevronRight,
   Star,
-  Package,
-  Truck,
-  Phone,
-  Mail,
+  Users,
   ChevronDown,
-  Plus,
-  Minus,
-  ShoppingCart,
+  MapPin,
+  Clock,
+  Share2,
+  Info,
+  Phone,
+  Search,
   Filter,
+  ShoppingBag,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
   fetchShops,
   supabase,
@@ -37,9 +33,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import type { Shop, Category, Product, WorkHours } from "@/lib/type";
 import { ProductCard } from "../../../components/ProductCard";
-import { HomeCategories } from "@/components/home-categories";
 import AdBanner from "@/components/AdBanner";
-import { useCart } from "@/components/cart-provider";
 
 export default function ShopDetailPage() {
   const params = useParams();
@@ -48,7 +42,7 @@ export default function ShopDetailPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
-  const [activeTab, setActiveTab] = useState("featured");
+  const [activeTab, setActiveTab] = useState("categories");
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [productsSort, setProductsSort] = useState("newest");
@@ -219,171 +213,226 @@ export default function ShopDetailPage() {
     );
   }
 
-  const router = useRouter();
-  const { addItem } = useCart();
-  
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-900 to-gray-900 text-white">
-      {/* Shop Header */}
-      <div className="bg-gradient-to-r from-purple-900 to-indigo-900 shadow-lg">
-        <div className="px-4 py-4">
-          <div className="flex items-center justify-between">
-            <button 
-              onClick={() => router.push('/shops')}
-              className="flex items-center text-white"
-            >
-              <ArrowLeft className="h-5 w-5 mr-2" />
-              <span className="font-medium">Back</span>
-            </button>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => router.push('/cart')}
-                className="relative flex items-center justify-center w-10 h-10 rounded-full bg-purple-800 hover:bg-purple-700"
-                aria-label="View cart"
-              >
-                <ShoppingCart className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">3</span>
-              </button>
-            </div>
-          </div>
+    <div className="min-h-screen w-full">
+{/* Hero/Banner Section - 6am Mart Style */}
+<div className="relative w-full h-60 sm:h-72 md:h-80">
+        <Image
+          src={shop.cover_image_url || "/placeholder.svg"}
+          alt={shop.shop_name}
+          fill
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute top-4 left-4">
+          <button onClick={() => window.history.back()} className="bg-black/40 text-white p-2 rounded-full">
+            <ChevronLeft size={24} />
+          </button>
+        </div>
+        <div className="absolute top-4 right-4 flex gap-2">
+          <button className="bg-black/40 text-white p-2 rounded-full">
+            <Heart size={24} />
+          </button>
+          <button className="bg-black/40 text-white p-2 rounded-full">
+            <MoreHorizontal size={24} />
+          </button>
         </div>
       </div>
 
-      {/* Shop Info Card */}
-      <div className="px-4 py-6">
-        <div className="bg-gradient-to-r from-purple-800 to-indigo-800 rounded-xl p-4 shadow-lg">
-          <div className="flex items-center">
-            <div className="w-20 h-20 rounded-xl overflow-hidden relative mr-4 bg-purple-700">
-              {shop?.logo_url ? (
-                <Image src={shop.logo_url} alt={shop.shop_name} fill className="object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-2xl font-bold">
-                  {shop?.shop_name?.charAt(0) || "S"}
-                </div>
-              )}
-            </div>
+      {/* Store Info Panel */}
+      <div className="relative -mt-16 sm:-mt-20 z-10">
+        <div className="max-w-4xl mx-auto bg-card rounded-2xl p-4 sm:p-6 shadow-lg">
+          <div className="flex items-start gap-4">
+            <Image
+              src={shop.logo_url || "/placeholder.svg"}
+              alt={`${shop.shop_name} logo`}
+              width={80}
+              height={80}
+              className="rounded-full border-4 border-card"
+            />
             <div className="flex-1">
-              <h1 className="text-2xl font-bold">{shop?.shop_name || "Loading..."}</h1>
-              <div className="flex items-center mt-1 text-gray-300">
-                <MapPin className="h-4 w-4 mr-1" />
-                <span className="text-sm">{shop?.address || "Address unavailable"}</span>
-              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{shop.shop_name}</h1>
+              <Link href="#" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1">
+                {shop.address} <ChevronRight size={16} />
+              </Link>
             </div>
           </div>
           
-          {/* Shop Metrics */}
-          <div className="grid grid-cols-3 gap-4 mt-4">
-            <div className="bg-purple-700/50 rounded-lg p-3 text-center">
-              <div className="text-xl font-bold">4.8</div>
-              <div className="text-xs text-gray-300">Rating</div>
+          <div className="grid grid-cols-3 gap-4 mt-4 text-center border-t border-border pt-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Products</p>
+              <p className="font-bold text-foreground">{productsCount}</p>
             </div>
-            <div className="bg-purple-700/50 rounded-lg p-3 text-center">
-              <div className="text-xl font-bold">30</div>
-              <div className="text-xs text-gray-300">Delivery Time</div>
+            <div>
+              <p className="text-sm text-muted-foreground">Delivery Time</p>
+              <p className="font-bold text-foreground">30 min</p>
             </div>
-            <div className="bg-purple-700/50 rounded-lg p-3 text-center">
-              <div className="text-xl font-bold">${shop?.delivery_fee || "3.99"}</div>
-              <div className="text-xs text-gray-300">Delivery Fee</div>
+            <div>
+              <p className="text-sm text-muted-foreground">Rating/Review</p>
+              <p className="font-bold text-foreground flex items-center justify-center gap-1">
+                <Star size={16} className="text-yellow-400" fill="currentColor" /> 4.8 (200)
+              </p>
             </div>
           </div>
-          
-          {/* Action Buttons */}
-          <div className="flex space-x-3 mt-4">
-            <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg flex items-center justify-center">
-              <Phone className="h-4 w-4 mr-2" />
-              Call
-            </button>
-            <button className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg flex items-center justify-center">
-              <MapPin className="h-4 w-4 mr-2" />
-              Directions
+
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <button className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold">Delivery</button>
+            <button className="w-full bg-secondary text-secondary-foreground py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
+              <Users size={20} /> Group Order
             </button>
           </div>
         </div>
       </div>
 
 
-      {/* Category Tabs */}
-      <div className="px-4 mt-6">
-        <div className="overflow-x-auto scrollbar-hide">
-          <div className="flex space-x-4 border-b border-gray-700">
-            <button 
-              className="text-white px-4 py-2 border-b-2 border-blue-500 font-medium"
-              onClick={() => setActiveTab("featured")}
+      {/* Main Content Area */}
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* شريط تصنيفات المتجر */}
+        <div className="mb-8 relative">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Categories</h2>
+          <div className="relative">
+            {/* سهم يسار (ديسكتوب فقط) */}
+            <button
+              className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+              onClick={() => {
+                const el = document.getElementById("shop-category-scroll");
+                if (el) el.scrollBy({ left: -150, behavior: "smooth" });
+              }}
+              aria-label="Scroll Left"
             >
-              Featured Items
+              <ChevronDown className="rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
             </button>
-            <button 
-              className="text-gray-400 px-4 py-2 hover:text-white"
-              onClick={() => setActiveTab("phone")}
-            >
-              Phone
-            </button>
-            <button 
-              className="text-gray-400 px-4 py-2 hover:text-white"
-              onClick={() => setActiveTab("airpods")}
-            >
-              Airpods
-            </button>
-            <button 
-              className="text-gray-400 px-4 py-2 hover:text-white"
-              onClick={() => setActiveTab("watch")}
-            >
-              Watch
-            </button>
-          </div>
-        </div>
-        
-        <h2 className="text-2xl font-bold mt-6 mb-4">Featured Items</h2>
-        
-        {/* Custom scrollbar hide */}
-        <style jsx>{`
-          .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-          }
-          .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-          }
-        `}</style>
-      </div>
 
-      {/* Product Grid */}
-      <div className="px-4 pb-20">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 8 }).map((_, index) => (
-            <div key={index} className="bg-gradient-to-b from-purple-800/50 to-indigo-900/50 rounded-xl overflow-hidden shadow-lg">
-              <div className="relative h-40 bg-purple-700/30">
-                <Image 
-                  src={`/products/product-${(index % 6) + 1}.png`} 
-                  alt={`Product ${index + 1}`}
-                  fill
-                  className="object-cover"
-                />
-                <button className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/30 flex items-center justify-center">
-                  <Heart className="h-4 w-4" />
+            {/* تصنيفات المتجر */}
+            <div
+              id="shop-category-scroll"
+              className="flex overflow-x-auto gap-3 scrollbar-hide pb-2 scroll-smooth"
+            >
+              <button
+                key="all"
+                onClick={() => setSelectedCategory(null)}
+                className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
+                  selectedCategory === null ? "text-blue-600" : "text-gray-700 dark:text-gray-200"
+                }`}
+              >
+                <div
+                  className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
+                    selectedCategory === null ? "border-blue-600" : "border-transparent"
+                  } bg-gray-300 dark:bg-gray-700 flex items-center justify-center font-bold`}
+                >
+                  <span className={selectedCategory === null ? "text-blue-600" : "text-gray-700 dark:text-gray-200"}>
+                    A
+                  </span>
+                </div>
+                <span className="text-sm font-medium mt-1">All</span>
+              </button>
+              {uniqueCategories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
+                    selectedCategory === cat.id ? "text-blue-600" : "text-gray-700 dark:text-gray-200"
+                  }`}
+                >
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
+                    selectedCategory === cat.id ? "bg-blue-600 border-blue-600" : " border-transparent"
+                  }`}>
+                    {cat.image_url ? (
+                      <Image
+                        src={cat.image_url}
+                        alt={cat.title}
+                        fill
+                        className="object-cover rounded-full"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white font-bold">
+                        {cat.title[0]}
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-sm font-medium mt-1">{cat.title}</span>
                 </button>
-              </div>
-              <div className="p-3">
-                <h3 className="font-medium text-sm line-clamp-1">Premium Headphones</h3>
-                <div className="flex items-center mt-1">
-                  <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-                  <span className="text-xs text-gray-300 ml-1">4.8</span>
-                </div>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="font-bold">$129.99</span>
-                  <button className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
+              ))}
             </div>
-          ))}
+
+            {/* سهم يمين (ديسكتوب فقط) */}
+            <button
+              className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+              onClick={() => {
+                const el = document.getElementById("shop-category-scroll");
+                if (el) el.scrollBy({ left: 150, behavior: "smooth" });
+              }}
+              aria-label="Scroll Right"
+            >
+              <ChevronDown className="-rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
+            </button>
+          </div>
+          {/* Custom scrollbar hide */}
+          <style jsx>{`
+            .scrollbar-hide::-webkit-scrollbar {
+              display: none;
+            }
+            .scrollbar-hide {
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+            }
+          `}</style>
+        </div>
+
+        {/* فلترة المنتجات حسب التصنيف المختار */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {productsLoading ? (
+            <div className="text-center text-gray-400 col-span-full py-8">
+              Loading products...
+            </div>
+          ) : productsError ? (
+            <div className="text-center text-red-500 col-span-full py-8">
+              Error loading products: {productsError.message}
+            </div>
+          ) : filteredSortedProducts
+              .filter((product: Product) =>
+                selectedCategory === null
+                  ? true
+                  : product.categories?.id === selectedCategory
+              )
+              .length === 0 ? (
+            <div className="text-center text-gray-400 col-span-full py-8">
+              No products found for this category
+            </div>
+          ) : (
+            filteredSortedProducts
+              .filter((product: Product) =>
+                selectedCategory === null
+                  ? true
+                  : product.categories?.id === selectedCategory
+              )
+              .map((product: Product, index: number) => (
+                <React.Fragment key={product.id}>
+                  {index > 0 && index % 8 === 0 && (
+                    <AdBanner
+                      key={`ad-${index}`}
+                      imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
+                      title="Fresh Deals"
+                      subtitle="Save more on your favorites"
+                    />
+                  )}
+                  <ProductCard
+                    key={product.id}
+                    product={{
+                      ...product,
+                      id: typeof product.id === "string" ? product.id : product.id,
+                      shop: typeof product.shop === "string" ? product.shop : product.shop,
+                      price: typeof product.price === "string" ? product.price : product.price,
+                    }}
+                  />
+                </React.Fragment>
+              ))
+          )}
         </div>
       </div>
-      </div>
+    </div>
   );
 }
- 
 
 // Shop Type Components
 interface ShopContentProps {

@@ -43,7 +43,7 @@ function StoreCard({ shop }: { shop: Shop }) {
         {/* Shop Logo بارزة وكاملة بين صورة الغلاف والمحتوى */}
         <div className="relative w-full flex justify-center">
           <div
-            className="absolute left-1/2 -top-12 transform -translate-x-1/2 z-20 w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white shadow-xl overflow-hidden bg-white flex items-center justify-center"
+            className="absolute left-1/2 -top-12 transform -translate-x-1/2 z-20 w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-background shadow-xl overflow-hidden bg-background flex items-center justify-center"
             style={{ pointerEvents: "none" }}
           >
             <Image

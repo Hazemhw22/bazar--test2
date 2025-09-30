@@ -20,7 +20,7 @@ export function LanguageSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="flex items-center gap-1 cursor-pointer">
+        <button className="flex items-center gap-1 cursor-pointer p-2 rounded-full hover:bg-accent">
           <Image
             src={currentLangData.flag}
             alt={currentLangData.label}
@@ -29,9 +29,9 @@ export function LanguageSelector() {
             className="w-5 h-5 rounded-full"
             unoptimized
           />
-        </div>
+        </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-30">
+      <DropdownMenuContent align="end" className="w-40">
         {supportedLanguages.map((lang) => (
           <DropdownMenuItem
             key={lang.code}
