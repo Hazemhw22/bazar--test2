@@ -248,7 +248,7 @@ export default function CheckoutPage() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow container mx-auto px-4 py-6">
+  <main className="flex-grow container mx-auto px-4 py-6 pb-2">
         {/* User Info / Delivery vs Pickup */}
         <div className="space-y-4 mb-8">
           <div className="flex gap-3">
@@ -527,13 +527,9 @@ export default function CheckoutPage() {
             })}
           </div>
         </div>
-        {errorMsg && (
-          <p className="mt-4 text-sm text-red-400 text-center">{errorMsg}</p>
-        )}
-      </main>
 
-      {/* Footer Button */}
-      <footer className="fixed bottom-[70px] md:bottom-4 left-0 w-full p-4 bg-gradient-to-t from-[#110e24] via-[#110e24]/90 to-transparent pointer-events-none">
+      {/* Sticky footer placed directly under "Your Items" */}
+      <div className="sticky bottom-0 left-0 w-full p-4 bg-gradient-to-t from-[#110e24] via-[#110e24]/90 to-transparent pointer-events-none z-40">
         <div className="container mx-auto px-4 pointer-events-auto">
           <Button
             onClick={handlePlaceOrder}
@@ -543,7 +539,12 @@ export default function CheckoutPage() {
             {isLoading ? "Processing..." : `Continue (${total.toFixed(2)} ₪)`}
           </Button>
         </div>
-      </footer>
+      </div>
+
+        {errorMsg && (
+          <p className="mt-4 text-sm text-red-400 text-center">{errorMsg}</p>
+        )}
+      </main>
     </div>
   );
 }
