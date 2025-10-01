@@ -128,10 +128,10 @@ export default function ProductFeaturesModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg w-full max-h-[90vh] flex flex-col p-0 rounded-2xl bg-background">
+    <DialogContent className="max-w-lg w-full max-h-[90vh] flex flex-col p-0 rounded-2xl bg-white dark:bg-background shadow-lg">
         <DialogHeader className="p-4 pb-0">
           <DialogTitle className="text-xl font-bold">{product.title}</DialogTitle>
-          <DialogClose className="absolute top-3 right-3 p-1 bg-secondary text-secondary-foreground rounded-full shadow-md z-20">
+          <DialogClose className="absolute top-3 right-3 p-1 bg-white text-foreground border border-border rounded-full shadow-md z-20 dark:bg-secondary dark:text-secondary-foreground">
             <XCircle size={24} />
           </DialogClose>
         </DialogHeader>
@@ -147,7 +147,7 @@ export default function ProductFeaturesModal({
                 className="w-full h-auto object-contain"
                 priority
               />
-              <div className="absolute bottom-2 left-2 bg-destructive text-destructive-foreground font-bold rounded-full px-4 py-1.5 shadow-lg text-lg">
+              <div className="absolute bottom-2 left-2 bg-yellow-100 text-yellow-900 font-bold rounded-full px-4 py-1.5 shadow-lg text-lg dark:bg-destructive dark:text-destructive-foreground">
                 <span>Total: </span>
                 <span>₪{(totalPrice * quantity).toFixed(2)}</span>
               </div>
@@ -163,7 +163,7 @@ export default function ProductFeaturesModal({
                   <h3 className="text-lg font-semibold text-foreground">
                     {currentLabel.label}
                   </h3>
-                  <span className="text-sm font-medium text-muted-foreground bg-secondary px-2 py-1 rounded-md">
+                  <span className="text-sm font-medium text-muted-foreground bg-gray-100 px-2 py-1 rounded-md dark:bg-secondary">
                     {step + 1} / {featureLabels.length}
                   </span>
                 </div>
@@ -175,15 +175,7 @@ export default function ProductFeaturesModal({
                     return (
                       <div
                         key={value.id}
-                        className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
-                          isSelected
-                            ? "border-primary bg-primary/10"
-                            : "border-border"
-                        } ${
-                          !value.available
-                            ? "opacity-50 cursor-not-allowed"
-                            : "cursor-pointer hover:bg-secondary/50"
-                        }`}
+                        className={`flex items-center justify-between p-3 rounded-lg border transition-all ${isSelected ? "border-primary bg-primary/10" : "border-border"} ${!value.available ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-gray-100 dark:hover:bg-secondary/50"}`}
                         onClick={() =>
                           value.available !== false &&
                           handleSelectFeature(currentLabel.id, value.id, isMultiSelect)
@@ -200,14 +192,14 @@ export default function ProductFeaturesModal({
                             />
                           )}
                           <div className="flex flex-col">
-                            <span className="font-semibold text-foreground">
+                            <span className="font-semibold text-black dark:text-white">
                               {value.value}
                             </span>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           {value.price_addition > 0 && (
-                            <span className="text-sm font-bold text-primary">
+                            <span className="text-sm font-bold text-black dark:text-white">
                               +₪{value.price_addition.toFixed(2)}
                             </span>
                           )}
@@ -222,7 +214,7 @@ export default function ProductFeaturesModal({
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-8 text-muted-foreground dark:text-white">
                 No customization options available.
               </div>
             )}
