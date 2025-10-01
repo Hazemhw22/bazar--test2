@@ -20,34 +20,34 @@ export default function ProductTabs({
 
   return (
     <div className="mb-12">
-      <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-        <nav className="flex space-x-8">
+      <div className="mb-6">
+        <nav className="flex gap-3">
           <button
             onClick={() => setActiveTab("description")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`flex-1 py-3 px-5 rounded-2xl text-sm font-medium transition-all duration-150 ${
               activeTab === "description"
-                ? "border-blue-600 text-blue-600 dark:text-blue-400"
-                : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                ? "bg-gradient-to-r from-[#3b3470] to-[#5a4aa3] text-white shadow-[0_8px_30px_rgba(59,102,255,0.18)] ring-1 ring-[#3b66ff]/20"
+                : "bg-transparent border border-[rgba(255,255,255,0.06)] text-white"
             }`}
           >
             Description
           </button>
           <button
             onClick={() => setActiveTab("specifications")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`flex-1 py-3 px-5 rounded-2xl text-sm font-medium transition-all duration-150 ${
               activeTab === "specifications"
-                ? "border-blue-600 text-blue-600 dark:text-blue-400"
-                : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                ? "bg-gradient-to-r from-[#3b3470] to-[#5a4aa3] text-white shadow-[0_8px_30px_rgba(59,102,255,0.18)] ring-1 ring-[#3b66ff]/20"
+                : "bg-transparent border border-[rgba(255,255,255,0.06)] text-white"
             }`}
           >
-            Specifications
+            Specification
           </button>
           <button
             onClick={() => setActiveTab("reviews")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`flex-1 py-3 px-5 rounded-2xl text-sm font-medium transition-all duration-150 ${
               activeTab === "reviews"
-                ? "border-blue-600 text-blue-600 dark:text-blue-400"
-                : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                ? "bg-gradient-to-r from-[#3b3470] to-[#5a4aa3] text-white shadow-[0_8px_30px_rgba(59,102,255,0.18)] ring-1 ring-[#3b66ff]/20"
+                : "bg-transparent border border-[rgba(255,255,255,0.06)] text-white"
             }`}
           >
             Reviews ({reviewsCount})
