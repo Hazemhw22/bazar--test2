@@ -9,7 +9,7 @@ import {
 import { supabase } from "../lib/supabase";
 import Link from "next/link";
 import Image from "next/image";
-import { Star, MapPin, Clock, ChevronDown, Search, Filter, ShoppingBag, Award, Calendar } from "lucide-react";
+import { Star, MapPin, Clock, ChevronDown, Search, Filter, ShoppingBag, Award, Calendar, LayoutGrid, List } from "lucide-react";
 
 // أنواع التصنيفات
 interface CategoryShop {
@@ -48,11 +48,33 @@ type Shop = {
 
 type SortOption = "rating" | "products" | "alphabetical" | "newest";
 
-export default function ShopsPage() {
+export default function ShopsPage({
+  viewMode: viewModeProp,
+  onViewModeChange,
+  initialViewMode,
+}: {
+  viewMode?: "grid" | "list";
+  onViewModeChange?: (m: "grid" | "list") => void;
+  initialViewMode?: "grid" | "list";
+}) {
   const [shopsData, setShopsData] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortOption>("rating");
+  const [viewMode, setViewModeState] = useState<"grid" | "list">(
+    viewModeProp ?? initialViewMode ?? "grid"
+  );
+
+  // sync when controlled prop changes
+  useEffect(() => {
+    if (viewModeProp) setViewModeState(viewModeProp);
+  }, [viewModeProp]);
+
+  const setViewMode = (m: "grid" | "list") => {
+    if (onViewModeChange) onViewModeChange(m);
+    // only update local state when uncontrolled
+    if (viewModeProp === undefined) setViewModeState(m);
+  };
 
   // كاتيجوري المتاجر وسوب كاتيجوري
   const [shopCategories, setShopCategories] = useState<CategoryShop[]>([]);
@@ -212,16 +234,9 @@ export default function ShopsPage() {
       </div>
 
       {/* Search and Filter */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <input
-            type="text"
-            placeholder="Search shops..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-pazar-dark-accent bg-white dark:bg-pazar-dark-card text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-pazar-primary"
-          />
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+      <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
+        <div className="relative flex-1 w-full">
+          <div className="relative w-full">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="20"
@@ -232,15 +247,39 @@ export default function ShopsPage() {
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="text-gray-400"
+              className="text-gray-400 absolute left-4 top-1/2 -translate-y-1/2"
             >
               <circle cx="11" cy="11" r="8"></circle>
               <path d="m21 21-4.3-4.3"></path>
             </svg>
+            <input
+              type="text"
+              placeholder="Search shops..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 dark:border-pazar-dark-accent bg-white dark:bg-pazar-dark-card text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-pazar-primary text-lg"
+            />
           </div>
         </div>
 
-      
+        <div className="flex items-center gap-3 ml-4">
+          <div className="hidden md:flex items-center bg-white/5 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`p-2 rounded-md ${viewMode === "grid" ? "bg-pazar-primary text-white" : "text-gray-300 hover:bg-white/5"}`}
+              aria-label="Grid view"
+            >
+              <LayoutGrid className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-2 rounded-md ${viewMode === "list" ? "bg-pazar-primary text-white" : "text-gray-300 hover:bg-white/5"}`}
+              aria-label="List view"
+            >
+              <List className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
       </div>
       
       {/* Categories */}
@@ -359,6 +398,40 @@ function StoreCard({ shop }: { shop: Shop }) {
             <Star className="w-3 h-3 text-yellow-400" fill="currentColor" />
             <span>4.7</span>
           </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+// Compact list row for list view
+function ListRow({ shop }: { shop: Shop }) {
+  return (
+    <Link
+      href={`/shops/${shop.id}`}
+      className="flex items-center gap-4 p-3 bg-white/5 rounded-lg hover:bg-white/10"
+    >
+      <div className="w-20 h-12 relative rounded-md overflow-hidden bg-gray-200">
+        <Image
+          src={shop.cover_image_url || "/placeholder.svg"}
+          alt={shop.shop_name}
+          fill
+          className="object-cover"
+        />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between">
+          <h4 className="font-semibold truncate">{shop.shop_name}</h4>
+          <div className="flex items-center gap-2 text-xs text-gray-300">
+            <Star className="w-4 h-4 text-yellow-400" />
+            <span>4.7</span>
+          </div>
+        </div>
+        <p className="text-sm text-gray-300 truncate">{shop.categoryTitle}</p>
+        <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3">
+          <span>{shop.productsCount} Products</span>
+          <span>•</span>
+          <span>30 min</span>
         </div>
       </div>
     </Link>

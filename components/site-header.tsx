@@ -272,10 +272,10 @@ export function SiteHeader() {
       {/* Mobile Sidebar */}
       <MobileSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} user={user} />
 
-      {/* Mobile Categories Bar */}
+      {/* Mobile Categories Bar
       <div className="w-full md:hidden">
         <CategoryMenu />
-      </div>
+      </div> */}
     </>
   );
 }

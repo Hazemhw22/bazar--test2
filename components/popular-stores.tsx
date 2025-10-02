@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Shop } from "@/lib/type";
 import { useQuery } from "@tanstack/react-query";
-import { Star } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 
 function StoreCard({ shop }: { shop: Shop }) {
   return (
@@ -45,6 +45,8 @@ export function PopularStores() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(true);
 
   const itemsPerView = {
     mobile: 1,
@@ -102,6 +104,33 @@ export function PopularStores() {
     trackMouse: true,
   });
 
+  const handleScroll = (direction: "left" | "right") => {
+    const container = document.getElementById("popular-stores-container");
+    if (container) {
+      const scrollAmount = container.clientWidth * 0.9; // scroll almost full view
+      const newScrollLeft = direction === "left" ? container.scrollLeft - scrollAmount : container.scrollLeft + scrollAmount;
+      container.scrollTo({ left: newScrollLeft, behavior: "smooth" });
+    }
+  };
+
+  const checkScrollPosition = () => {
+    const container = document.getElementById("popular-stores-container");
+    if (!container) return;
+    setShowLeftArrow(container.scrollLeft > 10);
+    setShowRightArrow(container.scrollLeft < container.scrollWidth - container.clientWidth - 10);
+  };
+
+  useEffect(() => {
+    const container = document.getElementById("popular-stores-container");
+    checkScrollPosition();
+    if (container) container.addEventListener("scroll", checkScrollPosition);
+    window.addEventListener("resize", checkScrollPosition);
+    return () => {
+      if (container) container.removeEventListener("scroll", checkScrollPosition);
+      window.removeEventListener("resize", checkScrollPosition);
+    };
+  }, [shops]);
+
   return (
     <section className="py-8 px-2 md:px-4">
       <div className="mx-auto max-w-8xl">
@@ -118,22 +147,41 @@ export function PopularStores() {
         </div>
 
         <div className="relative" {...swipeHandlers}>
-          <div className="overflow-hidden">
-            <div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 transition-transform duration-300"
-            >
+          <div className="relative">
+            {showLeftArrow && (
+              <button
+                onClick={() => handleScroll("left")}
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 dark:bg-black/60 shadow-md"
+                aria-label="Previous"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+            )}
+            {showRightArrow && (
+              <button
+                onClick={() => handleScroll("right")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 dark:bg-black/60 shadow-md"
+                aria-label="Next"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            )}
+
+            <div id="popular-stores-container" className="flex gap-6 overflow-x-auto snap-x snap-mandatory py-2 px-2">
               {loading ? (
                 Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="animate-pulse">
+                  <div key={i} className="animate-pulse flex-shrink-0 w-80">
                     <div className="bg-secondary rounded-2xl aspect-[16/9]"></div>
                   </div>
                 ))
               ) : shops.length === 0 ? (
-                <div className="col-span-full text-center text-muted-foreground py-12">
-                  No stores found
-                </div>
+                <div className="col-span-full text-center text-muted-foreground py-12">No stores found</div>
               ) : (
-                shops.slice(0, 6).map((shop) => <StoreCard key={shop.id} shop={shop} />)
+                shops.slice(0, 6).map((shop) => (
+                  <div key={shop.id} className="snap-center flex-shrink-0 w-80">
+                    <StoreCard shop={shop} />
+                  </div>
+                ))
               )}
             </div>
           </div>

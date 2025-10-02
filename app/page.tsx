@@ -7,6 +7,7 @@ import { GiftSection } from "../components/gift-section";
 import { PopularStores } from "../components/popular-stores";
 import MainProductSection from "../components/MainProductSection";
 import { SpecialOffers } from "../components/special-offers";
+import { NearToYou } from "../components/near-to-you";
 import { LocationModal } from "../components/location-modal";
 import { useLocation } from "../components/location-provider";
 import { HomeCategories } from "../components/home-categories";
@@ -52,6 +53,16 @@ export default function Home() {
           <SpecialOffers />
         </div>
 
+        {/* Near To You Section (carousel like Special Offers) */}
+        <div className="px-1">
+          <NearToYou />
+        </div>
+
+          {/* Stores and Gift Section */}
+        <div className="px-1">
+          <PopularStores />
+        </div>
+
         {/* Product Sections with Banners */}
         <div className="px-1">
           <MainProductSection title="Todays Best Deals For You!" products={offers} linkToAll="/products?filter=offers" />
@@ -78,18 +89,8 @@ export default function Home() {
         <div className="px-1">
           <MainProductSection title="Best Sellers In Beauty & Health" products={selected} linkToAll="/products?filter=selected" />
         </div>
-        <AdBanner
-          imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
-          href="/products?filter=deals"
-          title="Special Offers"
-          subtitle="Up to 50% off"
-          className="bg-gradient-to-r from-pazar-primary/10 to-pazar-secondary/10"
-        />
-
-        {/* Stores and Gift Section */}
-        <div className="px-1">
-          <PopularStores />
-        </div>
+   
+      
         <div className="px-1 pb-24">
           <GiftSection />
         </div>

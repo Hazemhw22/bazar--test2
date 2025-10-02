@@ -80,19 +80,30 @@ export default function MainProductSection({
       </Link>
       </div>
 
-      {/* شبكة الكروت */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-2 sm:gap-4">
-        {loading ? (
-          <div className="col-span-2 md:col-span-6 text-center py-10">
-            جاري التحميل...
-          </div>
-        ) : products.length > 0 ? (
-          products.map((product) => <ProductCard key={product.id} product={product} />)
-        ) : (
-          <div className="col-span-2 md:col-span-6 text-center py-10">
-            لا توجد منتجات
-          </div>
-        )}
+      {/* شبكة الكروت أفقياً (سحب يمين/يسار) */}
+      <div className="relative">
+        <div
+          id={`product-scroller-${title}`}
+          className="flex gap-3 overflow-x-auto snap-x snap-mandatory py-2 px-1"
+        >
+          {loading ? (
+            <div className="flex gap-3 px-2">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="w-44 sm:w-56 md:w-64 h-56 bg-gray-100 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          ) : products.length > 0 ? (
+            products.map((product) => (
+              <div key={product.id} className="snap-center flex-shrink-0 w-44 sm:w-56 md:w-64 ">
+                <div className="h-full flex flex-col">
+                  <ProductCard product={product} />
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-10">لا توجد منتجات</div>
+          )}
+        </div>
       </div>
     </section>
   );

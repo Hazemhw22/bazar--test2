@@ -142,6 +142,18 @@ export function SpecialOffers() {
     }
   };
 
+  // attach scroll listener to container to update arrow visibility
+  useEffect(() => {
+    const container = document.getElementById("special-offers-container");
+    checkScrollPosition();
+    if (container) container.addEventListener("scroll", checkScrollPosition);
+    window.addEventListener("resize", checkScrollPosition);
+    return () => {
+      if (container) container.removeEventListener("scroll", checkScrollPosition);
+      window.removeEventListener("resize", checkScrollPosition);
+    };
+  }, [products]);
+
   if (loading) {
     return (
       <section className="w-full py-4 sm:py-8 px-2 sm:px-4 lg:px-8">
@@ -254,95 +266,125 @@ export function SpecialOffers() {
         <div className="text-center text-gray-500 py-4">No special offers available at the moment.</div>
       ) : (
         <>
-          <div 
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"
-            id="special-offers-container"
-          >
-            {products.map((product) => (
-              <div 
-                key={product.id} 
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow p-3 border border-gray-100 dark:border-gray-700 flex flex-col"
+          <div className="relative">
+            {showLeftArrow && (
+              <button
+                onClick={() => handleScroll("left")}
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 dark:bg-black/60 shadow-md"
+                aria-label="Previous"
               >
-                <div className="relative mb-3 pt-[100%]">
-                  <Link href={`/products/${product.id}`}>
-                    <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-md">
-                      {product.images && product.images.length > 0 ? (
-                        <img 
-                          src={product.images[0]} 
-                          alt={product.title} 
-                          className="object-cover w-full h-full transition-transform hover:scale-105"
-                        />
-                      ) : (
-                        <div className="bg-gray-200 dark:bg-gray-700 w-full h-full flex items-center justify-center">
-                          <span className="text-gray-500 dark:text-gray-400">No image</span>
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+            )}
+            {showRightArrow && (
+              <button
+                onClick={() => handleScroll("right")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 dark:bg-black/60 shadow-md"
+                aria-label="Next"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            )}
+
+            <div
+              id="special-offers-container"
+              className="flex gap-4 overflow-x-auto snap-x snap-mandatory py-2 px-2"
+            >
+              {products.map((product) => (
+                <div key={product.id} className="snap-center flex-shrink-0 w-64 sm:w-72 md:w-80">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow p-3 border border-gray-100 dark:border-gray-700 flex flex-col h-full">
+                    <div className="relative mb-3 pt-[100%]">
+                      <Link href={`/products/${product.id}`}>
+                        <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-md">
+                          {product.images && product.images.length > 0 ? (
+                            <img
+                              src={product.images[0]}
+                              alt={product.title}
+                              className="object-cover w-full h-full transition-transform hover:scale-105"
+                            />
+                          ) : (
+                            <div className="bg-gray-200 dark:bg-gray-700 w-full h-full flex items-center justify-center">
+                              <span className="text-gray-500 dark:text-gray-400">No image</span>
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+
+                      {getDiscountText(product) && (
+                        <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded">
+                          {getDiscountText(product)}
                         </div>
                       )}
+
+                      <div className="absolute top-2 right-2 flex flex-col gap-2">
+                        <button
+                          onClick={() =>
+                            toggleFavorite({
+                              id: Number(product.id),
+                              name: product.title,
+                              price: getDisplayPrice(product),
+                              discountedPrice: product.sale_price ?? getDisplayPrice(product),
+                              image: (product.images && product.images[0]) || "/placeholder.svg",
+                              store: "",
+                              rating: 0,
+                              reviews: 0,
+                            })
+                          }
+                          className="bg-white dark:bg-gray-800 p-1.5 rounded-full shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        >
+                          <Heart
+                            size={16}
+                            className={isFavorite(Number(product.id)) ? "fill-red-500 text-red-500" : "text-gray-500 dark:text-gray-400"}
+                          />
+                        </button>
+                        <button
+                          onClick={() => setQuickViewProduct(product)}
+                          className="bg-white dark:bg-gray-800 p-1.5 rounded-full shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        >
+                          <Eye size={16} className="text-gray-500 dark:text-gray-400" />
+                        </button>
+                      </div>
                     </div>
-                  </Link>
-                  
-                  {/* Discount badge */}
-                  {getDiscountText(product) && (
-                    <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded">
-                      {getDiscountText(product)}
+
+                    <Link href={`/products/${product.id}`} className="flex-grow">
+                      <h3 className="font-medium text-sm mb-1 line-clamp-2 text-gray-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                        {product.title}
+                      </h3>
+                    </Link>
+
+                    <div className="flex items-center mb-1.5">
+                      <div className="flex ">
+                        <Eye size={18} />
+                        <span className="ml-1 text-sm text-gray-600 dark:text-gray-400">Views</span>
+                      </div>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({product.view_count || 0})</span>
                     </div>
-                  )}
-                  
-                  {/* Action buttons */}
-                  <div className="absolute top-2 right-2 flex flex-col gap-2">
-                    <button 
-                      onClick={() => toggleFavorite(product.id)}
-                      className="bg-white dark:bg-gray-800 p-1.5 rounded-full shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      <Heart 
-                        size={16} 
-                        className={isFavorite(product.id) ? "fill-red-500 text-red-500" : "text-gray-500 dark:text-gray-400"} 
-                      />
-                    </button>
-                    <button 
-                      onClick={() => setQuickViewProduct(product)}
-                      className="bg-white dark:bg-gray-800 p-1.5 rounded-full shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      <Eye size={16} className="text-gray-500 dark:text-gray-400" />
-                    </button>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="font-semibold text-blue-600 dark:text-blue-400">{getDisplayPrice(product).toFixed(2)} ₪</span>
+                        {product.sale_price && product.price && product.sale_price < parseFloat(product.price) && (
+                          <span className="text-xs text-gray-500 dark:text-gray-400 line-through ml-1">{parseFloat(product.price).toFixed(2)} ₪</span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() =>
+                          addItem({
+                            id: Number(product.id),
+                            name: product.title,
+                            price: getDisplayPrice(product),
+                            image: (product.images && product.images[0]) || "/placeholder.svg",
+                          })
+                        }
+                        className="bg-blue-600 hover:bg-blue-700 text-white p-1.5 rounded-full transition-colors"
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
                   </div>
                 </div>
-                
-                <Link href={`/products/${product.id}`} className="flex-grow">
-                  <h3 className="font-medium text-sm mb-1 line-clamp-2 text-gray-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                    {product.title}
-                  </h3>
-                </Link>
-                
-                <div className="flex items-center mb-1.5">
-                  <div className="flex ">
-                               <Eye size={18} />
-                    <span className="ml-1 text-sm text-gray-600 dark:text-gray-400">Views</span>
-                  </div>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
-                    ({product.view_count || 0})
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="font-semibold text-blue-600 dark:text-blue-400">
-                      {getDisplayPrice(product).toFixed(2)} ₪
-                    </span>
-                    {product.sale_price && product.price && product.sale_price < parseFloat(product.price) && (
-                      <span className="text-xs text-gray-500 dark:text-gray-400 line-through ml-1">
-                        {parseFloat(product.price).toFixed(2)} ₪
-                      </span>
-                    )}
-                  </div>
-                  <button 
-                    onClick={() => addItem(product)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white p-1.5 rounded-full transition-colors"
-                  >
-                    <Plus size={16} />
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </>
       )}
