@@ -20,6 +20,20 @@ interface OrderData {
   total: number;
   estimatedTime: string;
   deliveryAddress: string;
+  number?: string | number;
+  createdAt?: string;
+  shipping?: any;
+  paymentMethod?: string;
+  product?: {
+    id: number | string;
+    title?: string;
+    price?: number;
+    images?: string[];
+  };
+  shop?: {
+    id?: number | string;
+    shop_name?: string;
+  };
 }
 
 function OrderConfirmationContent() {
@@ -28,52 +42,120 @@ function OrderConfirmationContent() {
   const orderId = searchParams?.get("orderId");
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [noOrderFound, setNoOrderFound] = useState(false);
 
   useEffect(() => {
     const fetchOrder = async () => {
-      if (!orderId) {
-        // In a real app, you might want to redirect or show an error
-        // For now, we'll use mock data if no ID is present.
-        setOrderData({
-          id: "12345",
-          total: 32.12,
-          estimatedTime: "30mins",
-          deliveryAddress: "Home",
-        });
-        setLoading(false);
-        return;
-      }
-
       setLoading(true);
       try {
-        const { data, error } = await supabase
-          .from("orders")
-          .select("*, products(price)")
-          .eq("id", orderId)
-          .single();
+        let order: any = null;
 
-        if (error || !data) {
-          throw new Error("Order not found");
+        if (orderId) {
+          const { data, error } = await supabase
+            .from("orders")
+            .select("id, total, shipping_address, shipping_method, payment_method, created_at, product_id")
+            .eq("id", orderId)
+            .single();
+          if (error || !data) {
+            console.warn("Order not found by id, will try latest order for user", { orderId, error });
+            // fallback: try latest order for current user
+            const { data: sessionData } = await supabase.auth.getSession();
+            const userId = sessionData?.session?.user?.id;
+            if (userId) {
+              const { data: latest, error: latestErr } = await supabase
+                .from("orders")
+                .select("id, number, total, shipping_address, shipping_method, payment_method, created_at, product_id")
+                .eq("buyer_id", userId)
+                .order("created_at", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+              if (!latestErr && latest) {
+                order = latest;
+              } else {
+                console.warn("No latest order found for user", { userId, latestErr });
+              }
+            }
+            if (!order) {
+              // instead of throwing, set a flag to show a friendly message in the UI
+              setNoOrderFound(true);
+              setLoading(false);
+              return;
+            }
+          } else {
+            order = data;
+          }
+        } else {
+          // No orderId: fetch latest order for current user
+          const { data: sessionData } = await supabase.auth.getSession();
+          const userId = sessionData?.session?.user?.id;
+          if (!userId) {
+            // no user session – fallback to mock
+            setOrderData({ id: "", total: 0, estimatedTime: "30mins", deliveryAddress: "Home" });
+            setLoading(false);
+            return;
+          }
+
+          const { data, error } = await supabase
+            .from("orders")
+            .select("id, total, shipping_address, shipping_method, payment_method, created_at, product_id")
+            .eq("buyer_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (error || !data) throw new Error("Latest order not found");
+          order = data;
         }
 
-        // This is a simplified calculation. You'd likely have more complex logic.
-        const total = data.products.price + (data.shipping_method?.cost || 0);
+        // normalize total
+        const total = typeof order.total === "number" ? order.total : Number(order.total) || 0;
 
-        setOrderData({
-          id: data.id,
-          total: total,
-          estimatedTime: "30mins", // This would likely come from your shipping logic
-          deliveryAddress: data.shipping_address?.city || "Home",
-        });
+        // Prepare result object
+        const result: OrderData = {
+          id: order.id,
+          total,
+          estimatedTime: "30mins",
+          deliveryAddress: order.shipping_address?.address || order.shipping_address?.city || "Home",
+          number: order.number ?? order.id,
+          createdAt: order.created_at,
+          shipping: order.shipping_address,
+          paymentMethod: order.payment_method?.type || (order.payment_method && typeof order.payment_method === "string" ? order.payment_method : "unknown"),
+        };
+
+        // Fetch product and shop details if we have product_id
+        const productId = order.product_id ?? null;
+        if (productId != null) {
+          const { data: productData } = await supabase
+            .from("products")
+            .select("id, title, price, images, shop")
+            .eq("id", productId)
+            .maybeSingle();
+
+          if (productData) {
+            result.product = {
+              id: productData.id,
+              title: productData.title,
+              price: typeof productData.price === "number" ? productData.price : Number(productData.price) || 0,
+              images: productData.images || [],
+            };
+
+            // fetch shop
+            const shopId = productData.shop;
+            if (shopId) {
+              const { data: shopData } = await supabase
+                .from("shops")
+                .select("id, shop_name, logo_url, address")
+                .eq("id", shopId)
+                .maybeSingle();
+              if (shopData) result.shop = { id: shopData.id, shop_name: shopData.shop_name };
+            }
+          }
+        }
+
+        setOrderData(result);
       } catch (error) {
         console.error("Failed to fetch order:", error);
-        // Fallback to mock data on error
-        setOrderData({
-          id: orderId,
-          total: 32.12,
-          estimatedTime: "30mins",
-          deliveryAddress: "Home",
-        });
+        setOrderData({ id: orderId || "", total: 32.12, estimatedTime: "30mins", deliveryAddress: "Home" });
       } finally {
         setLoading(false);
       }
@@ -86,6 +168,23 @@ function OrderConfirmationContent() {
     return (
       <div className="flex justify-center items-center min-h-screen bg-[#1a0b2e] text-white">
         Loading order confirmation...
+      </div>
+    );
+  }
+
+  if (noOrderFound) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#1a0b2e] via-[#1a0b2e] to-[#110e24] text-white flex flex-col items-center justify-center p-4">
+        <h2 className="text-2xl font-bold mb-4">No order found</h2>
+        <p className="text-muted-foreground mb-6">We couldn't find the order you requested. You can check your orders list or go back to the home page.</p>
+        <div className="flex gap-3">
+          <Link href="/orders">
+            <Button>My Orders</Button>
+          </Link>
+          <Link href="/">
+            <Button variant="outline">Home</Button>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -114,6 +213,12 @@ function OrderConfirmationContent() {
 
         <h1 className="text-3xl font-bold mb-2">Yay! Your order</h1>
         <h1 className="text-3xl font-bold mb-4">has been placed.</h1>
+        {orderData?.number && (
+          <div className="text-sm text-muted-foreground mb-2">Order #: <span className="font-semibold">{orderData.number}</span></div>
+        )}
+        {orderData?.createdAt && (
+          <div className="text-sm text-muted-foreground mb-4">Placed on: <span className="font-semibold">{new Date(orderData.createdAt).toLocaleString()}</span></div>
+        )}
 
         <p className="text-gray-400 max-w-xs mx-auto mb-12">
           Your order would be delivered in the 30 mins atmost
@@ -127,6 +232,22 @@ function OrderConfirmationContent() {
             </div>
             <span className="font-semibold">{orderData?.estimatedTime}</span>
           </div>
+          <div className="flex items-start gap-4">
+            {orderData?.product?.images?.[0] ? (
+              <div className="w-20 h-20 rounded-md overflow-hidden bg-white/5 flex-shrink-0">
+                <img src={orderData.product.images[0]} alt={orderData.product.title} className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div className="w-20 h-20 rounded-md bg-white/5 flex items-center justify-center text-muted-foreground">No Image</div>
+            )}
+
+            <div className="flex-1">
+              <div className="font-semibold">{orderData?.product?.title || "Product"}</div>
+              <div className="text-sm text-muted-foreground">{orderData?.shop?.shop_name || "Store"}</div>
+              <div className="mt-2 font-semibold">₪{orderData?.product?.price?.toFixed ? orderData.product.price.toFixed(2) : orderData?.total.toFixed(2)}</div>
+            </div>
+          </div>
+
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3 text-gray-300">
               <MapPin size={20} />
@@ -134,12 +255,13 @@ function OrderConfirmationContent() {
             </div>
             <span className="font-semibold">{orderData?.deliveryAddress}</span>
           </div>
+
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3 text-gray-300">
               <Wallet size={20} />
-              <span>Amount Paid</span>
+              <span>Payment</span>
             </div>
-            <span className="font-semibold">₪{orderData?.total.toFixed(2)}</span>
+            <span className="font-semibold">{orderData?.paymentMethod || "—"}</span>
           </div>
         </div>
       </main>

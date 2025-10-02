@@ -17,22 +17,52 @@ export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<'ongoing' | 'completed'>('ongoing');
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "delivered": return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
-      case "shipped": return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400";
-      case "processing": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400";
-      case "cancelled": return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
-      default: return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400";
+    const s = (status || '').toString().toLowerCase().replace(/[_-]/g, ' ').trim();
+    switch (s) {
+      case 'delivered':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+      case 'shipped':
+      case 'on the way':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
+      case 'pending':
+        return 'bg-yellow-50 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+      case 'processing':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+      case 'ready for pickup':
+        return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-400';
+      case 'cancelled':
+      case 'rejected':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+      case 'complete':
+      case 'completed':
+        return 'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
     }
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "delivered": return <CheckCircle size={16} className="text-green-600" />;
-      case "shipped": return <Truck size={16} className="text-blue-600" />;
-      case "processing": return <Clock size={16} className="text-yellow-600" />;
-      case "cancelled": return <XCircle size={16} className="text-red-600" />;
-      default: return <AlertCircle size={16} className="text-gray-600" />;
+    const s = (status || '').toString().toLowerCase().replace(/[_-]/g, ' ').trim();
+    switch (s) {
+      case 'delivered':
+        return <CheckCircle size={16} className="text-green-600" />;
+      case 'shipped':
+      case 'on the way':
+        return <Truck size={16} className="text-blue-600" />;
+      case 'pending':
+        return <Clock size={16} className="text-yellow-600" />;
+      case 'processing':
+        return <Clock size={16} className="text-yellow-600" />;
+      case 'ready for pickup':
+        return <Package size={16} className="text-indigo-600" />;
+      case 'cancelled':
+      case 'rejected':
+        return <XCircle size={16} className="text-red-600" />;
+      case 'complete':
+      case 'completed':
+        return <CheckCircle size={16} className="text-green-600" />;
+      default:
+        return <AlertCircle size={16} className="text-gray-600" />;
     }
   };
 
@@ -62,10 +92,13 @@ export default function OrdersPage() {
 
   // Filter orders based on active tab
   const filteredOrders = ordersData.filter(order => {
+    // Requirement: if status is 'complete' it should be in the Completed tab,
+    // otherwise it belongs to the Ongoing tab.
+    const status = (order.status || '').toString().toLowerCase();
     if (activeTab === 'ongoing') {
-      return ['processing', 'shipped', 'in_transit'].includes(order.status);
+      return status !== 'completed';
     } else {
-      return ['delivered', 'cancelled'].includes(order.status);
+      return status === 'completed';
     }
   });
 
@@ -139,8 +172,9 @@ export default function OrdersPage() {
                         <span className="text-xs text-gray-600 dark:text-gray-400">Qty = 1</span>
                       </div>
                       <div className="mt-2">
-                        <Badge className="bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 font-normal text-xs px-2 py-1">
-                          In Delivery
+                        <Badge className={`${getStatusColor(order.status)} font-normal text-xs px-2 py-1 inline-flex items-center gap-2`}>
+                          {getStatusIcon(order.status)}
+                          <span className="capitalize">{(order.status || 'unknown').toString().replace(/_/g, ' ')}</span>
                         </Badge>
                       </div>
                     </div>

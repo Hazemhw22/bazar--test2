@@ -73,6 +73,7 @@ export default function CheckoutPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [addressInput, setAddressInput] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"visa" | "card" | "cash">("cash");
   const [showCardModal, setShowCardModal] = useState(false);
@@ -110,6 +111,12 @@ export default function CheckoutPage() {
           setFirstName(profile.full_name ? profile.full_name.split(" ")[0] : "");
           setLastName(profile.full_name ? profile.full_name.split(" ").slice(1).join(" ") : "");
           setAddressInput(profile.address || "");
+          // prefill email from session when available
+          setEmail(session?.user?.email || "");
+        }
+        // if session exists but profile row not found, still set email from session
+        if (!profile) {
+          setEmail(session?.user?.email || "");
         }
       } else {
         setUser({
@@ -185,6 +192,7 @@ export default function CheckoutPage() {
         name: firstName,
         last_name: lastName,
         phone: phone,
+        email: email,
         address: addressInput
       };
 
@@ -195,19 +203,79 @@ export default function CheckoutPage() {
         paymentPayload = paymentMethod === "cash" ? { type: "cash", note: "Pay on delivery" } : { type: paymentMethod, details: cardDetails };
       }
 
+      // Build shipping_method object to satisfy DB NOT NULL constraint
+      const selectedDeliveryOption = deliveryOptions.find((o) => o.id === selectedDelivery) || null;
+      const shippingMethod = deliveryType === "pickup"
+        ? { type: "pickup", id: "pickup", name: "In-store pickup", cost: 0 }
+        : selectedDeliveryOption
+          ? { type: "delivery", id: selectedDeliveryOption.id, name: selectedDeliveryOption.title, cost: selectedDeliveryOption.price }
+          : { type: "delivery", id: "standard", name: "Standard", cost: 0 };
+
+      // Some DB schemas require a product_id on orders (not ideal for multi-item carts).
+      // Use the first cart item's id to satisfy a NOT NULL constraint if present.
+      const primaryProductIdRaw = items && items.length > 0 ? items[0].id : null;
+      const primaryProductId = primaryProductIdRaw != null ? Number(primaryProductIdRaw) : null;
+      if (primaryProductIdRaw != null && Number.isNaN(primaryProductId)) {
+        console.warn("Unable to coerce primary product id to number:", primaryProductIdRaw);
+      }
+
+      // Try to resolve delivery_method_id from the DB to satisfy FK constraint.
+      // We attempt to find a delivery_methods row by a slug-like column or title.
+      let delivery_method_id: number | null = null;
+      try {
+        // try slug/identifier first
+        const { data: dmBySlug } = await supabase
+          .from("delivery_methods")
+          .select("id")
+          .eq("slug", selectedDelivery)
+          .maybeSingle();
+        if (dmBySlug && (dmBySlug as any).id) {
+          delivery_method_id = (dmBySlug as any).id;
+        } else if (selectedDeliveryOption) {
+          // try matching by title/name (case-insensitive)
+          const { data: dmByName } = await supabase
+            .from("delivery_methods")
+            .select("id")
+            .ilike("title", `%${selectedDeliveryOption.title}%`)
+            .maybeSingle();
+          if (dmByName && (dmByName as any).id) {
+            delivery_method_id = (dmByName as any).id;
+          }
+        }
+      } catch (dmErr) {
+        console.warn("Failed to resolve delivery_method_id from delivery_methods table:", dmErr);
+        delivery_method_id = null;
+      }
+
       const insertRes = await supabase.from("orders").insert([{ 
         buyer_id: buyerId,
         status: "pending",
+        product_id: primaryProductId,
+        shipping_method: shippingMethod,
         shipping_address: shippingAddress,
         payment_method: paymentPayload,
-        total: total
-      }]);
+        assigned_driver_id: null,
+        confirmed: false,
+        total: total,
+        delivery_method_id,
+        selected_feature_value_ids: [],
+        delivery_location_method_id: null,
+      }]).select('id').single();
 
       if (insertRes.error) throw insertRes.error;
 
+      const insertedId = (insertRes.data as any)?.id;
+      // set `number` column to the order id (as requested: number هو id order)
+      if (insertedId != null) {
+        try {
+          await supabase.from("orders").update({ number: insertedId }).eq("id", insertedId);
+        } catch (updateErr) {
+          console.warn("Failed to update order.number with inserted id:", updateErr);
+        }
+      }
+
       clearCart();
-  const insertedId = (insertRes.data as any)?.[0]?.id || "12345";
-  router.push("/order-confirmation?orderId=" + insertedId);
+      router.push("/order-confirmation?orderId=" + insertedId);
     } catch (e: any) {
       setErrorMsg(e.message || "Failed to place order");
     } finally {
@@ -289,6 +357,9 @@ export default function CheckoutPage() {
                 </div>
                 <div className="mt-3">
                   <input value={phone} onChange={(e)=>setPhone(e.target.value)} placeholder="Phone" className="w-full p-2 rounded-md bg-transparent border border-transparent focus:border-border" />
+                </div>
+                <div className="mt-3">
+                  <input value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="Email" type="email" className="w-full p-2 rounded-md bg-transparent border border-transparent focus:border-border" />
                 </div>
               </div>
 
