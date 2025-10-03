@@ -249,7 +249,7 @@ export default function CheckoutPage() {
 
       const insertRes = await supabase.from("orders").insert([{ 
         buyer_id: buyerId,
-        status: "pending",
+        status: "processing",
         product_id: primaryProductId,
         shipping_method: shippingMethod,
         shipping_address: shippingAddress,
@@ -576,7 +576,7 @@ export default function CheckoutPage() {
             {items.map((item) => {
               const p = productsMap[item.id];
               return (
-                <div key={item.id} className="p-3 bg-white/5 rounded-lg flex items-center gap-4">
+                <div key={item.id} className="p-3 bg-white/5 rounded-lg flex items-center gap-4 border border-[#666665]">
                   <div className="w-16 h-16 rounded-md bg-white/10 overflow-hidden flex-shrink-0">
                     <img
                       src={(p?.images?.[0] || item.image) as string}

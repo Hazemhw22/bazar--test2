@@ -37,7 +37,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="text-foreground transition-colors duration-300 pb-2 md:pb-0">
+      <body className="text-foreground transition-colors duration-300 pb-20 md:pb-0">
         <AppProviders>
           <HtmlLangDirSync />
           {children}

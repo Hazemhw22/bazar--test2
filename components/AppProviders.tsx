@@ -30,8 +30,10 @@ export default function AppProviders({
                 <div className="min-h-screen flex flex-col">
                   <SiteHeader />
                   <BreadcrumbsNav />
-                  <main className="flex-1 w-full pb-20 md:pb-0">
-                    {children}
+                  <main className="flex-1 w-full pb-24 md:pb-0">
+                    <div className="w-full md:max-w-[1200px] md:mx-auto md:px-4">
+                      {children}
+                    </div>
                   </main>
                   <Toaster />
                 </div>
