@@ -121,9 +121,9 @@ export function NearToYou() {
     <div className="relative">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">Near To You</h2>
-          <div className="w-5 h-5 sm:w-6 sm:h-6 bg-green-500 rounded-full flex items-center justify-center">
-            <span className="text-white text-xs font-bold">◎</span>
+          <h2 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white">Near To You</h2>
+          <div className="w-4 h-4 sm:w-5 sm:h-5 bg-green-500 rounded-full flex items-center justify-center">
+            <span className="text-white text-[10px] font-bold">◎</span>
           </div>
         </div>
         <Link href="/products" className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium">
@@ -132,9 +132,9 @@ export function NearToYou() {
       </div>
 
       {loading ? (
-        <div className="flex gap-4 overflow-hidden">
+        <div className="flex gap-2 overflow-hidden">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="flex-shrink-0 w-64 sm:w-72 md:w-80">
+            <div key={i} className="flex-shrink-0 w-44 sm:w-48 md:w-52">
               <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
                 <div className="aspect-square bg-gray-200 dark:bg-gray-700 animate-pulse"></div>
               </div>
@@ -148,20 +148,20 @@ export function NearToYou() {
       ) : (
         <div className="relative">
           {showLeftArrow && (
-            <button onClick={() => handleScroll("left")} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 dark:bg-black/60 shadow-md" aria-label="Previous">
-              <ChevronLeft className="w-5 h-5" />
+            <button onClick={() => handleScroll("left")} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white/90 dark:bg-black/60 shadow-md" aria-label="Previous">
+              <ChevronLeft className="w-4 h-4" />
             </button>
           )}
           {showRightArrow && (
-            <button onClick={() => handleScroll("right")} className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 dark:bg-black/60 shadow-md" aria-label="Next">
-              <ChevronRight className="w-5 h-5" />
+            <button onClick={() => handleScroll("right")} className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white/90 dark:bg-black/60 shadow-md" aria-label="Next">
+              <ChevronRight className="w-4 h-4" />
             </button>
           )}
 
-          <div id="near-to-you-container" className="flex gap-4 overflow-x-auto snap-x snap-mandatory py-2 px-2">
+          <div id="near-to-you-container" className="flex gap-2 overflow-x-auto snap-x snap-mandatory py-1 px-1">
             {products.map((product) => (
-              <div key={product.id} className="snap-center flex-shrink-0 w-64 sm:w-72 md:w-80">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow p-3 border border-gray-100 dark:border-gray-700 flex flex-col h-full">
+              <div key={product.id} className="snap-center flex-shrink-0 w-44 sm:w-48 md:w-52">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow p-1 border border-gray-100 dark:border-gray-700 flex flex-col h-full">
                   <div className="relative mb-3 pt-[100%]">
                     <Link href={`/products/${product.id}`}>
                       <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-md">
@@ -173,7 +173,7 @@ export function NearToYou() {
                       </div>
                     </Link>
 
-                    <div className="absolute top-2 right-2 flex flex-col gap-2">
+                    <div className="absolute top-2 right-2 flex flex-col gap-1">
                       <button onClick={() => toggleFavorite({
                         id: Number(product.id),
                         name: product.title,
@@ -183,29 +183,29 @@ export function NearToYou() {
                         store: "",
                         rating: 0,
                         reviews: 0,
-                      })} className="bg-white dark:bg-gray-800 p-1.5 rounded-full shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                        <Heart size={16} className={isFavorite(Number(product.id)) ? "fill-red-500 text-red-500" : "text-gray-500 dark:text-gray-400"} />
+                      })} className="bg-white dark:bg-gray-800 p-1 rounded-full shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <Heart size={14} className={isFavorite(Number(product.id)) ? "fill-red-500 text-red-500" : "text-gray-500 dark:text-gray-400"} />
                       </button>
-                      <button onClick={() => setQuickViewProduct(product)} className="bg-white dark:bg-gray-800 p-1.5 rounded-full shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                        <Eye size={16} className="text-gray-500 dark:text-gray-400" />
+                      <button onClick={() => setQuickViewProduct(product)} className="bg-white dark:bg-gray-800 p-1 rounded-full shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <Eye size={14} className="text-gray-500 dark:text-gray-400" />
                       </button>
                     </div>
                   </div>
 
                   <Link href={`/products/${product.id}`} className="flex-grow">
-                    <h3 className="font-medium text-sm mb-1 line-clamp-2 text-gray-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{product.title}</h3>
+                    <h3 className="font-medium text-xs mb-1 line-clamp-2 text-gray-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{product.title}</h3>
                   </Link>
 
-                  <div className="flex items-center mb-1.5">
-                    <div className="flex "><Eye size={18} /><span className="ml-1 text-sm text-gray-600 dark:text-gray-400">Views</span></div>
+                  <div className="flex items-center mb-1">
+                    <div className="flex items-center gap-1"><Eye size={14} /><span className="ml-1 text-xs text-gray-600 dark:text-gray-400">Views</span></div>
                     <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({product.view_count || 0})</span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-semibold text-blue-600 dark:text-blue-400">{getDisplayPrice(product).toFixed(2)} ₪</span>
+                      <span className="font-semibold text-sm text-blue-600 dark:text-blue-400">{getDisplayPrice(product).toFixed(2)} ₪</span>
                     </div>
-                    <button onClick={() => addItem({ id: Number(product.id), name: product.title, price: getDisplayPrice(product), image: (product.images && product.images[0]) || "/placeholder.svg" })} className="bg-blue-600 hover:bg-blue-700 text-white p-1.5 rounded-full transition-colors"><Plus size={16} /></button>
+                    <button onClick={() => addItem({ id: Number(product.id), name: product.title, price: getDisplayPrice(product), image: (product.images && product.images[0]) || "/placeholder.svg" })} className="bg-blue-600 hover:bg-blue-700 text-white p-1 rounded-full transition-colors"><Plus size={14} /></button>
                   </div>
                 </div>
               </div>
