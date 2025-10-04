@@ -297,7 +297,12 @@ export default function ShopsPage({
                 : "bg-gray-100 dark:bg-pazar-dark-accent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-pazar-dark-accent/80"
             }`}
           >
-            All
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 relative rounded-full overflow-hidden bg-gray-100">
+                <Image src="/placeholder.svg" alt="All" fill className="object-cover" />
+              </div>
+              <span>All</span>
+            </div>
           </button>
           {shopCategories.map((category) => (
             <button
@@ -309,7 +314,17 @@ export default function ShopsPage({
                   : "bg-gray-100 dark:bg-pazar-dark-accent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-pazar-dark-accent/80"
               }`}
             >
-              {category.title}
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 relative rounded-full overflow-hidden bg-gray-100">
+                  <Image
+                    src={category.image_url || "/placeholder.svg"}
+                    alt={category.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <span>{category.title}</span>
+              </div>
             </button>
           ))}
         </div>
@@ -327,7 +342,12 @@ export default function ShopsPage({
                   ${selectedShopSubCategory === sub.id ? "bg-blue-600 text-white" : ""}
                 `}
               >
-                {sub.title}
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 relative rounded-full overflow-hidden bg-gray-100">
+                    <Image src={sub.image_url || "/placeholder.svg"} alt={sub.title} fill className="object-cover" />
+                  </div>
+                  <span>{sub.title}</span>
+                </div>
               </button>
             ))}
           </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Category, CategorySub } from "@/lib/type";
+import { CategoryShop, CategorySubShop } from "@/lib/type";
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
@@ -10,8 +10,8 @@ import { useI18n } from "../lib/i18n";
 
 
 export function HomeCategories() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [subcategories, setSubcategories] = useState<CategorySub[]>([]);
+  const [categories, setCategories] = useState<CategoryShop[]>([]);
+  const [subcategories, setSubcategories] = useState<CategorySubShop[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +36,7 @@ export function HomeCategories() {
       setError(null);
 
       const { data, error: fetchError } = await supabase
-        .from("categories")
+        .from("categories_shop")
         .select("*")
         .order("id", { ascending: true });
 
@@ -55,7 +55,7 @@ export function HomeCategories() {
 
   const fetchSubcategories = async (categoryId: number) => {
     const { data, error } = await supabase
-      .from("categories_sub") 
+      .from("categories_sub_shop")
       .select("*")
       .eq("category_id", categoryId);
 
@@ -152,19 +152,20 @@ export function HomeCategories() {
               href={`/categories/${category.id}`}
               className="flex flex-col items-center text-center cursor-pointer group"
             >
-              <div className="w-20 h-20 p-4 rounded-2xl bg-card flex items-center justify-center overflow-hidden mb-2 transition-all duration-300 group-hover:shadow-lg group-hover:bg-primary/10">
-                {category.image_url ? (
-                  <Image
-                    src={category.image_url}
-                    alt={category.title}
-                    width={64}
-                    height={64}
-                    className="object-contain transition-transform duration-300 group-hover:scale-110"
-                  />
-                ) : (
-                  <div className="w-16 h-16 bg-muted rounded-full" />
-                )}
-              </div>
+              <div className="w-20 h-20 rounded-2xl bg-card overflow-hidden mb-2 transition-all duration-300 group-hover:shadow-lg group-hover:bg-primary/10">
+                  {category.image_url ? (
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={category.image_url}
+                        alt={category.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-full h-full bg-muted" />
+                  )}
+                </div>
               <h3 className="text-sm font-medium text-foreground truncate w-full">
                 {category.title}
               </h3>
