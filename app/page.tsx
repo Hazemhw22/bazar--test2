@@ -2,7 +2,10 @@
 // app/page.tsx
 "use client";
 
+import React, { useEffect, useState } from "react";
 import { HeroSection } from "../components/hero-section";
+import Link from "next/link";
+import Image from "next/image";
 import { GiftSection } from "../components/gift-section";
 import { PopularStores } from "../components/popular-stores";
 import MainProductSection from "../components/MainProductSection";
@@ -11,8 +14,11 @@ import { NearToYou } from "../components/near-to-you";
 import { LocationModal } from "../components/location-modal";
 import { useLocation } from "../components/location-provider";
 import { HomeCategories } from "../components/home-categories";
-import type { Product } from "@/lib/type";
+import type { Product, CategoryShop } from "@/lib/type";
+import { supabase } from "@/lib/supabase";
+import { ProductCard } from "../components/ProductCard";
 import AdBanner from "../components/AdBanner";
+import CategoriesWithProducts from "../components/CategoriesWithProducts";
 
 export default function Home() {
   const { showLocationModal, setShowLocationModal, selectedCity, setSelectedCity } = useLocation();
@@ -92,6 +98,7 @@ export default function Home() {
    
       
         <div className="px-1 pb-24">
+          <CategoriesWithProducts />
           <GiftSection />
         </div>
       </main>
@@ -105,3 +112,5 @@ export default function Home() {
     </>
   );
 }
+
+// moved to components/CategoriesWithProducts.tsx

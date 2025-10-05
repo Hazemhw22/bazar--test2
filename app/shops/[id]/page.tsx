@@ -379,54 +379,92 @@ export default function ShopDetailPage() {
           `}</style>
         </div>
 
-        {/* فلترة المنتجات حسب التصنيف المختار */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* فلترة المنتجات حسب التصنيف المختار - عرض مجموعات أفقية كل 5 */}
+        <div className="space-y-6">
           {productsLoading ? (
-            <div className="text-center text-gray-400 col-span-full py-8">
-              Loading products...
-            </div>
+            <div className="text-center text-gray-400 py-8">Loading products...</div>
           ) : productsError ? (
-            <div className="text-center text-red-500 col-span-full py-8">
-              Error loading products: {productsError.message}
-            </div>
-          ) : filteredSortedProducts
-              .filter((product: Product) =>
-                selectedCategory === null
-                  ? true
-                  : product.categories?.id === selectedCategory
-              )
-              .length === 0 ? (
-            <div className="text-center text-gray-400 col-span-full py-8">
-              No products found for this category
-            </div>
+            <div className="text-center text-red-500 py-8">Error loading products: {productsError.message}</div>
           ) : (
-            filteredSortedProducts
-              .filter((product: Product) =>
-                selectedCategory === null
-                  ? true
-                  : product.categories?.id === selectedCategory
-              )
-              .map((product: Product, index: number) => (
-                <React.Fragment key={product.id}>
-                  {index > 0 && index % 8 === 0 && (
+            (() => {
+              const list = filteredSortedProducts.filter((product: Product) =>
+                selectedCategory === null ? true : product.categories?.id === selectedCategory
+              );
+
+              if (list.length === 0) {
+                return <div className="text-center text-gray-400 py-8">No products found for this category</div>;
+              }
+
+              // chunk into groups of 5
+              const chunks: Product[][] = [];
+              for (let i = 0; i < list.length; i += 5) {
+                chunks.push(list.slice(i, i + 5));
+              }
+
+              return chunks.map((chunk, idx) => (
+                <section key={idx} className="relative">
+                  {/* Group title */}
+                  <div className="flex items-center justify-between mb-3 px-2 sm:px-6">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-4 sm:w-1.5 sm:h-6 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
+                      <h3 className="text-base sm:text-lg font-bold">{`عروض مميزة — مجموعة ${idx + 1}`}</h3>
+                    </div>
+                    <Link href="/products" className="text-sm text-blue-600 hover:text-blue-800">عرض الكل</Link>
+                  </div>
+                  {/* arrows for desktop */}
+                  <button
+                    className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+                    onClick={() => {
+                      const el = document.getElementById(`shop-product-scroll-${idx}`);
+                      if (el) el.scrollBy({ left: -400, behavior: "smooth" });
+                    }}
+                    aria-label="Scroll Left"
+                  >
+                    <ChevronDown className="rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
+                  </button>
+
+                  <div id={`shop-product-scroll-${idx}`} className="flex gap-3 overflow-x-auto snap-x snap-mandatory py-2 px-2 scroll-smooth">
+                    {chunk.map((product) => (
+                      <div key={product.id} className="snap-center flex-shrink-0 w-44 sm:w-52 md:w-56">
+                        <ProductCard
+                          product={{
+                            ...product,
+                            id: typeof product.id === "string" ? product.id : product.id,
+                            shop: typeof product.shop === "string" ? product.shop : product.shop,
+                            price: typeof product.price === "string" ? product.price : product.price,
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+                    onClick={() => {
+                      const el = document.getElementById(`shop-product-scroll-${idx}`);
+                      if (el) el.scrollBy({ left: 400, behavior: "smooth" });
+                    }}
+                    aria-label="Scroll Right"
+                  >
+                    <ChevronDown className="-rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
+                  </button>
+                </section>
+              )).reduce((acc: any[], el, i, arr) => {
+                // interleave AdBanner between groups
+                acc.push(el);
+                if (i < arr.length - 1) {
+                  acc.push(
                     <AdBanner
-                      key={`ad-${index}`}
+                      key={`ad-between-${i}`}
                       imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
                       title="Fresh Deals"
                       subtitle="Save more on your favorites"
                     />
-                  )}
-                  <ProductCard
-                    key={product.id}
-                    product={{
-                      ...product,
-                      id: typeof product.id === "string" ? product.id : product.id,
-                      shop: typeof product.shop === "string" ? product.shop : product.shop,
-                      price: typeof product.price === "string" ? product.price : product.price,
-                    }}
-                  />
-                </React.Fragment>
-              ))
+                  );
+                }
+                return acc;
+              }, [] as any[]);
+            })()
           )}
         </div>
       </div>

@@ -55,8 +55,6 @@
 body {
   background: linear-gradient(
     160deg,
-    hsla(256, 26%, 29%, 1) 50%,
-    hsla(256, 26%, 29%, 1) 50%,
     hsla(262, 80%, 8%, 1) 100%
   );
   color: hsl(var(--foreground));
@@ -65,8 +63,6 @@ body {
 .dark body {
   background: linear-gradient(
     160deg,
-    hsla(256, 26%, 29%, 1) 50%,
-    hsla(256, 26%, 29%, 1) 50%,
     hsla(262, 80%, 8%, 1) 100%
   ) !important;
 }
