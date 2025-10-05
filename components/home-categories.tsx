@@ -139,20 +139,20 @@ export function HomeCategories() {
           <h2 className="text-xl font-bold">
             {t("suggestedCategories")}
           </h2>
-          <Link href="/categories" className="text-sm font-medium text-primary hover:underline">
+          <Link href="/categories_shop" className="text-sm font-medium text-primary hover:underline">
             See All
           </Link>
         </div>
 
         {/* Categories Grid */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-6 sm:gap-6 md:gap-8 justify-items-center">
           {categories.slice(0, 8).map((category) => (
             <Link
               key={category.id}
-              href={`/categories/${category.id}`}
-              className="flex flex-col items-center text-center cursor-pointer group"
+              href={`/categories_shop/${category.id}`}
+              className="flex flex-col items-center text-center cursor-pointer group px-2 py-1"
             >
-              <div className="w-20 h-20 rounded-2xl bg-card overflow-hidden mb-2 transition-all duration-300 group-hover:shadow-lg group-hover:bg-primary/10">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-lg bg-card overflow-hidden mb-2 transition-all duration-300 group-hover:shadow-lg group-hover:bg-primary/10">
                   {category.image_url ? (
                     <div className="relative w-full h-full">
                       <Image
@@ -166,7 +166,7 @@ export function HomeCategories() {
                     <div className="w-full h-full bg-muted" />
                   )}
                 </div>
-              <h3 className="text-sm font-medium text-foreground truncate w-full">
+              <h3 className="text-xs sm:text-sm font-medium text-foreground truncate w-full">
                 {category.title}
               </h3>
             </Link>
