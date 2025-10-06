@@ -158,7 +158,7 @@ export default function CategoryShopDetail() {
                       <div className="text-sm text-muted-foreground truncate">{s.address}</div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm text-muted-foreground">{count} منتج</div>
+                      <div className="text-sm text-muted-foreground">{count} Products</div>
                       <button
                         onClick={() => setActiveShop((prev) => (prev?.id === s.id ? null : s))}
                         className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-primary text-white rounded-lg text-sm"
