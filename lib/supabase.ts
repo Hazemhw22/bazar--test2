@@ -100,12 +100,7 @@ export const fetchShops = async () => {
   const supabase = createServerSupabaseClient();
   const { data: shops, error } = await supabase
     .from("shops")
-    .select(
-      `
-      *,
-      profiles:profiles(full_name)
-    `
-    )
+    .select("*")
     .order("created_at", { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -164,11 +159,11 @@ export const incrementShopVisitCountClient = async (shopId: string) => {
   }
 
   // Increment the visit_count (handle null/undefined case)
-  const currentCount = (currentShop?.visit_count as number) || 0;
+  const currentCount = Number(((currentShop as any)?.visit_count) ?? 0) || 0;
   const newVisitCount = currentCount + 1;
 
   // Update the visit_count
-  const { error: updateError } = await supabase
+  const { error: updateError } = await (supabase as any)
     .from("shops")
     .update({ visit_count: newVisitCount })
     .eq("id", shopId);
