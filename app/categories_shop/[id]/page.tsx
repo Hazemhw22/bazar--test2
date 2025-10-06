@@ -2,10 +2,10 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { ShoppingBag, Store } from "lucide-react";
+import { ShoppingBag, Store, ChevronDown } from "lucide-react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import type { CategoryShop, Product, Shop } from "@/lib/type";
+import type { CategoryShop, Product, Shop, CategorySubShop } from "@/lib/type";
 import { ProductCard } from "@/components/ProductCard";
 
 export default function CategoryShopDetail() {
@@ -14,6 +14,8 @@ export default function CategoryShopDetail() {
   const [category, setCategory] = useState<CategoryShop | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [shops, setShops] = useState<Shop[]>([]);
+  const [subcategories, setSubcategories] = useState<CategorySubShop[]>([]);
+  const [selectedSubId, setSelectedSubId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeShop, setActiveShop] = useState<Shop | null>(null);
   const [activeTab, setActiveTab] = useState<'products' | 'shops'>('products');
@@ -64,15 +66,39 @@ export default function CategoryShopDetail() {
     loadShops();
   }, [products]);
 
+  // fetch subcategories for this category_shop
+  useEffect(() => {
+    async function loadSubcats() {
+      try {
+        const { data } = await supabase
+          .from("categories_sub_shop")
+          .select("*")
+          .eq("category_id", id)
+          .order("created_at", { ascending: true });
+        setSubcategories((data || []) as CategorySubShop[]);
+      } catch (err) {
+        console.error(err);
+        setSubcategories([]);
+      }
+    }
+    if (id) loadSubcats();
+  }, [id]);
+
+  // filtered products when a subcategory is selected
+  const filteredProducts = useMemo(() => {
+    if (!selectedSubId) return products;
+    return products.filter((p) => p.subcategory_id === selectedSubId);
+  }, [products, selectedSubId]);
+
   const productsByShop = useMemo(() => {
     const map: Record<string, Product[]> = {};
-    for (const p of products) {
+    for (const p of filteredProducts) {
       const key = String((p as any).shop || "");
       map[key] = map[key] || [];
       map[key].push(p);
     }
     return map;
-  }, [products]);
+  }, [filteredProducts]);
 
   if (loading) return <div className="py-12 text-center">جاري التحميل...</div>;
   if (!category) return <div className="py-12 text-center">التصنيف غير موجود</div>;
@@ -105,6 +131,67 @@ export default function CategoryShopDetail() {
         </div>
       </div>
 
+
+      {/* Subcategories (rounded tiles) */}
+      {subcategories.length > 0 && (
+        <div className="mb-4">
+          <div className="relative">
+            <button
+              className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+              onClick={() => {
+                const el = document.getElementById("category-sub-scroll");
+                if (el) el.scrollBy({ left: -150, behavior: "smooth" });
+              }}
+              aria-label="Scroll left"
+            >
+              <ChevronDown className="rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
+            </button>
+
+            <div id="category-sub-scroll" className="flex overflow-x-auto gap-3 scrollbar-hide pb-2 scroll-smooth">
+              <button
+                onClick={() => setSelectedSubId(null)}
+                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl whitespace-nowrap transition-all ${selectedSubId === null ? "text-blue-600" : "text-gray-700 dark:text-gray-200"}`}
+              >
+                <div className={`w-12 h-12 relative rounded-full overflow-hidden border-2 transition-colors ${selectedSubId === null ? "border-blue-600" : "border-transparent"} bg-gray-300 dark:bg-gray-700 flex items-center justify-center font-bold`}>All</div>
+                <span className="text-sm font-medium mt-1">All</span>
+              </button>
+
+              {subcategories.map((sub) => (
+                <button
+                  key={sub.id}
+                  onClick={() => setSelectedSubId(sub.id)}
+                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl whitespace-nowrap transition-all ${selectedSubId === sub.id ? "text-blue-600" : "text-gray-700 dark:text-gray-200"}`}
+                >
+                  <div className={`w-12 h-12 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${selectedSubId === sub.id ? "border-blue-600" : "border-transparent"}`}>
+                    {sub.image_url ? (
+                      <Image src={sub.image_url} alt={sub.title} fill className="object-cover rounded-full" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white font-bold bg-gray-400">{sub.title?.[0]}</div>
+                    )}
+                  </div>
+                  <span className="text-sm font-medium mt-1">{sub.title}</span>
+                </button>
+              ))}
+            </div>
+
+            <button
+              className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+              onClick={() => {
+                const el = document.getElementById("category-sub-scroll");
+                if (el) el.scrollBy({ left: 150, behavior: "smooth" });
+              }}
+              aria-label="Scroll right"
+            >
+              <ChevronDown className="-rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
+            </button>
+
+            <style jsx>{`
+              .scrollbar-hide::-webkit-scrollbar { display: none; }
+              .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+            `}</style>
+          </div>
+        </div>
+      )}
   {/* Tabs (centered, non-sticky) */}
   <div className="mb-6">
         <div className="flex justify-center">
@@ -132,7 +219,7 @@ export default function CategoryShopDetail() {
       {activeTab === 'products' && (
         <section className="space-y-6 mb-8">
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((p) => (
+            {filteredProducts.map((p) => (
               <div key={p.id} className="">
                 <ProductCard product={p} />
               </div>

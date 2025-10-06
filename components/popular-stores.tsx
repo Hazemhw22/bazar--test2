@@ -60,7 +60,7 @@ export function PopularStores() {
       // جلب المتاجر مع اسم صاحب المتجر
       const { data: shops, error: shopsError } = await supabase
         .from("shops")
-        .select("*, profiles(full_name)");
+        .select("*");
       // جلب التصنيفات
       const { data: cats } = await supabase.from("categories").select("*");
       if (!shopsError && shops && cats) {

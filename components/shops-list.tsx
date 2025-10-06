@@ -111,7 +111,7 @@ export default function ShopsPage({
       setLoading(true);
       const { data: shops, error: shopsError } = await supabase
         .from("shops")
-        .select("*, profiles(full_name)");
+        .select("*");
       const { data: cats } = await supabase.from("categories_shop").select("*");
       const { data: products } = await supabase.from("products").select("shop");
       if (!shopsError && shops && cats) {
