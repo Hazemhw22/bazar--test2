@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Home, ShoppingCart, ClipboardList, ShoppingBag, Store } from "lucide-react";
+import RestaurantSvg from "@/components/icons/RestaurantSvg";
 import { useCart } from "./cart-provider";
 import { useI18n } from "../lib/i18n";
 import { usePathname } from "next/navigation";
@@ -16,11 +17,11 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
   const pathname = usePathname();
 
   const navItems = [
-    { href: "/", label: t("nav.home"), icon: Home },
-    { href: "/products", label: t("nav.sales"), icon: ShoppingBag },
-    { href: "/cart", label: t("nav.cart"), icon: ShoppingCart, isCart: true },
-    { href: "/shops", label: t("nav.shops"), icon: Store },
-    { href: "/orders", label: t("nav.orders"), icon: ClipboardList },
+  { href: "/", label: t("nav.home"), icon: Home },
+  { href: "/products", label: t("nav.sales"), icon: ShoppingBag },
+  { href: "/cart", label: t("nav.cart"), icon: ShoppingCart, isCart: true },
+  { href: "/shops", label: t("nav.shops"), icon: Store },
+  { href: "/restaurants", label: t("nav.restaurants") || "Restaurants", icon: (props: any) => <RestaurantSvg size={22} {...props} /> },
   ];
 
   return (

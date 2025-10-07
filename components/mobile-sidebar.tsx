@@ -13,12 +13,12 @@ interface MobileSidebarProps {
 
 const menuItems = [
   { href: "/account", label: "Profile", icon: User },
-  { href: "/orders/history", label: "History", icon: History },
+  { href: "/orders/history", label: "Orders", icon: History },
   { href: "/wallet", label: "Wallet", icon: Wallet },
   { href: "/notifications", label: "Notifications", icon: Bell },
   { href: "/favourite", label: "Favourite", icon: Heart },
   { href: "/invite", label: "Invite Friends", icon: Gift },
-  { href: "/search", label: "Search", icon: Search },
+  { href: "/restaurants", label: "Restaurants", icon: Search },
 ];
 
 export default function MobileSidebar({ open, onClose, user }: MobileSidebarProps) {
