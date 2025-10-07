@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
 import Image from "next/image"
+import { HeroSales } from "../../components/hero-sales"
 import { Dialog } from "@headlessui/react"
 import { supabase } from "../../lib/supabase"
 import { ProductsList } from "../../components/product-list"
@@ -87,10 +88,11 @@ export default function Products() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("*, shops:shops(shop_name), categories:categories(title), categories_sub:categories_sub(title)")
+        .select("*, shops:shops(id, shop_name, category_shop_id), categories:categories(title), categories_sub:categories_sub(title)")
         .order("created_at", { ascending: false })
       if (error) throw error
-      return (data ?? []).map((product: any) => ({
+
+      const mapped = (data ?? []).map((product: any) => ({
         ...product,
         shops: product.shops && Array.isArray(product.shops) ? product.shops[0] : product.shops,
         categories:
@@ -98,6 +100,19 @@ export default function Products() {
         categories_sub:
           product.categories_sub && Array.isArray(product.categories_sub) ? product.categories_sub[0] : product.categories_sub,
       }))
+
+      // Exclude products whose related shop belongs to category_shop_id = 15 or has shop_name 'מסעדות'
+      const excludedCategoryId = 15
+      const excludedShopName = "מסעדות"
+      const filtered = mapped.filter((product: any) => {
+        const shop = product.shops
+        if (!shop) return true
+        if (typeof shop.category_shop_id === "number" && shop.category_shop_id === excludedCategoryId) return false
+        if (typeof shop.shop_name === "string" && shop.shop_name === excludedShopName) return false
+        return true
+      })
+
+      return filtered
     },
     refetchInterval: 5000,
   })
@@ -131,21 +146,7 @@ export default function Products() {
   return (
     <div className="mx-auto w-full max-w-full px-4 sm:px-6 md:px-8 lg:px-12 py-6 mobile:max-w-[480px] page-background text-foreground">
       {/* Hero */}
-      <div className="relative w-full h-64 md:h-80 lg:h-96 rounded-2xl overflow-hidden mb-8">
-        <Image
-          src="/stylish-asian-senior-woman-going-shopping-wearing-trendy-clothes-sunglasses-holding-store-bags-w.jpg"
-          alt="Collection hero"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="absolute left-8 top-8 text-white">
-          <div className="text-4xl md:text-6xl lg:text-7xl font-extrabold mb-4">Simple is More</div>
-          <div className="text-lg md:text-xl lg:text-2xl opacity-90">Discover fresh arrivals and best deals</div>
-        </div>
-      </div>
+      <HeroSales />
 
       {/* Category Pills Section */}
       <div className="mb-8 relative">
@@ -171,11 +172,11 @@ export default function Products() {
           >
             {categories.map((cat: Category | string) => {
               const isCategoryObject = typeof cat !== "string"
-              const title = isCategoryObject ? cat.title : cat
+              const title = isCategoryObject ? (cat as Category).title : (cat as string)
 
               return (
                 <button
-                  key={isCategoryObject ? cat.id : cat}
+                  key={isCategoryObject ? (cat as Category).id : (cat as string)}
                   onClick={() => {
                     setSelectedCategory(title)
                     setSelectedSubcategory(null)
@@ -188,9 +189,9 @@ export default function Products() {
                       selectedCategory === title ? "border-blue-600" : "border-transparent"
                     }`}
                   >
-                    {isCategoryObject && cat.image_url ? (
+                    {isCategoryObject && (cat as any).image_url ? (
                       <Image
-                        src={cat.image_url}
+                        src={(cat as any).image_url}
                         alt={title}
                         fill
                         className="object-cover rounded-full"
@@ -268,20 +269,14 @@ export default function Products() {
         `}</style>
       </div>
 
-      {/* Mobile filter button */}
-      <div className="md:hidden mb-6 flex justify-end">
-        <Button onClick={() => setFilterOpen(true)} variant="outline" size="lg">
-          <SlidersHorizontal size={20} />
-          <span className="ml-2 text-base">Filters</span>
-        </Button>
-      </div>
+      {/* Mobile filter button (moved next to view toggle) */}
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Sidebar filters */}
         <aside className="hidden lg:block lg:w-1/5 sticky top-20 self-start bg-card rounded-2xl p-6 shadow-sm border border-border/50">
           <h2 className="text-xl font-bold flex items-center gap-2 mb-6">
             <SlidersHorizontal size={20} />
-            Filters
+            <span>Filters</span>
           </h2>
 
           {/* Brands searchable */}
@@ -379,37 +374,6 @@ export default function Products() {
 
         {/* Products content */}
         <section className="w-full lg:w-4/5">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-6">
-            <h1 className="text-3xl lg:text-4xl font-bold flex items-center gap-2">Sales Page</h1>
-            <div className="flex items-center gap-6 w-full md:w-auto">
-              <Input
-                type="text"
-                placeholder="Search products..."
-                className="w-full md:w-96 h-12 text-lg border border-gray-400 dark:border-blue-800"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="flex items-center gap-2 whitespace-nowrap border border-gray-400 dark:border-blue-800 h-12 px-6 bg-transparent"
-                  >
-                    <SortIcon className="w-6 h-6 text-gray-500 dark:text-gray-200" />
-                    <span className="text-base">Sort</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Most Popular</DropdownMenuItem>
-                  <DropdownMenuItem>Newest</DropdownMenuItem>
-                  <DropdownMenuItem>Price: Low to High</DropdownMenuItem>
-                  <DropdownMenuItem>Price: High to Low</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-
           {/* View Toggle */}
           <div className="flex items-center gap-2 mb-6">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Show by:</span>
@@ -427,7 +391,22 @@ export default function Products() {
               </DropdownMenuContent>
             </DropdownMenu>
             
-            <div className="flex rounded-md">
+            <div className="flex items-center gap-2">
+              {/* Mobile-only Filters button */}
+              <div className="md:hidden">
+                <Button
+                  onClick={() => setFilterOpen(true)}
+                  variant="outline"
+                  size="sm"
+                  className="px-3"
+                  aria-label="Filters / الفلاتر"
+                  title="Filters / الفلاتر"
+                >
+                  <SlidersHorizontal className="h-4 w-4" aria-hidden={true} />
+                  <span className="ml-2 text-sm">Filters</span>
+                </Button>
+              </div>
+              <div className="flex rounded-md">
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
@@ -446,6 +425,7 @@ export default function Products() {
               </Button>
             </div>
           </div>
+        </div>
 
           {isLoading && <div className="text-xl text-center py-12">جاري التحميل...</div>}
           {error && <div className="text-xl text-center py-12 text-red-500">حدث خطأ أثناء جلب المنتجات</div>}

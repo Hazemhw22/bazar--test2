@@ -59,8 +59,6 @@ export default function ShopsPage({
 }) {
   const [shopsData, setShopsData] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<SortOption>("rating");
   const [viewMode, setViewModeState] = useState<"grid" | "list">(
     viewModeProp ?? initialViewMode ?? "grid"
   );
@@ -151,36 +149,8 @@ export default function ShopsPage({
       );
     }
 
-    // فلترة البحث
-    filtered = filtered.filter(
-      (shop) =>
-        shop.shop_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        shop.shop_desc?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        shop.address?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    // Sort based on selected option
-    switch (sortBy) {
-      case "rating":
-        filtered.sort((a: any, b: any) => (b.rating ?? 0) - (a.rating ?? 0));
-        break;
-      case "products":
-        filtered.sort(
-          (a: any, b: any) => (b.productsCount ?? 0) - (a.productsCount ?? 0)
-        );
-        break;
-      case "alphabetical":
-        filtered.sort((a, b) =>
-          (a.shop_name ?? "").localeCompare(b.shop_name ?? "")
-        );
-        break;
-      case "newest":
-        filtered.sort((a, b) => Number(b.id) - Number(a.id));
-        break;
-    }
-
     return filtered;
-  }, [shopsData, searchQuery, sortBy, selectedShopCategory, selectedShopSubCategory]);
+  }, [shopsData, selectedShopCategory, selectedShopSubCategory]);
 
   // سحب أفقي بالماوس
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -233,52 +203,37 @@ export default function ShopsPage({
         </p>
       </div>
 
-      {/* Search and Filter */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
-        <div className="relative flex-1 w-full">
-          <div className="relative w-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-gray-400 absolute left-4 top-1/2 -translate-y-1/2"
-            >
-              <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.3-4.3"></path>
-            </svg>
-            <input
-              type="text"
-              placeholder="Search shops..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-200 dark:border-pazar-dark-accent bg-white dark:bg-pazar-dark-card text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-pazar-primary text-lg"
-            />
-          </div>
+      {/* View mode + Filters (mobile friendly) */}
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center bg-white/5 rounded-lg p-1">
+          <button
+            onClick={() => setViewMode("grid")}
+            className={`p-2 rounded-md ${viewMode === "grid" ? "bg-pazar-primary text-white" : "text-gray-300 hover:bg-white/5"}`}
+            aria-label="Grid view"
+          >
+            <LayoutGrid className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setViewMode("list")}
+            className={`p-2 rounded-md ${viewMode === "list" ? "bg-pazar-primary text-white" : "text-gray-300 hover:bg-white/5"}`}
+            aria-label="List view"
+          >
+            <List className="w-5 h-5" />
+          </button>
         </div>
 
-        <div className="flex items-center gap-3 ml-4">
-          <div className="hidden md:flex items-center bg-white/5 rounded-lg p-1">
-            <button
-              onClick={() => setViewMode("grid")}
-              className={`p-2 rounded-md ${viewMode === "grid" ? "bg-pazar-primary text-white" : "text-gray-300 hover:bg-white/5"}`}
-              aria-label="Grid view"
-            >
-              <LayoutGrid className="w-5 h-5" />
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`p-2 rounded-md ${viewMode === "list" ? "bg-pazar-primary text-white" : "text-gray-300 hover:bg-white/5"}`}
-              aria-label="List view"
-            >
-              <List className="w-5 h-5" />
-            </button>
-          </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              // open filters - you can replace this with your filter drawer logic
+              setSelectedShopCategory(null)
+              setSelectedShopSubCategory(null)
+            }}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-pazar-dark-accent text-sm"
+          >
+            <Filter className="w-4 h-4" />
+            <span>Filters</span>
+          </button>
         </div>
       </div>
       
