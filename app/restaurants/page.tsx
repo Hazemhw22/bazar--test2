@@ -234,8 +234,26 @@ export default function RestaurantsPage() {
 
           <div className="mt-6 space-y-8">
             <MainProductSection title="More dishes" products={restaurantProducts.slice(0,4)} linkToAll="/products" />
+             <AdBanner
+            imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
+            href="/products?filter=deals"
+            title="Special Restaurant Deals"
+            subtitle="Discover discounts from local restaurants"
+          />
             <MainProductSection title="Chef's Picks" products={restaurantProducts.slice(0,4)} linkToAll="/products" />
+             <AdBanner
+            imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
+            href="/products?filter=deals"
+            title="Special Restaurant Deals"
+            subtitle="Discover discounts from local restaurants"
+          />
             <MainProductSection title="Trending Now" products={restaurantProducts.slice(0,4)} linkToAll="/products" />
+             <AdBanner
+            imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
+            href="/products?filter=deals"
+            title="Special Restaurant Deals"
+            subtitle="Discover discounts from local restaurants"
+          />
             <MainProductSection title="Special Offers" products={restaurantProducts.slice(0,4)} linkToAll="/products" />
           </div>
         </div>
