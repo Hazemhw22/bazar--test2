@@ -72,7 +72,7 @@ export function HeroSales() {
 
         setProducts(mapped)
       } catch (err) {
-        console.error("❌ فشل تحميل المنتجات:", err)
+    console.error("❌ Failed to load products:", err)
       }
     })()
 
@@ -113,7 +113,7 @@ export function HeroSales() {
   if (products.length === 0) {
     return (
       <section className="flex justify-center items-center h-64 bg-card rounded-2xl shadow-lg">
-        <p className="text-muted-foreground">لا توجد منتجات حالياً</p>
+        <p className="text-muted-foreground">No products available</p>
       </section>
     )
   }

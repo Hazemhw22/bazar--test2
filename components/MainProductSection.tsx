@@ -101,7 +101,7 @@ export default function MainProductSection({
               </div>
             ))
           ) : (
-            <div className="text-center py-10">لا توجد منتجات</div>
+            <div className="text-center py-10">No products</div>
           )}
         </div>
       </div>

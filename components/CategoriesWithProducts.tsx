@@ -70,7 +70,7 @@ export default function CategoriesWithProducts() {
     return (
       <section className="py-8 bg-green-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center py-8">جارٍ تحميل التصنيفات والمنتجات...</p>
+          <p className="text-center py-8">Loading categories and products...</p>
         </div>
       </section>
     );

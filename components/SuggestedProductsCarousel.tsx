@@ -59,7 +59,7 @@ export default function SimilarProductsCarousel({ products }: SimilarProductsCar
 
   return (
     <div className="mt-6">
-      <h2 className="text-xl font-semibold mb-4">منتجات مشابهة</h2>
+  <h2 className="text-xl font-semibold mb-4">Similar Products</h2>
 
       <div className="relative">
         {/* Desktop Arrows */}
@@ -128,7 +128,7 @@ export default function SimilarProductsCarousel({ products }: SimilarProductsCar
 
       {/* Swipe hint */}
       <div className="md:hidden text-center mt-2 text-xs text-gray-500 dark:text-gray-400">
-        👈 اسحب لليسار أو اليمين لمزيد من المنتجات 👉
+  👈 Swipe left or right for more products 👉
       </div>
     </div>
   );

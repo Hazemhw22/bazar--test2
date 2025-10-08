@@ -200,7 +200,7 @@ export default function ShopDetailPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[40vh] text-lg">
-        جاري تحميل بيانات المتجر...
+          Loading shop data...
       </div>
     );
   }
@@ -487,7 +487,8 @@ function DefaultShopContent({ shop }: ShopContentProps) {
         </div>
         <div>
           <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">متجر عام</h3>
-          <p className="text-gray-600 dark:text-gray-300">منتجات متنوعة</p>
+          <p className="text-gray-600 dark:text-gray-300">Various products</p>
+            <p className="text-gray-600 dark:text-gray-300">Mixed products</p>
         </div>
       </div>
     </div>

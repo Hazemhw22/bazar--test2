@@ -100,7 +100,7 @@ export default function CategoryShopDetail() {
     return map;
   }, [filteredProducts]);
 
-  if (loading) return <div className="py-12 text-center">جاري التحميل...</div>;
+  if (loading) return <div className="py-12 text-center">Loading...</div>;
   if (!category) return <div className="py-12 text-center">التصنيف غير موجود</div>;
 
   return (

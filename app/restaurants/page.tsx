@@ -8,6 +8,7 @@ import type { CategorySubShop, Shop, Product } from "@/lib/type";
 import { ProductCard } from "@/components/ProductCard";
 import AdBanner from "@/components/AdBanner";
 import MainProductSection from "@/components/MainProductSection";
+import RestaurantGrid from "@/components/RestaurantGrid";
 import { HeroSectionRes } from "@/components/hero-section-res";
 
 export default function RestaurantsPage() {
@@ -140,16 +141,16 @@ export default function RestaurantsPage() {
 
         {/* Offers with restaurants: clicking a shop opens inline product scroller */}
         <section className="mb-8">
-          <h2 className="text-xl font-bold mb-4">عروض المطاعم</h2>
-          <div className="overflow-x-auto pb-2">
-            <div className="flex gap-4 items-center px-1">
+          <h2 className="text-xl font-bold mb-4">Restaurant Offers</h2>
+          <div className="overflow-x-auto pb-">
+            <div className="flex gap- items- px-">
               {shops.map((s) => (
                 <div key={s.id} className="flex-shrink-0 w-28 text-center">
                   <button
                     onClick={() => setActiveShop((prev) => (prev?.id === s.id ? null : s))}
                     className="flex flex-col items-center gap-2 w-full"
                   >
-                    <div className={`w-20 h-20 rounded-full overflow-hidden bg-gray-100 relative border ${activeShop?.id === s.id ? 'ring-2 ring-primary' : ''}`}>
+                    <div className={`w-16 h-16 rounded-full overflow-hidden bg-gray-100 relative border ${activeShop?.id === s.id ? 'ring-2 ring-primary' : ''}`}>
                       <Image src={(s.logo_url as string) || "/placeholder.svg"} alt={s.shop_name} fill className="object-cover" />
                     </div>
                     <div className="text-sm truncate w-full">{s.shop_name}</div>
@@ -161,18 +162,12 @@ export default function RestaurantsPage() {
 
           {/* Single inline panel for the active shop */}
           {activeShop && (
-            <div className="mt-4 bg-white dark:bg-gray-900 rounded-lg p-3 shadow-inner border">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 relative">
-                    <Image src={(activeShop.logo_url as string) || "/placeholder.svg"} alt={activeShop.shop_name} fill className="object-cover" />
-                  </div>
-                  <div>
-                    <div className="font-semibold">{activeShop.shop_name}</div>
-                    <div className="text-sm text-muted-foreground">{activeShop.address}</div>
-                  </div>
+            <div className="mt-3 bg-white dark:bg-gray-900 rounded-md p-2 shadow-inner border">
+              {/* Compact header: only product count (logo/name removed) */}
+              <div className="flex items-center justify-end mb-2">
+                  <div className="text-xs text-muted-foreground bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                  {(productsByShop[String(activeShop.id)] || []).length} products
                 </div>
-                <div className="text-sm text-muted-foreground">{(productsByShop[String(activeShop.id)] || []).length} منتجات</div>
               </div>
 
               <div className="relative">
@@ -187,8 +182,8 @@ export default function RestaurantsPage() {
 
                 <div id={`shop-products-scroll-${activeShop.id}`} className="flex gap-4 overflow-x-auto snap-x snap-mandatory py-2 px-1 scroll-smooth">
                   {(productsByShop[String(activeShop.id)] || []).map((p) => (
-                    <div key={p.id} className="snap-center flex-shrink-0 w-40 sm:w-44 md:w-48">
-                      <ProductCard product={p} />
+                    <div key={p.id} className="snap-center flex-shrink-0 w-32 sm:w-36 md:w-40">
+                      <ProductCard product={p} compact />
                     </div>
                   ))}
                 </div>
@@ -209,7 +204,7 @@ export default function RestaurantsPage() {
         {/* Popular restaurants (all shops) */}
         {shops.length > 0 && (
           <section className="mb-6">
-            <h2 className="text-xl font-bold mb-3">المطاعم المشهورة</h2>
+            <h2 className="text-xl font-bold mb-3">Popular Restaurants</h2>
             <div className="flex gap-3 overflow-x-auto pb-2">
               {shops.map((s) => (
                 <Link key={s.id} href={`/shops/${s.id}`} className="flex flex-col items-center gap-2 w-32">
@@ -257,6 +252,9 @@ export default function RestaurantsPage() {
             <MainProductSection title="Special Offers" products={restaurantProducts.slice(0,4)} linkToAll="/products" />
           </div>
         </div>
+        
+        {/* Grid of all restaurants (category_shop_id = 15) */}
+        <RestaurantGrid shops={shops} />
       </div>
     </main>
   );

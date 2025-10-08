@@ -28,7 +28,7 @@ export default function ProductPage() {
         if (error) throw error;
         setProduct(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "حدث خطأ أثناء جلب المنتج");
+  setError(err instanceof Error ? err.message : "An error occurred while fetching the product");
       } finally {
         setLoading(false);
       }
@@ -40,7 +40,7 @@ export default function ProductPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[40vh] text-lg">
-        جاري تحميل المنتج...
+  Loading product...
       </div>
     );
   }
@@ -48,7 +48,7 @@ export default function ProductPage() {
   if (error || !product) {
     return (
       <div className="flex justify-center items-center min-h-[40vh] text-lg text-red-500">
-        {error || "لم يتم العثور على المنتج"}
+  {error || "Product not found"}
       </div>
     );
   }

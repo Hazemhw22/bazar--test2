@@ -427,8 +427,8 @@ export default function Products() {
           </div>
         </div>
 
-          {isLoading && <div className="text-xl text-center py-12">جاري التحميل...</div>}
-          {error && <div className="text-xl text-center py-12 text-red-500">حدث خطأ أثناء جلب المنتجات</div>}
+          {isLoading && <div className="text-xl text-center py-12">Loading...</div>}
+          {error && <div className="text-xl text-center py-12 text-red-500">An error occurred while fetching products</div>}
           
           {/* Products Display */}
           {viewMode === "list" ? (

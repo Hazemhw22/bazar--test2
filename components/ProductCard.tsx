@@ -78,9 +78,10 @@ const customStyles = `
 
 interface ProductCardProps {
   product: Product;
+  compact?: boolean;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, compact = false }: ProductCardProps) {
   // Apply custom styles
   useEffect(() => {
     const styleElement = document.createElement('style');
@@ -150,7 +151,13 @@ export function ProductCard({ product }: ProductCardProps) {
         onClick={() => setIsModalOpen(true)}
       >
         {/* Image Container */}
-        <div className="relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-800">
+        <div
+          className={
+            compact
+              ? "relative h-28 sm:h-32 overflow-hidden bg-gray-50 dark:bg-gray-800"
+              : "relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-800"
+          }
+        >
           {/* Favorite Button */}
           <button
             onClick={handleToggleFavorite}
@@ -178,7 +185,7 @@ export function ProductCard({ product }: ProductCardProps) {
             src={mainImage}
             alt={product.title}
             fill
-            className="object-cover group-hover:scale-110 transition-transform duration-500"
+            className={`object-cover transition-transform duration-500 ${compact ? '' : 'group-hover:scale-110'}`}
             priority
           />
 
@@ -230,7 +237,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
           {/* Price & Add to Cart */}
           <div className="flex items-center justify-between mt-auto">
-            <p className="text-lg font-bold text-gray-900 dark:text-white">
+            <p className={`${compact ? 'text-sm font-semibold' : 'text-lg font-bold'} text-gray-900 dark:text-white`}>
               {discountedPrice.toFixed()} ₪
             </p>
             <button
