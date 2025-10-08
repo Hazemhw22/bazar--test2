@@ -124,7 +124,7 @@ export default function RestaurantsPage() {
           <div className="mb-6">
             <div className="flex gap-3 overflow-x-auto pb-2">
               {subcats.map((sc) => (
-                <Link key={sc.id} href={`/restaurants?sub=${sc.id}`} className="flex flex-col items-center gap-2">
+                <Link key={sc.id} href={`/categories_sub_shop/${sc.id}`} className="flex flex-col items-center gap-2">
                   <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100 relative">
                     {sc.image_url ? (
                       <Image src={sc.image_url} alt={sc.title} fill className="object-cover" />
