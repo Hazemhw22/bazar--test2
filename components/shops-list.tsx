@@ -9,7 +9,7 @@ import {
 import { supabase } from "../lib/supabase";
 import Link from "next/link";
 import Image from "next/image";
-import { Star, MapPin, Clock, ChevronDown, Search, Filter, ShoppingBag, Award, Calendar, LayoutGrid, List } from "lucide-react";
+import { Star, MapPin, Clock, ChevronDown, Search, Filter, ShoppingBag, Award, Calendar, LayoutGrid, List, Eye, Heart } from "lucide-react";
 
 // أنواع التصنيفات
 interface CategoryShop {
@@ -194,7 +194,7 @@ export default function ShopsPage({
   }, []);
 
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="container mx-auto px-1 py-6">
       {/* Header and Search */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-pazar-dark dark:text-white mb-2">Shops</h1>
@@ -312,39 +312,63 @@ export default function ShopsPage({
       {/* هنا يمكنك وضع شريط البحث أو خيارات الترتيب */}
 
       {/* Shop Cards */}
-      <div className="grid grid-cols-1 gap-6 md:gap-8 mt-8">
-        {loading ? (
+      {viewMode === "grid" ? (
+        <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 md:gap-8 mt-2">
+          {loading ? (
           // Loading skeletons
-          Array(6)
-            .fill(0)
-            .map((_, i) => (
-              <div key={i} className="bg-white dark:bg-pazar-dark-card rounded-xl shadow-sm animate-pulse">
-                <div className="h-32 bg-gray-200 dark:bg-pazar-dark-accent rounded-t-xl"></div>
-                <div className="p-4">
-                  <div className="h-6 bg-gray-200 dark:bg-pazar-dark-accent rounded w-3/4 mb-3"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-pazar-dark-accent rounded w-1/2 mb-2"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-pazar-dark-accent rounded w-5/6 mb-4"></div>
-                  <div className="flex justify-between">
-                    <div className="h-8 bg-gray-200 dark:bg-pazar-dark-accent rounded w-1/4"></div>
-                    <div className="h-8 bg-gray-200 dark:bg-pazar-dark-accent rounded w-1/4"></div>
+            Array(6)
+              .fill(0)
+              .map((_, i) => (
+                <div key={i} className="bg-white dark:bg-pazar-dark-card rounded-2xl shadow-sm animate-pulse">
+                  <div className="h-40 bg-gray-200 dark:bg-pazar-dark-accent rounded-t-2xl"></div>
+                  <div className="p-4">
+                    <div className="h-6 bg-gray-200 dark:bg-pazar-dark-accent rounded w-3/4 mb-3"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-pazar-dark-accent rounded w-1/2 mb-2"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-pazar-dark-accent rounded w-5/6 mb-4"></div>
+                    <div className="flex justify-between">
+                      <div className="h-8 bg-gray-200 dark:bg-pazar-dark-accent rounded w-1/4"></div>
+                      <div className="h-8 bg-gray-200 dark:bg-pazar-dark-accent rounded w-1/4"></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))
         ) : filteredAndSortedShops.length === 0 ? (
-          <div className="col-span-full text-center py-12">
+            <div className="col-span-full text-center py-12">
             <div className="text-5xl mb-4">🔍</div>
             <h3 className="text-xl font-semibold text-pazar-dark dark:text-white mb-2">No shops found</h3>
             <p className="text-gray-500 dark:text-gray-400">
               Try adjusting your search or filter criteria
             </p>
           </div>
-        ) : (
-          filteredAndSortedShops.map((shop) => (
-            <StoreCard key={shop.id} shop={shop} />
-          ))
-        )}
-      </div>
+          ) : (
+            filteredAndSortedShops.map((shop) => (
+              <StoreCard key={shop.id} shop={shop} />
+            ))
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4 mt-8">
+          {loading ? (
+            Array(6)
+              .fill(0)
+              .map((_, i) => (
+                <div key={i} className="bg-white dark:bg-pazar-dark-card rounded-xl shadow-sm animate-pulse h-20" />
+              ))
+          ) : filteredAndSortedShops.length === 0 ? (
+            <div className="col-span-full text-center py-12">
+              <div className="text-5xl mb-4">🔍</div>
+              <h3 className="text-xl font-semibold text-pazar-dark dark:text-white mb-2">No shops found</h3>
+              <p className="text-gray-500 dark:text-gray-400">
+                Try adjusting your search or filter criteria
+              </p>
+            </div>
+          ) : (
+            filteredAndSortedShops.map((shop) => (
+              <ListRow key={shop.id} shop={shop} />
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -354,28 +378,120 @@ function StoreCard({ shop }: { shop: Shop }) {
   return (
     <Link
       href={`/shops/${shop.id}`}
-      className="relative block overflow-hidden rounded-2xl aspect-[16/9] w-full group"
+      className="group relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col h-full"
     >
-      <Image
-        src={shop.cover_image_url || "/placeholder.svg"}
-        alt={shop.shop_name}
-        fill
-        className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
-      <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 text-white">
-        <h3 className="text-xl sm:text-2xl font-bold">{shop.shop_name}</h3>
-        <p className="text-sm text-gray-300 mb-2">{shop.categoryTitle}</p>
-        <div className="flex items-center justify-between text-xs sm:text-sm">
-          <span>{shop.productsCount} Products</span>
-          <span>30 min</span>
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/30">
-            <Star className="w-3 h-3 text-yellow-400" fill="currentColor" />
-            <span>4.7</span>
+  {/* Image */}
+  <div className="relative overflow-hidden bg-gray-50 dark:bg-gray-800 h-44 sm:h-52">
+        <Image
+          src={shop.cover_image_url || "/placeholder.svg"}
+          alt={shop.shop_name}
+          fill
+          className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
+        />
+
+
+        {/* Category badge */}
+        {shop.categoryTitle && (
+          <div className="absolute top-3 left-3 z-10">
+            <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-semibold shadow">
+              {shop.categoryTitle}
+            </span>
+          </div>
+        )}
+
+        
+      </div>
+
+      {/* Info */}
+      <div className="p-3 sm:p-4 flex flex-col flex-1 justify-between">
+        <div>
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 text-lg">
+              {shop.shop_name}
+            </h3>
+            {/* Open/Close badge next to name */}
+            {renderOpenBadge(shop.work_hours)}
+          </div>
+          {shop.shop_desc && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{shop.shop_desc}</p>
+          )}
+        </div>
+
+        <div className="mt-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
+              <Star className="w-3 h-3 text-yellow-400" fill="currentColor" />
+              <span className="text-sm">4.7</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
+              <ShoppingBag className="w-3 h-3 text-gray-700 dark:text-gray-200" />
+              <span className="text-sm">{shop.productsCount ?? 0}</span>
+            </div>
           </div>
         </div>
       </div>
     </Link>
+  );
+}
+
+// Helpers: determine if shop is open today from work_hours
+function parseTimeToMinutes(t?: string) {
+  if (!t) return null;
+  const parts = t.split(":");
+  if (parts.length < 2) return null;
+  const hh = parseInt(parts[0], 10);
+  const mm = parseInt(parts[1], 10);
+  if (Number.isNaN(hh) || Number.isNaN(mm)) return null;
+  return hh * 60 + mm;
+}
+
+function isOpenToday(work_hours: any): { open: boolean; label?: string } {
+  try {
+    if (!work_hours || !Array.isArray(work_hours)) return { open: false };
+    const now = new Date();
+    const todayIndex = now.getDay(); // 0 = Sunday
+    const names = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+    const entry = work_hours.find((w: any) => {
+      if (!w) return false;
+      if (typeof w.day === "number") return Number(w.day) === todayIndex;
+      const dayStr = String(w.day || "").toLowerCase();
+      if (names.includes(dayStr)) return names.indexOf(dayStr) === todayIndex;
+      if (dayStr.length >= 3) {
+        const short = dayStr.slice(0, 3);
+        return names.map(n => n.slice(0,3)).indexOf(short) === todayIndex;
+      }
+      return false;
+    });
+
+    if (!entry) return { open: false };
+    if (!entry.open) return { open: false };
+
+    const start = parseTimeToMinutes(entry.startTime || entry.start || entry.open_time);
+    const end = parseTimeToMinutes(entry.endTime || entry.end || entry.close_time);
+    if (start === null || end === null) {
+      // If times not parseable, fall back to entry.open flag
+      return { open: Boolean(entry.open), label: undefined };
+    }
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    return { open: nowMin >= start && nowMin <= end, label: `${entry.startTime || entry.start || entry.open_time} - ${entry.endTime || entry.end || entry.close_time}` };
+  } catch (err) {
+    return { open: false };
+  }
+}
+
+function renderOpenBadge(work_hours: any) {
+  const status = isOpenToday(work_hours);
+  if (status.open) {
+    return (
+      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-green-100 text-green-800">Open</span>
+    );
+  }
+  return (
+    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-red-100 text-red-800">Close</span>
   );
 }
 
@@ -406,7 +522,7 @@ function ListRow({ shop }: { shop: Shop }) {
         <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3">
           <span>{shop.productsCount} Products</span>
           <span>•</span>
-          <span>30 min</span>
+          {renderOpenBadge(shop.work_hours)}
         </div>
       </div>
     </Link>

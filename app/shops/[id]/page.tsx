@@ -17,6 +17,9 @@ import {
   Search,
   Filter,
   ShoppingBag,
+  Truck,
+  CreditCard,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -159,11 +162,72 @@ export default function ShopDetailPage() {
 
     openDays = workHoursArr.filter((wh) => wh.open).map((wh) => wh.day);
 
-    // تحقق من حالة المتجر الآن
-    if (todayWork && todayWork.open) {
-      const now = currentTime;
-      isOpen = now >= todayWork.startTime && now <= todayWork.endTime;
+    // (isOpen will be computed from remote or local todayWork below)
+  }
+
+  // fetch today's work hours from Supabase explicitly and store in state
+  const [todayWorkRemote, setTodayWorkRemote] = useState<WorkHours | null>(null);
+  useEffect(() => {
+    if (!shopId) return;
+    (async () => {
+      try {
+        const res = await supabase.from("shops").select("work_hours").eq("id", shopId).single();
+        const data = (res as any).data;
+        if (!data) return;
+        let arr: WorkHours[] = [];
+        if (Array.isArray(data.work_hours)) {
+          arr = data.work_hours.map((w: any) => (typeof w === "string" ? JSON.parse(w) : w));
+        } else if (typeof data.work_hours === "string") {
+          try {
+            arr = JSON.parse(data.work_hours);
+          } catch {
+            arr = [];
+          }
+        }
+        const todayIndexLocal = new Date().getDay();
+        const daysEnLocal = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+        const daysArLocal = ["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+        const todayEnLocal = daysEnLocal[todayIndexLocal];
+        const todayArLocal = daysArLocal[todayIndexLocal];
+        const found = arr.find((wh:any) => String(wh.day).toLowerCase() === todayEnLocal.toLowerCase() || String(wh.day) === todayArLocal) ?? null;
+        setTodayWorkRemote(found);
+      } catch (err) {
+        // ignore
+      }
+    })();
+  }, [shopId]);
+
+  // final today work prefers remote data if available
+  const finalTodayWork: WorkHours | null = todayWorkRemote ?? todayWork;
+  // compute isOpen from finalTodayWork
+  if (finalTodayWork && finalTodayWork.open) {
+    const start = (finalTodayWork.startTime ?? (finalTodayWork as any).start ?? (finalTodayWork as any).open_time) as string | undefined;
+    const end = (finalTodayWork.endTime ?? (finalTodayWork as any).end ?? (finalTodayWork as any).close_time) as string | undefined;
+    if (start && end) {
+      isOpen = currentTime >= start && currentTime <= end;
+    } else {
+      isOpen = Boolean(finalTodayWork.open);
     }
+  }
+
+  // Prepare display variables for today's day name and hours (for Delivery Time)
+  const todayIndex = new Date().getDay();
+  const daysEnFull = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  const displayTodayName = daysEnFull[todayIndex];
+  let displayTodayHours = "Closed";
+  if (todayWork) {
+    const s = (todayWork.startTime ?? (todayWork as any).start ?? (todayWork as any).open_time) as string | undefined;
+    const e = (todayWork.endTime ?? (todayWork as any).end ?? (todayWork as any).close_time) as string | undefined;
+    if (s && e) displayTodayHours = `${s} - ${e}`;
+    else displayTodayHours = todayWork.open ? "Open" : "Closed";
   }
 
   // استخراج التصنيفات الفريدة من المنتجات
@@ -233,9 +297,6 @@ export default function ShopDetailPage() {
           <button className="bg-black/40 text-white p-2 rounded-full">
             <Heart size={24} />
           </button>
-          <button className="bg-black/40 text-white p-2 rounded-full">
-            <MoreHorizontal size={24} />
-          </button>
         </div>
       </div>
 
@@ -251,10 +312,27 @@ export default function ShopDetailPage() {
               className="rounded-full border-4 border-card"
             />
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{shop.shop_name}</h1>
-              <Link href="#" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1">
+              <div className="flex items-center justify-between">
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{shop.shop_name}</h1>
+                {/* Open/Close badge */}
+                {isOpen ? (
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800">Open</span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-800">Closed</span>
+                )}
+              </div>
+              <Link href="#" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1 mt-1">
                 {shop.address} <ChevronRight size={16} />
               </Link>
+              {/* Rating on the opposite side under the address */}
+              <div className="mt-2 flex items-center justify-between">
+                <div />
+                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                  <Star size={16} className="text-yellow-400" fill="currentColor" />
+                  <span>4.8</span>
+                  <span className="text-xs text-muted-foreground">(200)</span>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -268,17 +346,30 @@ export default function ShopDetailPage() {
               <p className="font-bold text-foreground">30 min</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Rating/Review</p>
-              <p className="font-bold text-foreground flex items-center justify-center gap-1">
-                <Star size={16} className="text-yellow-400" fill="currentColor" /> 4.8 (200)
-              </p>
+              <p className="text-sm text-muted-foreground">{displayTodayName}</p>
+              <p className="font-bold text-foreground">{displayTodayHours}</p>
             </div>
+            <div />
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-3">
-            <button className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold">Delivery</button>
-            <button className="w-full bg-secondary text-secondary-foreground py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
-              <Users size={20} /> Group Order
+            <button aria-label="Delivery" className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold flex items-center justify-center gap-3">
+              <div className="flex items-center gap-2">
+                <Truck size={20} />
+                <span className="text-sm font-medium">Delivery</span>
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-800">
+                  <Check size={14} />
+                </span>
+              </div>
+            </button>
+            <button aria-label="Card Payment" className="w-full bg-secondary text-secondary-foreground py-3 rounded-lg font-semibold flex items-center justify-center gap-3">
+              <div className="flex items-center gap-2">
+                <CreditCard size={20} />
+                <span className="text-sm font-medium">Card Payment</span>
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-800">
+                  <Check size={14} />
+                </span>
+              </div>
             </button>
           </div>
         </div>

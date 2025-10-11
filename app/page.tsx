@@ -14,6 +14,7 @@ import { NearToYou } from "../components/near-to-you";
 import { LocationModal } from "../components/location-modal";
 import { useLocation } from "../components/location-provider";
 import { HomeCategories } from "../components/home-categories";
+import { HomeBrands } from "../components/home-brands";
 import type { Product, CategoryShop } from "@/lib/type";
 import { supabase } from "@/lib/supabase";
 import { ProductCard } from "../components/ProductCard";
@@ -52,6 +53,11 @@ export default function Home() {
         {/* Home Categories Section */}
         <div className="px-1">
           <HomeCategories />
+        </div>
+
+        {/* Home Brands Section */}
+        <div className="px-1">
+          <HomeBrands />
         </div>
 
         {/* Special Offers Section */}

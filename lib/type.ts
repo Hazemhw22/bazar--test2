@@ -55,14 +55,27 @@ export interface Shop {
   gallery?: string[];
   statusDropdownOpen?: boolean;
   visit_count?: number; // عدد زيارات المتجر
+  // Optional fields for UI/feature flags
+  delivery?: boolean;
+  delivery_available?: boolean;
+  supports_delivery?: boolean;
+  has_delivery?: boolean;
+  accepts_card?: boolean;
+  card_payment?: boolean;
+  payment_methods?: string[];
   // ...other properties
 }
 
 export interface WorkHours {
   day: string;
   open: boolean;
-  startTime: string;
-  endTime: string;
+  startTime?: string;
+  endTime?: string;
+  // alternate possible keys from DB
+  start?: string;
+  end?: string;
+  open_time?: string;
+  close_time?: string;
 }
 
 export interface Profile {

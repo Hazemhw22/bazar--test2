@@ -18,7 +18,6 @@ const menuItems = [
   { href: "/notifications", label: "Notifications", icon: Bell },
   { href: "/favourite", label: "Favourite", icon: Heart },
   { href: "/invite", label: "Invite Friends", icon: Gift },
-  { href: "/restaurants", label: "Restaurants", icon: Search },
 ];
 
 export default function MobileSidebar({ open, onClose, user }: MobileSidebarProps) {
