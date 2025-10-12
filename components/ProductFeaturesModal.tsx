@@ -87,6 +87,8 @@ export default function ProductFeaturesModal({
             })
           );
           setFeatureLabels(labelsWithValues);
+          // set the first label active by default
+          setActiveLabelId(labelsWithValues[0]?.id ?? null);
           // Reset selections when product changes
           setSelectionsPerUnit(Array(quantity).fill(0).map(() => ({})));
         }
@@ -179,20 +181,22 @@ export default function ProductFeaturesModal({
 
             {featureLabels.length > 0 ? (
               <div className="bg-white rounded-xl border border-border p-4 mt-2">
-                {/* Tabs for labels */}
-                <div className="flex gap-2 overflow-x-auto pb-3">
-                  {featureLabels.map((label) => {
-                    const active = activeLabelId === label.id || (activeLabelId === null && featureLabels[0]?.id === label.id);
-                    return (
-                      <button
-                        key={label.id}
-                        onClick={() => setActiveLabelId(label.id)}
-                        className={`whitespace-nowrap px-4 py-2 rounded-lg border ${active ? "bg-primary/10 border-primary" : "border-border"}`}
-                      >
-                        {label.label}
-                      </button>
-                    );
-                  })}
+                {/* Tabs for labels (nav underline style) */}
+                <div className="border-b border-border">
+                  <nav className="flex gap-4 overflow-x-auto -mb-px">
+                    {featureLabels.map((label) => {
+                      const active = activeLabelId === label.id;
+                      return (
+                        <button
+                          key={label.id}
+                          onClick={() => setActiveLabelId(label.id)}
+                          className={`pb-3 text-sm font-medium min-w-max ${active ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground border-b-2 border-transparent'}`}
+                        >
+                          {label.label}
+                        </button>
+                      );
+                    })}
+                  </nav>
                 </div>
 
                 {/* Values for the active tab */}
