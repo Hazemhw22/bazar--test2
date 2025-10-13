@@ -248,49 +248,54 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         <div className="text-xl font-bold">{product.sale_price ? `${product.sale_price}$` : `${product.price}$`}</div>
       </div>
 
-      {/* Sizes */}
-      <div className="w-full max-w-md mb-3">
-        <div className="flex items-center justify-between mb-2">
-          <span className="font-medium text-xl">Size</span>
-          <span className="text-sm text-[rgba(255,255,255,0.6)]">{product.shops?.shop_name ?? ''}</span>
-        </div>
-        <div className="flex gap-3">
-          {[37,38,39,40].map(s => {
-            const active = selectedSize === s;
-            return (
-              <button
-                key={s}
-                onClick={() => setSelectedSize(s)}
-                className={`w-14 h-14 rounded-lg flex items-center justify-center text-white text-lg font-medium transition-all ${active ? 'bg-[rgba(59,52,112,0.18)] border-2 border-[#5a4aa3] shadow-[0_6px_20px_rgba(90,74,163,0.12)]' : 'bg-transparent border border-[rgba(255,255,255,0.06)]'}`}>
-                {s}
-              </button>
-            )
-          })}
-        </div>
-      </div>
+      {/* Feature labels (sizes, colors, etc.) rendered from featureLabels */}
+      {featureLabels.map((label) => (
+        <div key={label.id} className="w-full max-w-md mb-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-medium text-xl">{label.label}</span>
+            <span className="text-sm text-[rgba(255,255,255,0.6)]">{product.shops?.shop_name ?? ''}</span>
+          </div>
 
-      {/* Colors */}
-      <div className="w-full max-w-md mb-4">
-        <div className="mb-2 text-sm font-medium">Colors</div>
-        <div className="flex gap-3 items-center">
-          {[
-            { key: 'Chalk Pink', label: 'Chalk Pink', color: '#f7b6b0' },
-            { key: 'Royal Gray', label: 'Royal Gray', color: '#7c8ca2' },
-            { key: 'Eucalyptus', label: 'Eucalyptus', color: '#b2c8b2' },
-          ].map(c => {
-            const active = selectedColor === c.key;
-            return (
-              <button
-                key={c.key}
-                onClick={() => setSelectedColor(c.key)}
-                className={`flex items-center gap-3 px-4 py-2 rounded-full transition-all ${active ? 'bg-[rgba(255,255,255,0.03)] ring-1 ring-[rgba(90,74,163,0.28)] border border-[rgba(255,255,255,0.06)]' : 'bg-transparent border border-[rgba(255,255,255,0.06)]'}`}>
-                <span className="w-4 h-4 rounded-full" style={{ background: c.color }} />
-                <span className={`text-sm ${active ? 'text-white' : 'text-[rgba(255,255,255,0.85)]'}`}>{c.label}</span>
-              </button>
-            )
-          })}
+          <div className="flex gap-3 flex-wrap items-center">
+            {(label.values || []).map((v) => {
+              const active = (selectedFeatures[label.id] || []).includes(v.id);
+              const isNumber = /^\d+$/.test(String(v.value));
+
+              // Numeric values: render as size-like square buttons
+              if (isNumber) {
+                return (
+                  <button
+                    key={v.id}
+                    onClick={() => handleSelectFeature(label.id, v.id)}
+                    className={`w-14 h-14 rounded-lg flex items-center justify-center text-white text-lg font-medium transition-all ${active ? 'bg-[rgba(59,52,112,0.18)] border-2 border-[#5a4aa3] shadow-[0_6px_20px_rgba(90,74,163,0.12)]' : 'bg-transparent border border-[rgba(255,255,255,0.06)]'}`}
+                  >
+                    {v.value}
+                  </button>
+                );
+              }
+
+              // Non-numeric values: render as pill (color/option) buttons
+              return (
+                <button
+                  key={v.id}
+                  onClick={() => handleSelectFeature(label.id, v.id)}
+                  className={`flex items-center gap-3 px-4 py-2 rounded-full transition-all ${active ? 'bg-[rgba(255,255,255,0.03)] ring-1 ring-[rgba(90,74,163,0.28)] border border-[rgba(255,255,255,0.06)]' : 'bg-transparent border border-[rgba(255,255,255,0.06)]'}`}
+                >
+                  {v.image || /^#([A-Fa-f0-9]{3,6})$/.test(String(v.value)) ? (
+                    <span className="w-4 h-4 rounded-full overflow-hidden" style={/^#([A-Fa-f0-9]{3,6})$/.test(String(v.value)) ? { background: String(v.value) } : undefined}>
+                      {v.image ? <img src={v.image as string} alt={String(v.value)} className="w-full h-full object-cover" /> : null}
+                    </span>
+                  ) : (
+                    <span className="w-4 h-4 rounded-full bg-[rgba(255,255,255,0.06)]" />
+                  )}
+
+                  <span className={`text-sm ${active ? 'text-white' : 'text-[rgba(255,255,255,0.85)]'}`}>{v.value}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      ))}
 
     
 

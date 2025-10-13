@@ -220,7 +220,6 @@ export default function ProductFeaturesModal({
 
                             <div className="flex-1 text-right pr-3" onClick={() => value.available !== false && handleSelectFeature(label.id, value.id, isMultiSelect)}>
                               <div className="font-semibold text-black dark:text-white">{value.value}</div>
-                              {!value.available && <div className="text-sm text-red-500 mt-1">غير متوفر</div>}
                             </div>
 
                             <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
