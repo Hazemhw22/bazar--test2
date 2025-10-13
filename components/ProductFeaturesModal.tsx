@@ -16,7 +16,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useCart } from "./cart-provider";
 import { supabase } from "@/lib/supabase";
 import { Product, ProductFeatureLabel } from "@/lib/type";
-import { XCircle, Minus, Plus, ShoppingBag } from "lucide-react";
+import { XCircle, Minus, Plus, ShoppingBag, Eye } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface ProductFeaturesModalProps {
   product: Product;
@@ -29,6 +30,7 @@ export default function ProductFeaturesModal({
   onClose,
   isOpen,
 }: ProductFeaturesModalProps) {
+  const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   // selectionsPerUnit[index] = Record<labelId, valueIds[]>
   const [selectionsPerUnit, setSelectionsPerUnit] = useState<
@@ -142,6 +144,16 @@ export default function ProductFeaturesModal({
           <DialogClose className="absolute top-3 right-3 p-1 bg-white text-foreground border border-border rounded-full shadow-md z-20 dark:bg-secondary dark:text-secondary-foreground">
             <XCircle size={24} />
           </DialogClose>
+          {/* Eye button placed next to close */}
+          <button
+            aria-label="View product page"
+            onClick={() => {
+              if (product.id) router.push(`/products/${product.id}`);
+            }}
+            className="absolute top-3 right-12 p-1 rounded-full bg-white text-foreground border border-border shadow-md z-20 hover:bg-[rgba(0,0,0,0.04)] dark:bg-secondary dark:text-secondary-foreground"
+          >
+            <Eye size={20} />
+          </button>
         </DialogHeader>
 
         <ScrollArea className="flex-grow">
@@ -166,7 +178,18 @@ export default function ProductFeaturesModal({
 
                 <div className="flex-1 text-right mr-6">
                   <div className="flex items-center justify-between gap-3">
-                    <div className="text-2xl font-bold text-foreground min-w-0 truncate">{product.title}</div>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="text-lg font-bold text-foreground min-w-0 truncate">{product.title}</div>
+                      <button
+                        aria-label="View product page"
+                        onClick={() => {
+                          if (product.id) router.push(`/products/${product.id}`);
+                        }}
+                        className="p-1 rounded-full bg-transparent hover:bg-[rgba(0,0,0,0.04)]"
+                      >
+                        <Eye size={16} />
+                      </button>
+                    </div>
                     <div className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-sm font-medium flex-shrink-0">
                       {currentUnitIndex + 1} / {Math.max(1, quantity)}
                     </div>

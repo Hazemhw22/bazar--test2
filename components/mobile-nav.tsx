@@ -19,7 +19,7 @@ export function MobileNav({ onCartToggle }: MobileNavProps) {
   const navItems = [
   { href: "/", label: t("nav.home"), icon: Home },
   { href: "/products", label: t("nav.sales"), icon: ShoppingBag },
-  { href: "/restaurants", label: t("nav.restaurants") || "Restaurants", icon: (props: any) => <RestaurantSvg size={22} {...props} /> },
+  { href: "/restaurants", label: t("nav.restaurants") , icon: (props: any) => <RestaurantSvg size={22} {...props} /> },
     { href: "/shops", label: t("nav.shops"), icon: Store },
    { href: "/cart", label: t("nav.cart"), icon: ShoppingCart, isCart: true },
   ];

@@ -245,15 +245,17 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       {/* Title + Price */}
       <div className="w-full max-w-md flex items-center justify-between px-1 mb-3">
         <h3 className="text-xl font-semibold">{product.title}</h3>
-        <div className="text-xl font-bold">{product.sale_price ? `${product.sale_price}$` : `${product.price}$`}</div>
+        <div className="text-right">
+          <div className="text-xl font-bold">{totalPrice}₪</div>
+          <div className="text-sm text-[rgba(255,255,255,0.6)] mt-1">{product.shops?.shop_name ?? ''}</div>
+        </div>
       </div>
 
       {/* Feature labels (sizes, colors, etc.) rendered from featureLabels */}
       {featureLabels.map((label) => (
-        <div key={label.id} className="w-full max-w-md mb-3">
-          <div className="flex items-center justify-between mb-2">
+        <div key={label.id} className="w-full max-w-md mb-4 px-2">
+          <div className="flex items-center justify-between mb-4">
             <span className="font-medium text-xl">{label.label}</span>
-            <span className="text-sm text-[rgba(255,255,255,0.6)]">{product.shops?.shop_name ?? ''}</span>
           </div>
 
           <div className="flex gap-3 flex-wrap items-center">
@@ -267,9 +269,12 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                   <button
                     key={v.id}
                     onClick={() => handleSelectFeature(label.id, v.id)}
-                    className={`w-14 h-14 rounded-lg flex items-center justify-center text-white text-lg font-medium transition-all ${active ? 'bg-[rgba(59,52,112,0.18)] border-2 border-[#5a4aa3] shadow-[0_6px_20px_rgba(90,74,163,0.12)]' : 'bg-transparent border border-[rgba(255,255,255,0.06)]'}`}
+                    className={`relative w-14 h-14 rounded-lg flex items-center justify-center text-white text-lg font-medium transition-all ${active ? 'bg-[rgba(59,52,112,0.18)] border-2 border-[#5a4aa3] shadow-[0_6px_20px_rgba(90,74,163,0.12)]' : 'bg-transparent border border-[rgba(255,255,255,0.06)]'}`}
                   >
-                    {v.value}
+                    <span>{v.value}</span>
+                    {active && (v.price_addition ?? 0) > 0 && (
+                      <span className="absolute -bottom-4 right-0 translate-y-1/2 bg-[#2f2f33] text-green-600 text-xs px-2 py-0.5 rounded">+{v.price_addition}₪</span>
+                    )}
                   </button>
                 );
               }
@@ -290,6 +295,9 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                   )}
 
                   <span className={`text-sm ${active ? 'text-white' : 'text-[rgba(255,255,255,0.85)]'}`}>{v.value}</span>
+                  {active && (v.price_addition ?? 0) > 0 && (
+                    <span className="ml-2 inline-flex items-center bg-[#2f2f33] text-white text-xs px-2 py-0.5 rounded">₪{v.price_addition}</span>
+                  )}
                 </button>
               );
             })}
@@ -298,6 +306,8 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       ))}
 
     
+
+      {/* overall featuresPrice (hidden here since per-label badges are shown) */}
 
       {/* Add to list button */}
       <div className="w-full max-w-md mb-6">
