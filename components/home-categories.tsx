@@ -38,6 +38,7 @@ export function HomeCategories() {
       const { data, error: fetchError } = await supabase
         .from("categories_shop")
         .select("*")
+        .neq("id", 15)
         .order("id", { ascending: true });
 
       if (fetchError) {

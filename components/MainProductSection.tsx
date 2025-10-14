@@ -42,19 +42,30 @@ export default function MainProductSection({
         console.error("Error fetching products:", error);
         setProducts([]);
       } else {
-        setProducts(
-          (data ?? []).map((product: any) => ({
-            ...product,
-            shops:
-              product.shops && Array.isArray(product.shops)
-                ? product.shops[0]
-                : product.shops,
-            categories:
-              product.categories && Array.isArray(product.categories)
-                ? product.categories[0]
-                : product.categories,
-          }))
-        );
+        // map products and filter out those whose shop is in category_shop_id = 15
+        const mapped = (data ?? []).map((product: any) => ({
+          ...product,
+          shops:
+            product.shops && Array.isArray(product.shops)
+              ? product.shops[0]
+              : product.shops,
+          categories:
+            product.categories && Array.isArray(product.categories)
+              ? product.categories[0]
+              : product.categories,
+        }));
+
+        // collect shop ids and remove products belonging to shops with category_shop_id = 15
+        const shopIds = Array.from(new Set(mapped.map((p: any) => p.shop).filter(Boolean)));
+        let allowedShopIds: any[] = shopIds;
+        if (shopIds.length > 0) {
+          const { data: shopsData } = await supabase.from('shops').select('id,category_shop_id').in('id', shopIds);
+          const filtered = (shopsData || []).filter((s: any) => Number(s.category_shop_id) !== 15).map((s: any) => s.id);
+          allowedShopIds = filtered;
+        }
+
+        const filteredProducts = mapped.filter((p: any) => allowedShopIds.includes(p.shop));
+        setProducts(filteredProducts);
       }
       setLoading(false);
     }

@@ -61,15 +61,24 @@ export function PopularStores() {
       const { data: shops, error: shopsError } = await supabase
         .from("shops")
         .select("*");
+      // استبعد المتاجر المرتبطة بفئة المتاجر ذات المعرف 15
+      const filteredShops = (shops || []).filter((s: any) => Number(s.category_shop_id) !== 15);
       // جلب التصنيفات
       const { data: cats } = await supabase.from("categories").select("*");
       if (!shopsError && shops && cats) {
         setCategories(cats); // <-- أضف هذا السطر
-        // جلب المنتجات لحساب عدد المنتجات لكل متجر
-        const { data: products } = await supabase
-          .from("products")
-          .select("shop");
-        const shopsWithCount = shops.map((shop) => {
+        // جلب المنتجات لحساب عدد المنتجات لكل متجر (فقط للمتاجر المسموح بها)
+        let products: any[] = [];
+        if (filteredShops.length > 0) {
+          const shopIds = filteredShops.map((s: any) => s.id);
+          const { data: prods } = await supabase
+            .from("products")
+            .select("shop")
+            .in("shop", shopIds);
+          products = prods || [];
+        }
+
+        const shopsWithCount = filteredShops.map((shop) => {
           const count = products
             ? products.filter((p) => p.shop === shop.id).length
             : 0;

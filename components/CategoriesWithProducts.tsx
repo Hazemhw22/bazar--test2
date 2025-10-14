@@ -20,6 +20,7 @@ export default function CategoriesWithProducts() {
       const { data: cats } = await supabase
         .from("categories_shop")
         .select("*")
+        .neq("id", 15)
         .order("id", { ascending: true })
         .limit(12);
 
@@ -39,7 +40,10 @@ export default function CategoriesWithProducts() {
       const results = await Promise.all(promises);
       const map: Record<number, Product[]> = {};
       results.forEach((r: any, i: number) => {
-        map[categoriesList[i].id] = (r.data || []) as Product[];
+        // ensure we never include products belonging to category ids 15, 18, or 34
+        const excluded = new Set([15, 18, 34]);
+        const items = (r.data || []).filter((p: any) => !excluded.has(Number(p.category)));
+        map[categoriesList[i].id] = items as Product[];
       });
       if (!mounted) return;
       setProductsMap(map);
@@ -58,6 +62,9 @@ export default function CategoriesWithProducts() {
     const seen = new Set<string>();
     const out: Product[] = [];
     for (const p of arr) {
+      // skip products linked to excluded category ids (15, 18, 34)
+      const catId = Number((p as any).category);
+      if ([15, 18, 34].includes(catId)) continue;
       if (!seen.has(p.id)) {
         seen.add(p.id);
         out.push(p);

@@ -43,9 +43,10 @@ export function SpecialOffers() {
           view_count,
           created_at
         `)
-        .eq('active', true)
-        .order('created_at', { ascending: false })
-        .limit(10);
+         .eq("active", true)
+         .not("category", "in", "(18,34)")
+         .order("created_at", { ascending: false })
+         .limit(12);
 
       if (fetchError) {
         console.error('Supabase error:', fetchError.message);
