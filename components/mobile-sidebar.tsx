@@ -13,7 +13,7 @@ interface MobileSidebarProps {
 
 const menuItems = [
   { href: "/account", label: "Profile", icon: User },
-  { href: "/orders/history", label: "Orders", icon: History },
+  { href: "/orders", label: "Orders", icon: History },
   { href: "/wallet", label: "Wallet", icon: Wallet },
   { href: "/notifications", label: "Notifications", icon: Bell },
   { href: "/favourite", label: "Favourite", icon: Heart },
