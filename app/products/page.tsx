@@ -23,7 +23,7 @@ import { Category } from "../../lib/type"
 
 export default function Products() {
   const [minPrice, setMinPrice] = useState(0)
-  const [maxPrice, setMaxPrice] = useState(1000)
+  const [maxPrice, setMaxPrice] = useState(10000)
   const [rating, setRating] = useState<number[]>([])
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null)
