@@ -44,7 +44,7 @@ export function NearToYou() {
           created_at
         `)
         .eq("active", true)
-        .not("category", "in", "(18,34)")
+        .not("category", "in", "(18,56)")
         .order("created_at", { ascending: false })
         .limit(12);
 

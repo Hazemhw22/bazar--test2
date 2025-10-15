@@ -41,7 +41,7 @@ export default function CategoriesWithProducts() {
       const map: Record<number, Product[]> = {};
       results.forEach((r: any, i: number) => {
         // ensure we never include products belonging to category ids 15, 18, or 34
-        const excluded = new Set([15, 18, 34]);
+        const excluded = new Set([15, 18, 56]);
         const items = (r.data || []).filter((p: any) => !excluded.has(Number(p.category)));
         map[categoriesList[i].id] = items as Product[];
       });
@@ -64,7 +64,7 @@ export default function CategoriesWithProducts() {
     for (const p of arr) {
       // skip products linked to excluded category ids (15, 18, 34)
       const catId = Number((p as any).category);
-      if ([15, 18, 34].includes(catId)) continue;
+      if ([15, 18, 56].includes(catId)) continue;
       if (!seen.has(p.id)) {
         seen.add(p.id);
         out.push(p);
