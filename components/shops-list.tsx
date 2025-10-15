@@ -11,6 +11,46 @@ import Link from "next/link";
 import Image from "next/image";
 import { Star, MapPin, Clock, ChevronDown, Search, Filter, ShoppingBag, Award, Calendar, LayoutGrid, List, Eye, Heart } from "lucide-react";
 
+// Render a single star that fills proportionally to value/5 using two layered SVGs
+function StarProgress({ value = 0, size = 14 }: { value?: number; size?: number }) {
+  const pct = Math.max(0, Math.min(1, value / 5));
+  const gray = '#E5E7EB'; // tailwind gray-200
+  const yellow = '#F59E0B'; // tailwind amber-500
+
+  return (
+    <span className="inline-block relative" style={{ width: size, height: size }}>
+      {/* background (unfilled) star */}
+      <Star
+        style={{ width: size, height: size, color: gray }}
+        fill="none"
+        stroke="currentColor"
+      />
+      {/* foreground (filled) star clipped to percentage */}
+      <span style={{ position: 'absolute', left: 0, top: 0, width: `${pct * 100}%`, height: size, overflow: 'hidden' }}>
+        <Star
+          style={{ width: size, height: size, color: yellow }}
+          fill="currentColor"
+          stroke="none"
+        />
+      </span>
+    </span>
+  );
+}
+
+// Render 5 stars and fill each according to rating (supports fractional by filling each star proportionally)
+function StarsRow({ rating = 4, size = 14 }: { rating?: number; size?: number }) {
+  const r = Math.max(0, Math.min(5, rating));
+  return (
+    <div className="flex items-center gap-1">
+      {Array.from({ length: 5 }).map((_, i) => {
+        const perStarFill = Math.max(0, Math.min(1, r - i));
+        return <StarProgress key={i} value={perStarFill * 5} size={size} />;
+      })}
+    </div>
+  );
+}
+
+
 // أنواع التصنيفات
 interface CategoryShop {
   id: number;
@@ -420,8 +460,8 @@ function StoreCard({ shop }: { shop: Shop }) {
         <div className="mt-3 flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
-              <Star className="w-3 h-3 text-yellow-400" fill="currentColor" />
-              <span className="text-sm">4.7</span>
+              <StarProgress value={(shop as any).rating ?? 4.7} size={12} />
+              <span className="text-sm">{((shop as any).rating ?? 4.7).toFixed(1)}</span>
             </div>
           </div>
 
@@ -500,9 +540,10 @@ function ListRow({ shop }: { shop: Shop }) {
   return (
     <Link
       href={`/shops/${shop.id}`}
-      className="flex items-center gap-4 p-3 bg-white/5 rounded-lg hover:bg-white/10"
+      className="flex items-center gap-4 p-4 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 hover:scale-105 transition-all duration-200 cursor-pointer hover:ring-4 hover:ring-pazar-primary/20"
+      role="button"
     >
-      <div className="w-20 h-12 relative rounded-md overflow-hidden bg-gray-200">
+      <div className="w-20 h-20 relative rounded-md overflow-hidden bg-gray-200">
         <Image
           src={shop.cover_image_url || "/placeholder.svg"}
           alt={shop.shop_name}
@@ -513,16 +554,24 @@ function ListRow({ shop }: { shop: Shop }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
           <h4 className="font-semibold truncate">{shop.shop_name}</h4>
-          <div className="flex items-center gap-2 text-xs text-gray-300">
-            <Star className="w-4 h-4 text-yellow-400" />
-            <span>4.7</span>
+          {/* Open/Close badge moved to the top-right (replacing the stars) */}
+          <div className="flex-shrink-0">
+            {renderOpenBadge(shop.work_hours)}
           </div>
         </div>
         <p className="text-sm text-gray-300 truncate">{shop.categoryTitle}</p>
-        <div className="text-xs text-muted-foreground mt-1 flex items-center gap-3">
-          <span>{shop.productsCount} Products</span>
-          <span>•</span>
-          {renderOpenBadge(shop.work_hours)}
+        <div className="text-xs text-muted-foreground mt-1 flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <span>{shop.productsCount} Products</span>
+            </div>
+            {/* Stars moved below the products count */}
+            <div className="mt-1 flex items-center gap-2 text-xs text-gray-300">
+              <StarsRow rating={Math.round((shop as any).rating ?? 4)} size={14} />
+              <span>{((shop as any).rating ?? 4).toFixed(1)}</span>
+            </div>
+          </div>
+          <div className="flex-shrink-0" />
         </div>
       </div>
     </Link>
