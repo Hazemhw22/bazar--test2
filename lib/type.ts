@@ -202,3 +202,13 @@ export interface CategorySubShop {
   image_url: string;
   created_at: string;
 }
+
+// Represents a brand entry stored in `categories_brands` table
+export interface CategoryBrand {
+  id: number;
+  brand: string;
+  description?: string | null;
+  image_url?: string | null;
+  created_at?: string | null;
+  shop_id?: number | null; // optional link to a shop
+}

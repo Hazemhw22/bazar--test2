@@ -34,9 +34,10 @@ import {
   incrementShopVisitCountClient,
 } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
-import type { Shop, Category, Product, WorkHours } from "@/lib/type";
+import type { Shop, Category, Product, WorkHours, CategoryShop, CategorySubShop } from "@/lib/type";
 import { ProductCard } from "../../../components/ProductCard";
 import AdBanner from "@/components/AdBanner";
+import BrandsStrip from "@/components/BrandsStrip";
 
 export default function ShopDetailPage() {
   const params = useParams();
@@ -47,7 +48,11 @@ export default function ShopDetailPage() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeTab, setActiveTab] = useState("categories");
   const [categories, setCategories] = useState<Category[]>([]);
+  const [shopCategories, setShopCategories] = useState<CategoryShop[]>([]);
+  const [shopSubcategories, setShopSubcategories] = useState<CategorySubShop[]>([]);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [selectedBrand, setSelectedBrand] = useState<number | null>(null);
   const [productsSort, setProductsSort] = useState("newest");
   const [productsSearch, setProductsSearch] = useState("");
 
@@ -84,6 +89,26 @@ export default function ShopDetailPage() {
       .select("*")
       .then(({ data }) => setCategories(data ?? []));
   }, []);
+
+  
+
+  // If the shop record declares a shop-category (category_shop_id), prefer loading that
+  useEffect(() => {
+    const catId = (shop as any)?.category_shop_id;
+    if (!catId) return;
+
+    (async () => {
+      try {
+        const { data: cat } = await supabase.from("categories_shop").select("*").eq("id", catId).single();
+        setShopCategories(cat ? [cat as CategoryShop] : []);
+
+        const { data: subs } = await supabase.from("categories_sub_shop").select("*").eq("category_id", catId);
+        setShopSubcategories((subs as CategorySubShop[]) || []);
+      } catch (err) {
+        console.error("Error fetching shop's declared categories:", err);
+      }
+    })();
+  }, [shop]);
 
   // جلب بيانات المتجر
   useEffect(() => {
@@ -230,11 +255,14 @@ export default function ShopDetailPage() {
     else displayTodayHours = todayWork.open ? "Open" : "Closed";
   }
 
-  // استخراج التصنيفات الفريدة من المنتجات
-  const uniqueCategories: Category[] = products
-    .map((p: any) => p.categories)
-    .filter((cat) => cat && cat.id)
-    .filter((cat, idx, arr) => arr.findIndex((c) => c.id === cat.id) === idx);
+  // استخدم categories_shop المسترجعة كتصنيفات المتجر (fallback: استخراج من products إذا لم تتوفر)
+  const uniqueCategories: Category[] = (shopCategories.length > 0
+    ? shopCategories
+    : products
+        .map((p: any) => p.categories)
+        .filter((cat) => cat && cat.id)
+        .filter((cat, idx, arr) => arr.findIndex((c) => c.id === cat.id) === idx)
+  ) as any;
 
   // عدد المنتجات وعدد التصنيفات
   const productsCount = products.length;
@@ -401,7 +429,10 @@ export default function ShopDetailPage() {
             >
               <button
                 key="all"
-                onClick={() => setSelectedCategory(null)}
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setSelectedSubcategory(null);
+                }}
                 className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
                   selectedCategory === null ? "text-blue-600" : "text-gray-700 dark:text-gray-200"
                 }`}
@@ -420,7 +451,10 @@ export default function ShopDetailPage() {
               {uniqueCategories.map((cat) => (
                 <button
                   key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
+                  onClick={() => {
+                    setSelectedCategory(cat.id);
+                    setSelectedSubcategory(null);
+                  }}
                   className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
                     selectedCategory === cat.id ? "text-blue-600" : "text-gray-700 dark:text-gray-200"
                   }`}
@@ -470,6 +504,63 @@ export default function ShopDetailPage() {
           `}</style>
         </div>
 
+        {/* Subcategory Pills for selected category */}
+        {selectedCategory !== null && (
+          (() => {
+            const subs = shopSubcategories.filter((s) => Number(s.category_id) === Number(selectedCategory));
+            if (subs.length === 0) return null;
+
+            return (
+              <div className="flex overflow-x-auto gap-3 mt-3 pb-2 scrollbar-hide scroll-smooth" id="shop-subcategory-scroll">
+                {/* All pill */}
+                <button
+                  onClick={() => setSelectedSubcategory(null)}
+                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
+                    selectedSubcategory === null ? "text-blue-600" : "text-gray-700 dark:text-gray-200"
+                  }`}
+                >
+                  <div
+                    className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
+                      selectedSubcategory === null ? "border-blue-600" : "border-transparent bg-gray-300 dark:bg-gray-700"
+                    }`}
+                  >
+                    <div className="w-full h-full flex items-center justify-center text-white font-bold">A</div>
+                  </div>
+                  <span className="text-sm font-medium mt-1">All</span>
+                </button>
+
+                {subs.map((sub) => (
+                  <button
+                    key={sub.id}
+                    onClick={() => setSelectedSubcategory(sub.id)}
+                    className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
+                      selectedSubcategory === sub.id ? "text-blue-600" : "text-gray-700 dark:text-gray-200"
+                    }`}
+                  >
+                    <div
+                      className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
+                        selectedSubcategory === sub.id ? "bg-blue-600 border-blue-600" : "border-transparent bg-card"
+                      }`}
+                    >
+                      {sub.image_url ? (
+                        <Image src={sub.image_url} alt={sub.title} fill className="object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-white font-bold">{sub.title[0]}</div>
+                      )}
+                    </div>
+                    <span className="text-sm font-medium mt-1">{sub.title}</span>
+                  </button>
+                ))}
+              </div>
+            );
+          })()
+        )}
+
+        {/* Brands associated with shop (or general brands) */}
+        <div className="mt-6">
+          <BrandsStrip selectedBrand={selectedBrand} setSelectedBrand={setSelectedBrand} shopId={shop ? Number(shop.id) : null} />
+        </div>
+
         {/* فلترة المنتجات حسب التصنيف المختار - عرض مجموعات أفقية كل 5 */}
         <div className="space-y-6">
           {productsLoading ? (
@@ -478,9 +569,16 @@ export default function ShopDetailPage() {
             <div className="text-center text-red-500 py-8">Error loading products: {productsError.message}</div>
           ) : (
             (() => {
-              const list = filteredSortedProducts.filter((product: Product) =>
-                selectedCategory === null ? true : product.categories?.id === selectedCategory
-              );
+              const list = filteredSortedProducts.filter((product: Product) => {
+                // match category if selected
+                const matchCat = selectedCategory === null ? true : product.categories?.id === selectedCategory;
+                // match subcategory if selected
+                const matchSub = selectedSubcategory === null ? true : Number((product as any).subcategory_id || (product as any).subcategory || 0) === Number(selectedSubcategory);
+                // match brand if selected (check common product fields)
+                const productBrandId = Number((product as any).brand_id || (product as any).brand?.id || (product as any).brand || 0);
+                const matchBrand = selectedBrand === null ? true : productBrandId === Number(selectedBrand);
+                return matchCat && matchSub && matchBrand;
+              });
 
               if (list.length === 0) {
                 return <div className="text-center text-gray-400 py-8">No products found for this category</div>;
@@ -585,3 +683,4 @@ function DefaultShopContent({ shop }: ShopContentProps) {
     </div>
   );
 }
+
