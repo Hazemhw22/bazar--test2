@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { X, User, History, Wallet, Bell, Heart, Gift, Search, Settings } from "lucide-react";
+import { X, User, History, Wallet, Bell, Heart, Gift, Headphones, Settings } from "lucide-react";
 import { useEffect } from "react";
 import { Profile } from "@/lib/type";
 
@@ -78,7 +78,7 @@ export default function MobileSidebar({ open, onClose, user }: MobileSidebarProp
             <span>Settings and Privacy</span>
           </Link>
           <Link href="/help" onClick={onClose} className="flex items-center gap-3 px-4 py-3 text-sm rounded-lg hover:bg-accent">
-            <Search size={18} />
+            <Headphones size={18} />
             <span>Help center</span>
           </Link>
         </div>
