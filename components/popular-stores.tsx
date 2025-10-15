@@ -2,198 +2,121 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Card, CardContent } from "./ui/card";
-import { Badge } from "./ui/badge";
 import { useSwipeable } from "react-swipeable";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import type { Shop } from "@/lib/type";
-import { useQuery } from "@tanstack/react-query";
-import { Star, ChevronLeft, ChevronRight } from "lucide-react";
-
-function StoreCard({ shop }: { shop: Shop }) {
-  return (
-    <Link
-      href={`/shops/${shop.id}`}
-      className="relative block overflow-hidden rounded-2xl aspect-[16/9] w-full group"
-    >
-      <Image
-        src={shop.cover_image_url || "/placeholder.svg"}
-        alt={shop.shop_name}
-        fill
-        className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
-      <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 text-white">
-        <h3 className="text-xl sm:text-2xl font-bold">{shop.shop_name}</h3>
-        <p className="text-sm text-gray-300 mb-2">{shop.categoryTitle}</p>
-        <div className="flex items-center justify-between text-xs sm:text-sm">
-          <span>{shop.productsCount} Products</span>
-          <span>30 min</span>
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-black/30">
-            <Star className="w-3 h-3 text-yellow-400" fill="currentColor" />
-            <span>4.7</span>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
 
 export function PopularStores() {
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [shops, setShops] = useState<Shop[]>([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
-  const itemsPerView = {
-    mobile: 1,
-    tablet: 2,
-    desktop: 3,
-  };
-
+  // fetch shops (we only need first 3)
   useEffect(() => {
-    async function fetchData() {
+    let mounted = true;
+    async function fetchShops() {
       setLoading(true);
-      // جلب المتاجر مع اسم صاحب المتجر
-      const { data: shops, error: shopsError } = await supabase
-        .from("shops")
-        .select("*");
-      // استبعد المتاجر المرتبطة بفئة المتاجر ذات المعرف 15
-      const filteredShops = (shops || []).filter((s: any) => Number(s.category_shop_id) !== 15);
-      // جلب التصنيفات
-      const { data: cats } = await supabase.from("categories").select("*");
-      if (!shopsError && shops && cats) {
-        setCategories(cats); // <-- أضف هذا السطر
-        // جلب المنتجات لحساب عدد المنتجات لكل متجر (فقط للمتاجر المسموح بها)
-        let products: any[] = [];
-        if (filteredShops.length > 0) {
-          const shopIds = filteredShops.map((s: any) => s.id);
-          const { data: prods } = await supabase
-            .from("products")
-            .select("shop")
-            .in("shop", shopIds);
-          products = prods || [];
-        }
-
-        const shopsWithCount = filteredShops.map((shop) => {
-          const count = products
-            ? products.filter((p) => p.shop === shop.id).length
-            : 0;
-          return {
-            ...shop,
-            categoryTitle:
-              cats.find((cat) => cat.id === shop.category_id)?.title ||
-              "بدون تصنيف",
-            productsCount: count,
-          };
-        });
-        setShops(shopsWithCount);
-      }
+      const { data } = await supabase.from("shops").select("id,shop_name,cover_image_url");
+      if (!mounted) return;
+      const items = (data || []).slice(0, 3).map((s: any) => ({
+        id: s.id,
+        shop_name: s.shop_name,
+        cover_image_url: s.cover_image_url,
+      }));
+      // if less than 3, repeat to fill
+      while (items.length < 3 && items.length > 0) items.push(items[items.length % items.length]);
+      setShops(items as Shop[]);
       setLoading(false);
     }
-    fetchData();
+    fetchShops();
+    return () => { mounted = false; };
   }, []);
 
-  const maxIndex = Math.max(0, shops.length - itemsPerView.desktop);
+  const heroItems = useMemo(() => shops.slice(0, 3), [shops]);
+  const len = heroItems.length;
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => Math.min(prev + itemsPerView.desktop, maxIndex));
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex((prev) => Math.max(prev - itemsPerView.desktop, 0));
-  };
-
-  const swipeHandlers = useSwipeable({
-    onSwipedLeft: nextSlide,
-    onSwipedRight: prevSlide,
+  // swipe handlers
+  const handlers = useSwipeable({
+    onSwipedLeft: () => setCurrentIndex((c) => (len ? (c + 1) % len : 0)),
+    onSwipedRight: () => setCurrentIndex((c) => (len ? (c - 1 + len) % len : 0)),
     trackMouse: true,
   });
 
-  const handleScroll = (direction: "left" | "right") => {
-    const container = document.getElementById("popular-stores-container");
-    if (container) {
-      const scrollAmount = container.clientWidth * 0.9; // scroll almost full view
-      const newScrollLeft = direction === "left" ? container.scrollLeft - scrollAmount : container.scrollLeft + scrollAmount;
-      container.scrollTo({ left: newScrollLeft, behavior: "smooth" });
-    }
-  };
-
-  const checkScrollPosition = () => {
-    const container = document.getElementById("popular-stores-container");
-    if (!container) return;
-    setShowLeftArrow(container.scrollLeft > 10);
-    setShowRightArrow(container.scrollLeft < container.scrollWidth - container.clientWidth - 10);
-  };
-
+  // auto-rotate every 8 seconds
   useEffect(() => {
-    const container = document.getElementById("popular-stores-container");
-    checkScrollPosition();
-    if (container) container.addEventListener("scroll", checkScrollPosition);
-    window.addEventListener("resize", checkScrollPosition);
-    return () => {
-      if (container) container.removeEventListener("scroll", checkScrollPosition);
-      window.removeEventListener("resize", checkScrollPosition);
-    };
-  }, [shops]);
+    if (len <= 1) return;
+    if (isPaused) return;
+    const id = setInterval(() => {
+      setCurrentIndex((c) => (c + 1) % len);
+    }, 8000);
+    return () => clearInterval(id);
+  }, [len, isPaused]);
+
+  // clamp index
+  useEffect(() => {
+    if (len === 0) setCurrentIndex(0);
+    else setCurrentIndex((c) => ((c % len) + len) % len);
+  }, [len]);
 
   return (
-    <section className="py-8 px-2 md:px-4">
-      <div className="mx-auto max-w-8xl">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">
-            Popular Shops
-          </h2>
-          <Link
-            href="/shops"
-            className="text-primary hover:underline text-sm font-medium"
-          >
-            See All
-          </Link>
+    <section className="py-6 px-1 md:px-4">
+      <div className="mx-auto max-w-6xl">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">Popular Shop</h3>
+          <Link href="/shops" className="text-sm text-primary">See All</Link>
         </div>
 
-        <div className="relative" {...swipeHandlers}>
-          <div className="relative">
-            {showLeftArrow && (
-              <button
-                onClick={() => handleScroll("left")}
-                className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 dark:bg-black/60 shadow-md"
-                aria-label="Previous"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-            )}
-            {showRightArrow && (
-              <button
-                onClick={() => handleScroll("right")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 dark:bg-black/60 shadow-md"
-                aria-label="Next"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            )}
+        <div
+          {...handlers}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={() => setIsPaused(true)}
+          onTouchEnd={() => setIsPaused(false)}
+          className="relative"
+        >
+          {loading || len === 0 ? (
+            <div className="w-56 h-56 bg-gray-200 rounded-2xl mx-auto" />
+          ) : (
+            (() => {
+              const left = heroItems[(currentIndex - 1 + len) % len];
+              const center = heroItems[currentIndex % len];
+              const right = heroItems[(currentIndex + 1) % len];
+              return (
+                <div className="relative w-full flex items-center justify-center" style={{ minHeight: 240 }}>
+                  {/* left - behind */}
+                  <div
+                    className="absolute left-1 sm:left-1/4 top-1/2 -translate-y-1/2 w-40 sm:w-48 h-40 sm:h-48 rounded-2xl overflow-hidden shadow-md transform scale-95 opacity-90 cursor-pointer"
+                    onClick={() => setCurrentIndex((currentIndex - 1 + len) % len)}
+                    style={{ zIndex: 10 }}
+                  >
+                    <Link href={`/shops/${left.id}`} className="block w-full h-full">
+                      <Image src={left.cover_image_url || "/placeholder.svg"} alt={left.shop_name} width={320} height={320} className="object-cover w-full h-full" />
+                    </Link>
+                  </div>
 
-            <div id="popular-stores-container" className="flex gap-6 overflow-x-auto snap-x snap-mandatory py-2 px-2">
-              {loading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="animate-pulse flex-shrink-0 w-80">
-                    <div className="bg-secondary rounded-2xl aspect-[16/9]"></div>
+                  {/* right - behind */}
+                  <div
+                    className="absolute right-1 sm:right-1/4 top-1/2 -translate-y-1/2 w-40 sm:w-48 h-40 sm:h-48 rounded-2xl overflow-hidden shadow-md transform scale-95 opacity-90 cursor-pointer"
+                    onClick={() => setCurrentIndex((currentIndex + 1) % len)}
+                    style={{ zIndex: 10 }}
+                  >
+                    <Link href={`/shops/${right.id}`} className="block w-full h-full">
+                      <Image src={right.cover_image_url || "/placeholder.svg"} alt={right.shop_name} width={320} height={320} className="object-cover w-full h-full" />
+                    </Link>
                   </div>
-                ))
-              ) : shops.length === 0 ? (
-                <div className="col-span-full text-center text-muted-foreground py-12">No stores found</div>
-              ) : (
-                shops.slice(0, 6).map((shop) => (
-                  <div key={shop.id} className="snap-center flex-shrink-0 w-80">
-                    <StoreCard shop={shop} />
+
+                  {/* center - front */}
+                  <div className="relative w-52 h-52 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-3xl overflow-hidden shadow-2xl transform scale-100 z-20">
+                    <Link href={`/shops/${center.id}`} className="block w-full h-full">
+                      <Image src={center.cover_image_url || "/placeholder.svg"} alt={center.shop_name} width={420} height={420} className="object-cover w-full h-full rounded-3xl" />
+                    </Link>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
+                </div>
+              );
+            })()
+          )}
         </div>
       </div>
     </section>
