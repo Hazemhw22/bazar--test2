@@ -7,7 +7,7 @@ import { HeroSection } from "../components/hero-section";
 import Link from "next/link";
 import Image from "next/image";
 import { GiftSection } from "../components/gift-section";
-import { PopularStores } from "../components/popular-stores";
+import PopularStores from "../components/popular-stores";
 import MainProductSection from "../components/MainProductSection";
 import { SpecialOffers } from "../components/special-offers";
 import { NearToYou } from "../components/near-to-you";

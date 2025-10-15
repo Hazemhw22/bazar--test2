@@ -10,6 +10,7 @@ import AdBanner from "@/components/AdBanner";
 import MainProductSection from "@/components/MainProductSection";
 import RestaurantGrid from "@/components/RestaurantGrid";
 import { HeroSectionRes } from "@/components/hero-section-res";
+import PopularRestaurants from "@/components/popular-restaurants";
 
 export default function RestaurantsPage() {
   const CATEGORY_SHOP_ID = 15; // restaurants category_shop id
@@ -201,22 +202,8 @@ export default function RestaurantsPage() {
           )}
         </section>
 
-        {/* Popular restaurants (all shops) */}
-        {shops.length > 0 && (
-          <section className="mb-6">
-            <h2 className="text-xl font-bold mb-3">Popular Restaurants</h2>
-            <div className="flex gap-3 overflow-x-auto pb-2">
-              {shops.map((s) => (
-                <Link key={s.id} href={`/shops/${s.id}`} className="flex flex-col items-center gap-2 w-32">
-                  <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 relative">
-                    <Image src={(s.logo_url as string) || "/placeholder.svg"} alt={s.shop_name} fill className="object-cover" />
-                  </div>
-                  <div className="text-sm text-center truncate">{s.shop_name}</div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+        {/* Popular restaurants (top 3 for category 15) */}
+        <PopularRestaurants />
 
         {/* Ad banner between popular restaurants and main product sections */}
         <div className="mt-8">
