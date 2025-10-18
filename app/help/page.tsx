@@ -1,24 +1,26 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MessageSquare, Mail, Send, Headphones, X } from "lucide-react";
 
 export default function HelpPage() {
+  const { t, direction } = useI18n();
   // WhatsApp
-  const [waPhone, setWaPhone] = useState<string>("+15551234567"); // edit to your support number
-  const [waMessage, setWaMessage] = useState<string>("Hello, I need help with my order.");
+  const [waPhone, setWaPhone] = useState<string>(""); 
+  const [waMessage, setWaMessage] = useState<string>("");
 
   // Email note
-  const [emailTo, setEmailTo] = useState<string>("support@example.com");
-  const [emailSubject, setEmailSubject] = useState<string>("Support request");
+  const [emailTo, setEmailTo] = useState<string>("");
+  const [emailSubject, setEmailSubject] = useState<string>("");
   const [emailBody, setEmailBody] = useState<string>("");
 
   // Support bot modal
   const [botOpen, setBotOpen] = useState(false);
   const [messages, setMessages] = useState<Array<{ from: "bot" | "user"; text: string }>>([
-    { from: "bot", text: "مرحباً! أنا هنا لمساعدتك. كيف أستطيع خدمتك اليوم؟" },
+    { from: "bot", text: t("help.bot.welcome") },
   ]);
   const [botInput, setBotInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -59,38 +61,38 @@ export default function HelpPage() {
   };
 
   const generateBotReply = (userText: string) => {
-    const t = userText.toLowerCase();
-    if (t.includes("order") || t.includes("طلب") || t.includes("status") || t.includes("حالة")) {
-      return "يمكنك متابعة حالة الطلب من صفحة 'Orders'، أو أعطني رقم الطلب وسأتحقق لك.";
+    const lower = userText.toLowerCase();
+    if (lower.includes("order") || lower.includes("طلب") || lower.includes("status") || lower.includes("حالة")) {
+      return t("help.bot.reply.orderStatus");
     }
-    if (t.includes("refund") || t.includes("استرجاع") || t.includes("refund")) {
-      return "لإجراء استرجاع، يرجى تزويدي برقم الطلب وسأوجهك خلال الخطوات.";
+    if (lower.includes("refund") || lower.includes("استرجاع") || lower.includes("refund")) {
+      return t("help.bot.reply.refund");
     }
-    return "شكراً لسؤالك — فريق الدعم سيتواصل معك قريباً. هل تود إرسال ملاحظة عبر البريد أيضاً؟";
+    return t("help.bot.reply.default");
   };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 ">
-      <h1 className="text-2xl font-bold mb-6">Support / Help</h1>
+      <h1 className="text-2xl font-bold mb-6">{t("help.title")}</h1>
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* WhatsApp card */}
         <div className="bg-card p-4 rounded-lg shadow">
           <div className="flex items-center gap-3 mb-3">
             <MessageSquare className="text-green-600" />
-            <h2 className="text-lg font-semibold">Contact on WhatsApp</h2>
+            <h2 className="text-lg font-semibold">{t("help.whatsapp.title")}</h2>
           </div>
-          <p className="text-sm text-muted-foreground mb-3">Open a WhatsApp chat with our support team.</p>
-          <label className="text-xs text-muted-foreground">Phone</label>
-          <Input value={waPhone} onChange={(e) => setWaPhone(e.target.value)} className="mb-2" />
-          <label className="text-xs text-muted-foreground">Message</label>
-          <textarea value={waMessage} onChange={(e) => setWaMessage(e.target.value)} className="w-full p-2 border rounded mb-3 min-h-[88px]" />
+          <p className="text-sm text-muted-foreground mb-3">{t("help.whatsapp.desc")}</p>
+          <label className="text-xs text-muted-foreground">{t("help.phone")}</label>
+          <Input value={waPhone} onChange={(e) => setWaPhone(e.target.value)} className="mb-2" placeholder={t("help.whatsapp.phonePlaceholder")} />
+          <label className="text-xs text-muted-foreground">{t("help.message")}</label>
+          <textarea value={waMessage} onChange={(e) => setWaMessage(e.target.value)} className="w-full p-2 border rounded mb-3 min-h-[88px]" placeholder={t("help.messagePlaceholder")} />
           <div className="flex gap-2">
             <Button onClick={openWhatsApp} className="bg-green-600 hover:bg-green-700">
-              <span className="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.52 3.48a11.93 11.93 0 10-16.94 16.94L2 22l1.58-1.58A11.93 11.93 0 0020.52 3.48zm-8.52 17.02a9.96 9.96 0 01-5.48-1.6l-.39-.26-3.27.86.87-3.18-.26-.4A9.96 9.96 0 1112 20.5zM17.6 14.22c-.28-.14-1.66-.82-1.92-.92-.26-.11-.45-.14-.64.14-.19.28-.74.92-.9 1.11-.16.19-.31.21-.59.07-.28-.14-1.18-.43-2.25-1.39-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.12-.12.28-.31.42-.46.14-.15.19-.26.28-.43.09-.16.05-.31-.02-.45-.07-.14-.64-1.54-.88-2.1-.23-.55-.47-.48-.64-.49-.16-.01-.35-.01-.54-.01s-.45.07-.69.33c-.24.26-.92.9-.92 2.2 0 1.29.94 2.54 1.07 2.72.13.19 1.85 2.86 4.49 4.01 3.03 1.33 3.03 0 3.57-.99.09-.18.54-.9.62-1.05.08-.15.16-.27.05-.42-.11-.15-.39-.51-.67-.66z"/></svg>WhatsApp</span>
+              <span className="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.52 3.48a11.93 11.93 0 10-16.94 16.94L2 22l1.58-1.58A11.93 11.93 0 0020.52 3.48zm-8.52 17.02a9.96 9.96 0 01-5.48-1.6l-.39-.26-3.27.86.87-3.18-.26-.4A9.96 9.96 0 1112 20.5zM17.6 14.22c-.28-.14-1.66-.82-1.92-.92-.26-.11-.45-.14-.64.14-.19.28-.74.92-.9 1.11-.16.19-.31.21-.59.07-.28-.14-1.18-.43-2.25-1.39-.83-.74-1.39-1.65-1.55-1.93-.16-.28-.02-.43.12-.57.12-.12.28-.31.42-.46.14-.15.19-.26.28-.43.09-.16.05-.31-.02-.45-.07-.14-.64-1.54-.88-2.1-.23-.55-.47-.48-.64-.49-.16-.01-.35-.01-.54-.01s-.45.07-.69.33c-.24.26-.92.9-.92 2.2 0 1.29.94 2.54 1.07 2.72.13.19 1.85 2.86 4.49 4.01 3.03 1.33 3.03 0 3.57-.99.09-.18.54-.9.62-1.05.08-.15.16-.27.05-.42-.11-.15-.39-.51-.67-.66z"/></svg>{t("help.whatsapp.button")}</span>
             </Button>
             <Button variant="secondary" onClick={() => { setWaMessage(""); setWaPhone(""); }}>
-              Clear
+              {t("help.clear")}
             </Button>
           </div>
         </div>
@@ -99,27 +101,27 @@ export default function HelpPage() {
         <div className="bg-card p-4 rounded-lg shadow">
           <div className="flex items-center gap-3 mb-3">
             <Mail className="text-primary" />
-            <h2 className="text-lg font-semibold">Send a note by Email</h2>
+            <h2 className="text-lg font-semibold">{t("help.email.title")}</h2>
           </div>
-          <p className="text-sm text-muted-foreground mb-3">Write a note and open your mail client to send it to support.</p>
-          <label className="text-xs text-muted-foreground">To</label>
-          <Input value={emailTo} onChange={(e) => setEmailTo(e.target.value)} className="mb-2" />
-          <label className="text-xs text-muted-foreground">Subject</label>
-          <Input value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} className="mb-2" />
-          <label className="text-xs text-muted-foreground">Message</label>
-          <textarea value={emailBody} onChange={(e) => setEmailBody(e.target.value)} className="w-full p-2 border rounded mb-3 min-h-[120px]" />
+          <p className="text-sm text-muted-foreground mb-3">{t("help.email.desc")}</p>
+          <label className="text-xs text-muted-foreground">{t("help.email.from")}</label>
+          <Input value={emailTo} onChange={(e) => setEmailTo(e.target.value)} className="mb-2" placeholder={t("help.email.fromPlaceholder")} />
+          <label className="text-xs text-muted-foreground">{t("help.email.subject")}</label>
+          <Input value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} className="mb-2" placeholder={t("help.email.subjectPlaceholder")} />
+          <label className="text-xs text-muted-foreground">{t("help.email.message")}</label>
+          <textarea value={emailBody} onChange={(e) => setEmailBody(e.target.value)} className="w-full p-2 border rounded mb-3 min-h-[120px]" placeholder={t("help.email.messagePlaceholder")} />
           <div className="flex gap-2">
-            <Button onClick={sendMail}><span className="flex items-center gap-2"><Send size={14}/> Send Email</span></Button>
+            <Button onClick={sendMail}><span className="flex items-center gap-2"><Send size={14}/> {t("help.email.send")}</span></Button>
             <Button variant="ghost" onClick={() => { setEmailBody(""); setEmailSubject(""); }}>
-              Reset
+              {t("help.email.reset")}
             </Button>
           </div>
         </div>
       </section>
 
       {/* Support bot floating trigger */}
-      <div className="fixed bottom-28 right-6">
-        <button aria-label="Open support chat" onClick={() => setBotOpen(true)} className="w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
+      <div className={`fixed bottom-28 ${direction === "rtl" ? "left-6" : "right-6"}`}>
+        <button aria-label={t("help.openChat")} onClick={() => setBotOpen(true)} className="w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
           <Headphones size={20} />
         </button>
       </div>
@@ -132,15 +134,15 @@ export default function HelpPage() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <MessageSquare />
-                <div className="font-semibold">Support Bot</div>
+                <div className="font-semibold">{t("help.bot.title")}</div>
               </div>
-              <button onClick={() => setBotOpen(false)} className="p-1 rounded-md hover:bg-accent"><X size={16} /></button>
+              <button onClick={() => setBotOpen(false)} className="p-1 rounded-md hover:bg-accent" aria-label={t("common.close")}><X size={16} /></button>
             </div>
 
             <div className="flex-1 overflow-auto mb-3 p-2 space-y-3">
               {messages.map((m, i) => (
-                <div key={i} className={`flex ${m.from === 'bot' ? 'justify-start' : 'justify-end'}`}>
-                  <div className={`px-3 py-2 rounded-lg max-w-[80%] ${m.from === 'bot' ? 'bg-gray-100 text-gray-900' : 'bg-primary text-primary-foreground'}`}>
+                <div key={i} className={`flex ${m.from === 'bot' ? (direction === 'rtl' ? 'justify-end' : 'justify-start') : (direction === 'rtl' ? 'justify-start' : 'justify-end')}`}>
+                  <div className={`px-3 py-2 rounded-lg max-w-[80%] ${m.from === 'bot' ? 'bg-gray-100 text-gray-900' : 'bg-primary text-primary-foreground'} ${direction === 'rtl' ? 'text-right' : ''}`}>
                     {m.text}
                   </div>
                 </div>
@@ -149,8 +151,8 @@ export default function HelpPage() {
             </div>
 
             <div className="flex gap-2">
-              <input value={botInput} onChange={(e) => setBotInput(e.target.value)} className="flex-1 p-2 border rounded" placeholder="Write a message..." onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); sendBotMessage(); } }} />
-              <Button onClick={sendBotMessage}>Send</Button>
+              <input value={botInput} onChange={(e) => setBotInput(e.target.value)} className="flex-1 p-2 border rounded" placeholder={t("help.bot.placeholder")} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); sendBotMessage(); } }} />
+              <Button onClick={sendBotMessage}>{t("help.bot.send")}</Button>
             </div>
           </div>
         </div>

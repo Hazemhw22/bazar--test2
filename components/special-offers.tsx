@@ -20,7 +20,7 @@ export function SpecialOffers() {
   const [showRightArrow, setShowRightArrow] = useState(true);
   const { isFavorite, toggleFavorite } = useFavorites();
   const { addItem } = useCart();
-  const { t } = useI18n();
+  const { t, direction } = useI18n();
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
   useEffect(() => {
@@ -111,14 +111,14 @@ export function SpecialOffers() {
     return null;
   };
 
-  const handleScroll = (direction: "left" | "right") => {
+  const handleScroll = (dir: "left" | "right") => {
     const container = document.getElementById("special-offers-container");
     if (container) {
       const scrollAmount = 300;
-      const newScrollLeft = direction === "left" 
-        ? container.scrollLeft - scrollAmount 
-        : container.scrollLeft + scrollAmount;
-      
+      const logicalAmount = dir === "right" ? scrollAmount : -scrollAmount;
+      const multiplier = direction === "rtl" ? -1 : 1;
+      const newScrollLeft = container.scrollLeft + logicalAmount * multiplier;
+
       container.scrollTo({
         left: newScrollLeft,
         behavior: "smooth"
@@ -126,10 +126,13 @@ export function SpecialOffers() {
 
       setTimeout(() => {
         if (container) {
-          setShowLeftArrow(container.scrollLeft > 0);
-          setShowRightArrow(
-            container.scrollLeft < container.scrollWidth - container.clientWidth - 10
-          );
+          if (direction === "rtl") {
+            setShowLeftArrow(container.scrollLeft < container.scrollWidth - container.clientWidth - 10);
+            setShowRightArrow(container.scrollLeft > 0);
+          } else {
+            setShowLeftArrow(container.scrollLeft > 0);
+            setShowRightArrow(container.scrollLeft < container.scrollWidth - container.clientWidth - 10);
+          }
         }
       }, 300);
     }
@@ -138,10 +141,13 @@ export function SpecialOffers() {
   const checkScrollPosition = () => {
     const container = document.getElementById("special-offers-container");
     if (container) {
-      setShowLeftArrow(container.scrollLeft > 0);
-      setShowRightArrow(
-        container.scrollLeft < container.scrollWidth - container.clientWidth - 10
-      );
+      if (direction === "rtl") {
+        setShowLeftArrow(container.scrollLeft < container.scrollWidth - container.clientWidth - 10);
+        setShowRightArrow(container.scrollLeft > 0);
+      } else {
+        setShowLeftArrow(container.scrollLeft > 0);
+        setShowRightArrow(container.scrollLeft < container.scrollWidth - container.clientWidth - 10);
+      }
     }
   };
 
@@ -274,8 +280,8 @@ export function SpecialOffers() {
             {showLeftArrow && (
               <button
                 onClick={() => handleScroll("left")}
-                className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 dark:bg-black/60 shadow-md"
-                aria-label="Previous"
+                className={`absolute ${direction === "rtl" ? "right-2" : "left-2"} top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 dark:bg-black/60 shadow-md`}
+                aria-label={t("common.prev")}
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -283,8 +289,8 @@ export function SpecialOffers() {
             {showRightArrow && (
               <button
                 onClick={() => handleScroll("right")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 dark:bg-black/60 shadow-md"
-                aria-label="Next"
+                className={`absolute ${direction === "rtl" ? "left-2" : "right-2"} top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 dark:bg-black/60 shadow-md`}
+                aria-label={t("common.next")}
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -292,6 +298,7 @@ export function SpecialOffers() {
 
             <div
               id="special-offers-container"
+              dir={direction === "rtl" ? "rtl" : "ltr"}
               className="flex gap-2 overflow-x-auto snap-x snap-mandatory py-1 px-1"
             >
               {products.map((product) => (
@@ -315,12 +322,12 @@ export function SpecialOffers() {
                       </Link>
 
                       {getDiscountText(product) && (
-                        <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded">
+                        <div className={`absolute top-2 ${direction === "rtl" ? "right-2" : "left-2"} bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded`}>
                           {getDiscountText(product)}
                         </div>
                       )}
 
-                      <div className="absolute top-2 right-2 flex flex-col gap-1">
+                      <div className={`absolute top-2 ${direction === "rtl" ? "left-2" : "right-2"} flex flex-col gap-1`}>
                         <button
                           onClick={() =>
                             toggleFavorite({
