@@ -33,6 +33,9 @@
   "cart.viewFull": "צפה בעגלה המלאה",
   "cart.checkout": "לתשלום",
   "cart.clearAll": "נקה הכול",
+  "cart.empty_title": "העגלה ריקה",
+  "cart.empty_subtitle": "הוסף כמה מוצרים כדי להתחיל!",
+  "cart.continue_shopping": "המשך בקנייה",
   "footer.newsletterText": "הירשם לניוזלטר שלנו לקבלת עדכונים אחרונים",
   "footer.emailPlaceholder": "האימייל שלך",
   "footer.subscribe": "הירשם",
@@ -245,4 +248,53 @@
   ,"days.sat": "שבת"
   ,"ad.freshDeals.title": "מבצעים טריים"
   ,"ad.freshDeals.subtitle": "חסוך יותר על המועדפים שלך"
+  ,"checkout.empty.title": "עגלה ריקה"
+  ,"checkout.empty.hint": "הוסף פריטים לעגלה כדי להמשיך לתשלום."
+  ,"checkout.empty.button": "התחל לקניות"
+  ,"checkout.header.title": "תשלום"
+  ,"checkout.delivery.button": "משלוח"
+  ,"checkout.pickup.button": "איסוף מהחנות"
+  ,"checkout.selectedStore.fallback": "החנות הנבחרת"
+  ,"checkout.selectedStore.addressFallback": "כתובת החנות, עיר"
+  ,"checkout.input.firstName.placeholder": "שם פרטי"
+  ,"checkout.input.lastName.placeholder": "שם משפחה"
+  ,"checkout.input.phone.placeholder": "טלפון"
+  ,"checkout.input.email.placeholder": "אימייל"
+  ,"checkout.input.address.placeholder": "ערוך או הוסף כתובת"
+  ,"checkout.delivery.options.title": "אפשרויות משלוח"
+  ,"checkout.delivery.option.standard.title": "רגיל"
+  ,"checkout.delivery.option.standard.desc": "משלוח רגיל"
+  ,"checkout.delivery.option.standard.time": "20-30 דקות"
+  ,"checkout.delivery.option.priority.title": "מהיר"
+  ,"checkout.delivery.option.priority.desc": "משלוח מהיר יותר"
+  ,"checkout.delivery.option.priority.time": "20-30 דקות"
+  ,"checkout.delivery.option.schedule.title": "תזמון"
+  ,"checkout.delivery.option.schedule.desc": "בחר תאריך ושעה"
+  ,"checkout.payment.title": "שיטות תשלום"
+  ,"checkout.payment.visa": "ויזה"
+  ,"checkout.payment.visaDesc": "מהיר ובטוח"
+  ,"checkout.payment.card": "כרטיס"
+  ,"checkout.payment.cardDesc": "שמור כרטיס או שלם עכשיו"
+  ,"checkout.payment.cash": "מזומן"
+  ,"checkout.payment.cashDesc": "תשלום במתן"
+  ,"checkout.payment.payInStore": "התשלום יתבצע בחנות בעת האיסוף"
+  ,"checkout.dialog.title": "כרטיס אשראי / חיוב"
+  ,"checkout.dialog.creditTitle": "כרטיס אשראי / חיוב"
+  ,"checkout.card.name": "השם על הכרטיס"
+  ,"checkout.card.number": "מספר הכרטיס"
+  ,"checkout.card.expiry": "תוקף"
+  ,"checkout.card.cvv": "CVV"
+  ,"checkout.card.cancel": "ביטול"
+  ,"checkout.card.save": "שמור"
+  ,"cart.header.title": "רשימת קניות"
+  ,"cart.item.readyTime": "מוכן בעוד ~8 דקות"
+  ,"cart.promo.placeholder": "הכנס קוד הנחה"
+  ,"cart.summary.subtotal": "סיכום ביניים"
+  ,"cart.summary.total": "סה\"כ"
+  ,"cart.checkoutButton": "בצע רכישה"
+  ,"checkout.items.title": "הפריטים שלך"
+  ,"checkout.items.seeMenu": "ראה תפריט"
+  ,"checkout.processing": "מעבד..."
+  ,"checkout.continue": "המשך ({total} ₪)"
+  ,"checkout.delivery.meetTitle": "כתובת למשלוח / הערות"
 }

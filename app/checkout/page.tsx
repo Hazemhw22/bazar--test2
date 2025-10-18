@@ -34,38 +34,39 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 
-// Mock data - replace with actual data fetching
-const deliveryOptions = [
-  {
-    id: "priority",
-    title: "Priority",
-    description: "Delivered directly to you",
-    time: "20-30 min",
-    price: 1.99,
-    icon: Zap,
-  },
-  {
-    id: "standard",
-    title: "Standard",
-    description: "20-30 min",
-    time: "20-30 min",
-    price: 0,
-    icon: Clock,
-  },
-  {
-    id: "schedule",
-    title: "Schedule",
-    description: "Choose a time",
-    time: "",
-    price: 0,
-    icon: Calendar,
-  },
-];
+// delivery options will be localized inside the component using t()
 
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
   const router = useRouter();
   const { t } = useI18n();
+  // localized delivery options (use t for titles/descriptions)
+  const deliveryOptions = [
+    {
+      id: "priority",
+      title: t("checkout.delivery.option.priority.title"),
+      description: t("checkout.delivery.option.priority.desc"),
+      time: t("checkout.delivery.option.priority.time", { default: "20-30 min" }),
+      price: 1.99,
+      icon: Zap,
+    },
+    {
+      id: "standard",
+      title: t("checkout.delivery.option.standard.title"),
+      description: t("checkout.delivery.option.standard.desc"),
+      time: t("checkout.delivery.option.standard.time", { default: "20-30 min" }),
+      price: 0,
+      icon: Clock,
+    },
+    {
+      id: "schedule",
+      title: t("checkout.delivery.option.schedule.title"),
+      description: t("checkout.delivery.option.schedule.desc"),
+      time: "",
+      price: 0,
+      icon: Calendar,
+    },
+  ];
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [selectedDelivery, setSelectedDelivery] = useState("standard");
@@ -287,13 +288,11 @@ export default function CheckoutPage() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[#1a0b2e] to-[#110e24] text-white flex flex-col items-center justify-center text-center p-4">
         <ShoppingCart size={60} className="mb-4 text-muted-foreground" />
-        <h1 className="text-2xl font-bold mb-2">Your Cart is Empty</h1>
-        <p className="text-muted-foreground mb-6">
-          Add items to your cart to proceed to checkout.
-        </p>
+        <h1 className="text-2xl font-bold mb-2">{t("checkout.empty.title")}</h1>
+        <p className="text-muted-foreground mb-6">{t("checkout.empty.hint")}</p>
         <Link href="/products">
           <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full text-lg">
-            Start Shopping
+            {t("checkout.empty.button")}
           </Button>
         </Link>
       </div>
@@ -308,7 +307,7 @@ export default function CheckoutPage() {
           <button onClick={() => router.back()} className="p-2">
             <ArrowLeft size={24} />
           </button>
-          <h1 className="text-lg font-semibold">Checkout</h1>
+          <h1 className="text-lg font-semibold">{t("checkout.header.title")}</h1>
           <button className="p-2">
             <MoreVertical size={24} />
           </button>
@@ -325,47 +324,47 @@ export default function CheckoutPage() {
               className={`flex-1 p-4 rounded-lg border flex items-center justify-center gap-2 ${deliveryType === "delivery" ? "bg-blue-500/10 border-blue-500" : "bg-white/5 border-transparent"}`}
             >
               <Truck size={18} />
-              <span>Delivery</span>
+              <span>{t("checkout.delivery.button")}</span>
             </button>
             <button
               onClick={() => setDeliveryType("pickup")}
               className={`flex-1 p-4 rounded-lg border flex items-center justify-center gap-2 ${deliveryType === "pickup" ? "bg-blue-500/10 border-blue-500" : "bg-white/5 border-transparent"}`}
             >
               <Store size={18} />
-              <span>Pick up</span>
+              <span>{t("checkout.pickup.button")}</span>
             </button>
           </div>
 
           {deliveryType === "pickup" ? (
             <div className="p-4 bg-white/5 rounded-lg">
-              <p className="font-semibold">{selectedStore?.shop_name || selectedStore?.title || "Selected Store"}</p>
+              <p className="font-semibold">{selectedStore?.shop_name || selectedStore?.title || t("checkout.selectedStore.fallback")}</p>
               {selectedStore ? (
                 <div className="text-sm text-muted-foreground">
                   {selectedStore.address && <div>{selectedStore.address}</div>}
                   {selectedStore.owner_name && <div className="mt-1">Owner: {selectedStore.owner_name}</div>}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Store Address, City</p>
+                <p className="text-sm text-muted-foreground">{t("checkout.selectedStore.addressFallback")}</p>
               )}
             </div>
           ) : (
             <div className="space-y-3">
               <div className="p-4 bg-white/5 rounded-lg">
                 <div className="grid grid-cols-2 gap-3">
-                  <input value={firstName} onChange={(e)=>setFirstName(e.target.value)} placeholder="First name" className="p-2 rounded-md bg-transparent border border-transparent focus:border-border" />
-                  <input value={lastName} onChange={(e)=>setLastName(e.target.value)} placeholder="Last name" className="p-2 rounded-md bg-transparent border border-transparent focus:border-border" />
+                  <input value={firstName} onChange={(e)=>setFirstName(e.target.value)} placeholder={t("checkout.input.firstName.placeholder")} className="p-2 rounded-md bg-transparent border border-transparent focus:border-border" />
+                  <input value={lastName} onChange={(e)=>setLastName(e.target.value)} placeholder={t("checkout.input.lastName.placeholder")} className="p-2 rounded-md bg-transparent border border-transparent focus:border-border" />
                 </div>
                 <div className="mt-3">
-                  <input value={phone} onChange={(e)=>setPhone(e.target.value)} placeholder="Phone" className="w-full p-2 rounded-md bg-transparent border border-transparent focus:border-border" />
+                  <input value={phone} onChange={(e)=>setPhone(e.target.value)} placeholder={t("checkout.input.phone.placeholder")} className="w-full p-2 rounded-md bg-transparent border border-transparent focus:border-border" />
                 </div>
                 <div className="mt-3">
-                  <input value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="Email" type="email" className="w-full p-2 rounded-md bg-transparent border border-transparent focus:border-border" />
+                  <input value={email} onChange={(e)=>setEmail(e.target.value)} placeholder={t("checkout.input.email.placeholder")} type="email" className="w-full p-2 rounded-md bg-transparent border border-transparent focus:border-border" />
                 </div>
               </div>
 
               <div className="p-4 bg-white/5 rounded-lg">
-                <p className="font-semibold mb-2">Meet at door (address)</p>
-                <textarea value={addressInput} onChange={(e)=>setAddressInput(e.target.value)} placeholder="Edit or add address" className="w-full p-2 rounded-md bg-transparent border border-transparent focus:border-border" />
+                <p className="font-semibold mb-2">{t("checkout.delivery.meetTitle")}</p>
+                <textarea value={addressInput} onChange={(e)=>setAddressInput(e.target.value)} placeholder={t("checkout.input.address.placeholder")} className="w-full p-2 rounded-md bg-transparent border border-transparent focus:border-border" />
               </div>
             </div>
           )}
@@ -374,7 +373,7 @@ export default function CheckoutPage() {
         {/* Delivery Time / Options */}
         {deliveryType === "delivery" && (
           <div className="mb-8">
-            <h2 className="text-xl font-bold mb-4">Delivery Options</h2>
+            <h2 className="text-xl font-bold mb-4">{t("checkout.delivery.options.title")}</h2>
             <div className="space-y-3">
               {/* Standard */}
               <div
@@ -387,8 +386,8 @@ export default function CheckoutPage() {
               >
                 <Clock size={24} className={selectedDelivery === "standard" ? "text-blue-500" : "text-muted-foreground"} />
                 <div className="flex-1">
-                  <p className="font-semibold">Standard</p>
-                  <p className="text-sm text-muted-foreground">Regular delivery</p>
+                  <p className="font-semibold">{t("checkout.delivery.option.standard.title")}</p>
+                  <p className="text-sm text-muted-foreground">{t("checkout.delivery.option.standard.desc")}</p>
                 </div>
                 <span className="font-semibold">+₪50</span>
               </div>
@@ -404,8 +403,8 @@ export default function CheckoutPage() {
               >
                 <Zap size={24} className={selectedDelivery === "priority" ? "text-blue-500" : "text-muted-foreground"} />
                 <div className="flex-1">
-                  <p className="font-semibold">Express</p>
-                  <p className="text-sm text-muted-foreground">Faster delivery</p>
+                  <p className="font-semibold">{t("checkout.delivery.option.priority.title")}</p>
+                  <p className="text-sm text-muted-foreground">{t("checkout.delivery.option.priority.desc")}</p>
                 </div>
                 <span className="font-semibold">+₪100</span>
               </div>
@@ -421,8 +420,8 @@ export default function CheckoutPage() {
               >
                 <Calendar size={24} className={selectedDelivery === "schedule" ? "text-blue-500" : "text-muted-foreground"} />
                 <div className="flex-1">
-                  <p className="font-semibold">Schedule</p>
-                  <p className="text-sm text-muted-foreground">Choose a date & time</p>
+                  <p className="font-semibold">{t("checkout.delivery.option.schedule.title")}</p>
+                  <p className="text-sm text-muted-foreground">{t("checkout.delivery.option.schedule.desc")}</p>
                 </div>
                 {selectedDelivery === "schedule" && (
                   <CheckCircle size={20} className="text-blue-500" />
@@ -435,7 +434,7 @@ export default function CheckoutPage() {
         {/* Payment Methods (only for delivery). For pickup, payment is done in-store. */}
         {deliveryType === "delivery" ? (
           <div className="mb-8">
-            <h2 className="text-xl font-bold mb-4">Payment Methods</h2>
+            <h2 className="text-xl font-bold mb-4">{t("checkout.payment.title")}</h2>
             <div className="grid grid-cols-3 gap-3">
               {/* Visa card */}
               <button
@@ -450,8 +449,8 @@ export default function CheckoutPage() {
                 <div className="w-14 h-14 rounded-full flex items-center justify-center bg-white/10 overflow-hidden">
                   <img src="/Visa-Card-Logo-PNG-Clipart-Background-HD.png" alt="Card" className="w-full h-full object-contain" />
                 </div>
-                <div className="text-sm font-medium">Visa</div>
-                <div className="text-xs text-muted-foreground">Fast & secure</div>
+                <div className="text-sm font-medium">{t("checkout.payment.visa")}</div>
+                <div className="text-xs text-muted-foreground">{t("checkout.payment.visaDesc")}</div>
               </button>
 
               {/* Mastercard card */}
@@ -467,8 +466,8 @@ export default function CheckoutPage() {
                 <div className="w-14 h-14 rounded-full flex items-center justify-center bg-white/10 overflow-hidden">
                   <img src="/Visa-Card-Logo-No-Background.png" alt="Visa" className="w-full h-full object-contain" />
                 </div>
-                <div className="text-sm font-medium">Card</div>
-                <div className="text-xs text-muted-foreground">Save card or pay now</div>
+                <div className="text-sm font-medium">{t("checkout.payment.card")}</div>
+                <div className="text-xs text-muted-foreground">{t("checkout.payment.cardDesc")}</div>
               </button>
 
               {/* Cash card */}
@@ -484,26 +483,26 @@ export default function CheckoutPage() {
                 <div className="w-14 h-14 rounded-full flex items-center justify-center bg-white/10 overflow-hidden">
                   <img src="/cash-icon.webp" alt="Cash" className="w-full h-full object-contain" />
                 </div>
-                <div className="text-sm font-medium">Cash</div>
-                <div className="text-xs text-muted-foreground">Pay on delivery</div>
+                <div className="text-sm font-medium">{t("checkout.payment.cash")}</div>
+                <div className="text-xs text-muted-foreground">{t("checkout.payment.cashDesc")}</div>
               </button>
             </div>
           </div>
         ) : (
           <div className="mb-8">
-            <div className="p-4 bg-white/5 rounded-lg text-sm">الدفع سيتم في المتجر عند الاستلام</div>
+            <div className="p-4 bg-white/5 rounded-lg text-sm">{t("checkout.payment.payInStore")}</div>
           </div>
         )}
 
         {/* Card Entry Modal */}
         <Dialog open={showCardModal} onOpenChange={(open) => setShowCardModal(open)}>
-      <DialogContent className="w-[90vw] max-w-[360px] p-2 rounded-xl border border-white/10 bg-[#0b1220] shadow-2xl max-h-[420px] overflow-y-auto">
-        <DialogTitle className="sr-only">Credit/Debit Card</DialogTitle>
+        <DialogContent className="w-[90vw] max-w-[360px] p-2 rounded-xl border border-white/10 bg-[#0b1220] shadow-2xl max-h-[420px] overflow-y-auto">
+        <DialogTitle className="sr-only">{t("checkout.dialog.title")}</DialogTitle>
               <div className="flex items-start gap-2">
                 <input type="radio" checked readOnly className="mt-1" />
                 <div className="flex items-center gap-2">
                   <CreditCard size={16} className="text-blue-400" />
-                  <div className="text-sm font-medium">Credit/Debit Card</div>
+                  <div className="text-sm font-medium">{t("checkout.dialog.creditTitle")}</div>
                 </div>
               </div>
 
@@ -511,7 +510,7 @@ export default function CheckoutPage() {
 
               <div className="space-y-2">
                 <div>
-                  <div className="text-xs text-muted-foreground mb-1">Name on Card</div>
+                  <div className="text-xs text-muted-foreground mb-1">{t("checkout.card.name")}</div>
                   <input
                     value={cardDetails.name}
                     onChange={(e) => setCardDetails((c) => ({ ...c, name: e.target.value }))}
@@ -521,7 +520,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <div>
-                  <div className="text-xs text-muted-foreground mb-1">Card Number</div>
+                  <div className="text-xs text-muted-foreground mb-1">{t("checkout.card.number")}</div>
                   <input
                     value={cardDetails.number}
                     onChange={(e) => setCardDetails((c) => ({ ...c, number: e.target.value }))}
@@ -532,7 +531,7 @@ export default function CheckoutPage() {
 
                 <div className="grid grid-cols-3 gap-2">
                   <div className="col-span-2">
-                    <div className="text-xs text-muted-foreground mb-1">Expiry Date</div>
+                    <div className="text-xs text-muted-foreground mb-1">{t("checkout.card.expiry")}</div>
                     <input
                       value={cardDetails.expiry}
                       onChange={(e) => setCardDetails((c) => ({ ...c, expiry: e.target.value }))}
@@ -541,7 +540,7 @@ export default function CheckoutPage() {
                     />
                   </div>
                   <div>
-                    <div className="text-xs text-muted-foreground mb-1">CVV</div>
+                    <div className="text-xs text-muted-foreground mb-1">{t("checkout.card.cvv")}</div>
                     <input
                       value={cardDetails.cvc}
                       onChange={(e) => setCardDetails((c) => ({ ...c, cvc: e.target.value }))}
@@ -554,8 +553,8 @@ export default function CheckoutPage() {
 
               <DialogFooter>
                 <div className="w-full flex gap-2 mt-2">
-                  <Button variant="outline" onClick={() => setShowCardModal(false)} className="w-full">Cancel</Button>
-                  <Button onClick={() => setShowCardModal(false)} className="w-full">Save</Button>
+                  <Button variant="outline" onClick={() => setShowCardModal(false)} className="w-full">{t("checkout.card.cancel")}</Button>
+                  <Button onClick={() => setShowCardModal(false)} className="w-full">{t("checkout.card.save")}</Button>
                 </div>
               </DialogFooter>
             </DialogContent>
@@ -564,10 +563,10 @@ export default function CheckoutPage() {
         {/* Your Items */}
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold">Your Items</h2>
+            <h2 className="text-xl font-bold">{t("checkout.items.title")}</h2>
             <Link href="/cart">
               <Button variant="link" className="text-blue-400">
-                See menu
+                {t("checkout.items.seeMenu")}
               </Button>
             </Link>
           </div>
@@ -607,7 +606,7 @@ export default function CheckoutPage() {
             disabled={isLoading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-14 rounded-full text-lg"
           >
-            {isLoading ? "Processing..." : `Continue (${total.toFixed(2)} ₪)`}
+            {isLoading ? t("checkout.processing") : t("checkout.continue", { total: total.toFixed(2) })}
           </Button>
         </div>
       </div>

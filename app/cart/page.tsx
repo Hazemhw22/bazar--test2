@@ -51,7 +51,7 @@ export default function CartPage() {
       <div className="container mx-auto px-4 pt-4 pb-32">
         {/* Header */}
         <header className="flex items-center justify-between py-4">
-          <h1 className="text-xl font-bold">Shopping list</h1>
+          <h1 className="text-xl font-bold">{t("cart.header.title")}</h1>
           <Button variant="ghost" size="icon">
             <Menu />
           </Button>
@@ -83,7 +83,7 @@ export default function CartPage() {
 
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                   <Clock size={14} />
-                  <span>08.09</span>
+                  <span>{t("cart.item.readyTime")}</span>
                 </div>
 
                 <div className="flex items-center justify-between mt-2">
@@ -129,7 +129,7 @@ export default function CartPage() {
         {/* Discount Code */}
         <div className="relative my-8">
           <Input
-            placeholder="Enter your discount code"
+            placeholder={t("cart.promo.placeholder")}
             value={promoCode}
             onChange={(e) => setPromoCode(e.target.value)}
             className="bg-white/5 border-white/10 rounded-full h-12 px-6 placeholder:text-muted-foreground"
@@ -139,11 +139,11 @@ export default function CartPage() {
         {/* Summary */}
         <div className="space-y-4 text-lg">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Subtotal</span>
+            <span className="text-muted-foreground">{t("cart.summary.subtotal")}</span>
             <span className="font-medium">₪{subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between font-bold text-xl">
-            <span>Total</span>
+            <span>{t("cart.summary.total")}</span>
             <span>₪{total.toFixed(2)}</span>
           </div>
         </div>
@@ -153,9 +153,9 @@ export default function CartPage() {
       <footer className="fixed bottom-[70px] md:bottom-4 left-0 w-full p-4 bg-gradient-to-t from-[#110e24] via-[#110e24]/90 to-transparent pointer-events-none">
          <div className="container mx-auto px-4 pointer-events-auto">
             <Link href="/checkout" className="block">
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-14 rounded-full text-lg">
-                    Make a purchase
-                </Button>
+        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-14 rounded-full text-lg">
+          {t("cart.checkoutButton")}
+        </Button>
             </Link>
          </div>
       </footer>
