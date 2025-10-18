@@ -90,8 +90,8 @@ export function SiteHeader() {
                   onClick={handleLocationChange}
                   className="text-sm hover:underline cursor-pointer flex items-center"
                 >
-                  <span>Your Location:</span>
-                  <span className="font-medium ml-1">{selectedCity ? getCityDisplayName(selectedCity) : "Select Location"}</span>
+                  <span>{t("header.yourLocation")}</span>
+                  <span className="font-medium ml-1">{selectedCity ? getCityDisplayName(selectedCity) : t("header.selectLocation")}</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><path d="m6 9 6 6 6-6"/></svg>
                 </button>
               </div>
@@ -106,7 +106,7 @@ export function SiteHeader() {
               </div>
               <div className="flex items-center gap-1">
                 <UserIcon className="w-5 h-5" />
-                <Link href="/auth" className="text-sm hover:underline">Join Us</Link>
+                <Link href="/auth" className="text-sm hover:underline">{t("header.joinUs")}</Link>
               </div>
             </div>
           </div>
@@ -132,7 +132,7 @@ export function SiteHeader() {
                 <span className="pl-2 text-secondary">✨</span>
                 <input
                   type="text"
-                  placeholder="Search for products..."
+                  placeholder={t("nav.searchPlaceholder")}
                   className="flex-1 bg-transparent py-1 px-2 text-[18px] focus:outline-none"
                 />
                 <button className="bg-primary hover:bg-opacity-90 text-primary-foreground px-5 py-2 transition-colors">
@@ -214,7 +214,7 @@ export function SiteHeader() {
             <div className="w-full flex md:hidden items-center justify-between">
               <Link href="/" className="flex items-center gap-2">
                 <Image src="/logo.svg" alt="Pazar Logo" width={28} height={28} />
-                <span className="font-bold text-lg">PAZAR</span>
+                <span className="font-bold text-lg">{t("app.title")}</span>
               </Link>
 
               <div className="flex-1 flex justify-center">
@@ -223,7 +223,7 @@ export function SiteHeader() {
                   className="text-xs hover:underline cursor-pointer flex items-center gap-1"
                 >
                   <MapPin className="w-3 h-3" />
-                  <span className="font-medium truncate max-w-[120px]">{selectedCity ? getCityDisplayName(selectedCity) : "Select Location"}</span>
+                  <span className="font-medium truncate max-w-[120px]">{selectedCity ? getCityDisplayName(selectedCity) : t("header.selectLocation")}</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                 </button>
               </div>
@@ -243,7 +243,7 @@ export function SiteHeader() {
                 <Search size={16} className="mx-3 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Your order?"
+                  placeholder={t("search.mobilePlaceholder")}
                   className="flex-1 bg-transparent py-2 pr-3 text-sm focus:outline-none"
                 />
                 <button className="p-2 bg-transparent">

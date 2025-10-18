@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
+import { useI18n } from "@/lib/i18n";
 import type { CategoryBrand } from "@/lib/type";
 
 interface Props {
@@ -12,6 +13,9 @@ interface Props {
 }
 
 export default function BrandsStrip({ selectedBrand, setSelectedBrand, shopId }: Props) {
+  const { t } = useI18n();
+  const allLabel = t("common.all");
+  const allInitial = (allLabel && String(allLabel).charAt(0)) || "A";
   const [brands, setBrands] = useState<CategoryBrand[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,14 +39,14 @@ export default function BrandsStrip({ selectedBrand, setSelectedBrand, shopId }:
     return () => { mounted = false; };
   }, [shopId]);
 
-  if (loading) return <p className="py-4 text-center">Loading brands...</p>;
-  if (brands.length === 0) return <p className="py-4 text-center">No brands available</p>;
+  if (loading) return <p className="py-4 text-center">{t("brands.loading")}</p>;
+  if (brands.length === 0) return <p className="py-4 text-center">{t("brands.none")}</p>;
 
   return (
     <section className="w-full">
       <div className="max-w-7xl mx-auto px-1 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold">Brands</h2>
+          <h2 className="text-lg font-bold">{t("brands.title")}</h2>
         </div>
 
         <div id="shop-brand-scroll" className="flex overflow-x-auto gap-3 scrollbar-hide pb-2 scroll-smooth">
@@ -58,9 +62,9 @@ export default function BrandsStrip({ selectedBrand, setSelectedBrand, shopId }:
                 selectedBrand === null ? "border-blue-600" : "border-transparent bg-gray-300 dark:bg-gray-700"
               }`}
             >
-              <div className="w-full h-full flex items-center justify-center text-white font-bold">A</div>
+              <div className="w-full h-full flex items-center justify-center text-white font-bold">{allInitial}</div>
             </div>
-            <span className="text-sm font-medium mt-1">All</span>
+            <span className="text-sm font-medium mt-1">{t("common.all")}</span>
           </button>
 
           {brands.slice(0, 12).map((brand) => (

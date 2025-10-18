@@ -8,6 +8,7 @@ import { Product } from "@/lib/type";
 import { useFavorites } from "./favourite-items";
 import { useCart } from "./cart-provider";
 import Image from "next/image";
+import { useI18n } from "../lib/i18n";
 import * as Dialog from "@radix-ui/react-dialog";
 import ProductFeaturesModal from "./ProductFeaturesModal";
 
@@ -19,6 +20,7 @@ export function SpecialOffers() {
   const [showRightArrow, setShowRightArrow] = useState(true);
   const { isFavorite, toggleFavorite } = useFavorites();
   const { addItem } = useCart();
+  const { t } = useI18n();
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
   useEffect(() => {
@@ -162,8 +164,8 @@ export function SpecialOffers() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-                Special Offer
-              </h2>
+                    {t("special.title")}
+                  </h2>
               <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                 <span className="text-white text-xs font-bold">%</span>
               </div>
@@ -203,12 +205,12 @@ export function SpecialOffers() {
             </div>
           </div>
           <div className="text-center py-8">
-            <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">{t("special.fetchError", { message: error })}</p>
             <button 
               onClick={fetchSpecialOfferProducts}
               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
             >
-              Try Again
+              {t("common.retry")}
             </button>
           </div>
         </div>
@@ -230,8 +232,8 @@ export function SpecialOffers() {
               </div>
             </div>
           </div>
-          <div className="text-center py-8">
-            <p className="text-gray-600 dark:text-gray-400">No special offers available at the moment.</p>
+          <div className="text-center py-8"> 
+            <p className="text-gray-600 dark:text-gray-400">{t("special.none")}</p>
           </div>
         </div>
       </section>
@@ -243,7 +245,7 @@ export function SpecialOffers() {
       <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
           <h2 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white">
-            Special Offer
+            {t("special.title")}
           </h2>
           <div className="w-5 h-5 sm:w-6 sm:h-6 bg-green-500 rounded-full flex items-center justify-center">
             <span className="text-white text-xs font-bold">%</span>
@@ -253,7 +255,8 @@ export function SpecialOffers() {
           href="/products"
           className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
         >
-          View All <ChevronRight className="h-4 w-4 ml-1" />
+          {t("common.viewAll")}
+            <ChevronRight className="h-4 w-4 ml-1" />
       </Link>
       </div>
       

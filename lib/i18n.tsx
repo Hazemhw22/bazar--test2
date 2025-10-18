@@ -72,7 +72,8 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
     if (values) {
       Object.entries(values).forEach(([k, v]) => {
-        text = text.replace(new RegExp(`{${k}}`, "g"), String(v));
+        // Use split/join to avoid constructing potentially invalid RegExp patterns
+        text = text.split("{" + k + "}").join(String(v));
       });
     }
 

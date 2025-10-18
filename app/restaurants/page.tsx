@@ -11,8 +11,10 @@ import MainProductSection from "@/components/MainProductSection";
 import RestaurantGrid from "@/components/RestaurantGrid";
 import { HeroSectionRes } from "@/components/hero-section-res";
 import PopularRestaurants from "@/components/popular-restaurants";
+import { useI18n } from "@/lib/i18n";
 
 export default function RestaurantsPage() {
+  const { t } = useI18n()
   const CATEGORY_SHOP_ID = 15; // restaurants category_shop id
   const [subcats, setSubcats] = useState<CategorySubShop[]>([]);
   const [shops, setShops] = useState<Shop[]>([]);
@@ -112,7 +114,7 @@ export default function RestaurantsPage() {
     return products.filter((p) => shopIds.has(String((p as any).shop || "")));
   }, [products, shops]);
 
-  if (loading) return <div className="py-12 text-center">Loading restaurants...</div>;
+  if (loading) return <div className="py-12 text-center">{t("restaurants.loading")}</div>;
 
   return (
     <main className="min-h-screen">
@@ -142,7 +144,7 @@ export default function RestaurantsPage() {
 
         {/* Offers with restaurants: clicking a shop opens inline product scroller */}
         <section className="mb-8">
-          <h2 className="text-xl font-bold mb-4">Restaurant Offers</h2>
+          <h2 className="text-xl font-bold mb-4">{t("restaurants.offersTitle")}</h2>
           <div className="overflow-x-auto pb-">
             <div className="flex gap- items- px-">
               {shops.map((s) => (
@@ -161,19 +163,19 @@ export default function RestaurantsPage() {
             </div>
           </div>
 
-          {/* Single inline panel for the active shop */}
+              {/* Single inline panel for the active shop */}
           {activeShop && (
             <div className="mt-3 bg-white dark:bg-gray-900 rounded-md p-2 shadow-inner border">
               {/* Compact header: only product count (logo/name removed) */}
               <div className="flex items-center justify-end mb-2">
                   <div className="text-xs text-muted-foreground bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                  {(productsByShop[String(activeShop.id)] || []).length} products
+                  {(productsByShop[String(activeShop.id)] || []).length} {t("shops.products")}
                 </div>
               </div>
 
               <div className="relative">
                 <button
-                  aria-label="scroll left"
+                  aria-label={t("common.scrollLeft")}
                   className="hidden md:flex absolute left-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={() => {
                     const el = document.getElementById(`shop-products-scroll-${activeShop.id}`);
@@ -190,7 +192,7 @@ export default function RestaurantsPage() {
                 </div>
 
                 <button
-                  aria-label="scroll right"
+                  aria-label={t("common.scrollRight")}
                   className="hidden md:flex absolute right-1 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={() => {
                     const el = document.getElementById(`shop-products-scroll-${activeShop.id}`);
@@ -202,7 +204,7 @@ export default function RestaurantsPage() {
           )}
         </section>
 
-        {/* Popular restaurants (top 3 for category 15) */}
+  {/* Popular restaurants (top 3 for category 15) */}
         <PopularRestaurants />
 
         {/* Ad banner between popular restaurants and main product sections */}
@@ -210,33 +212,33 @@ export default function RestaurantsPage() {
           <AdBanner
             imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
             href="/products?filter=deals"
-            title="Special Restaurant Deals"
-            subtitle="Discover discounts from local restaurants"
+            title={t("restaurants.ad.title")}
+            subtitle={t("restaurants.ad.subtitle")}
           />
 
           <div className="mt-6 space-y-8">
-            <MainProductSection title="More dishes" products={restaurantProducts.slice(0,4)} linkToAll="/products" />
+            <MainProductSection title={t("restaurants.moreDishes")} products={restaurantProducts.slice(0,4)} linkToAll="/products" />
              <AdBanner
             imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
             href="/products?filter=deals"
-            title="Special Restaurant Deals"
-            subtitle="Discover discounts from local restaurants"
+            title={t("restaurants.ad.title")}
+            subtitle={t("restaurants.ad.subtitle")}
           />
-            <MainProductSection title="Chef's Picks" products={restaurantProducts.slice(0,4)} linkToAll="/products" />
+            <MainProductSection title={t("restaurants.chefsPicks")} products={restaurantProducts.slice(0,4)} linkToAll="/products" />
              <AdBanner
             imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
             href="/products?filter=deals"
-            title="Special Restaurant Deals"
-            subtitle="Discover discounts from local restaurants"
+            title={t("restaurants.ad.title")}
+            subtitle={t("restaurants.ad.subtitle")}
           />
-            <MainProductSection title="Trending Now" products={restaurantProducts.slice(0,4)} linkToAll="/products" />
+            <MainProductSection title={t("restaurants.trending")} products={restaurantProducts.slice(0,4)} linkToAll="/products" />
              <AdBanner
             imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
             href="/products?filter=deals"
-            title="Special Restaurant Deals"
-            subtitle="Discover discounts from local restaurants"
+            title={t("restaurants.ad.title")}
+            subtitle={t("restaurants.ad.subtitle")}
           />
-            <MainProductSection title="Special Offers" products={restaurantProducts.slice(0,4)} linkToAll="/products" />
+            <MainProductSection title={t("restaurants.specialOffers")} products={restaurantProducts.slice(0,4)} linkToAll="/products" />
           </div>
         </div>
         

@@ -38,8 +38,12 @@ import type { Shop, Category, Product, WorkHours, CategoryShop, CategorySubShop 
 import { ProductCard } from "../../../components/ProductCard";
 import AdBanner from "@/components/AdBanner";
 import BrandsStrip from "@/components/BrandsStrip";
+import { useI18n } from "@/lib/i18n";
 
 export default function ShopDetailPage() {
+  const { t } = useI18n();
+  const allLabel = t("common.all");
+  const allInitial = (allLabel && allLabel[0]) || "A";
   const params = useParams();
   const shopId = params?.id as string;
   const [shop, setShop] = useState<Shop | null>(null);
@@ -246,7 +250,8 @@ export default function ShopDetailPage() {
     "Friday",
     "Saturday",
   ];
-  const displayTodayName = daysEnFull[todayIndex];
+  const weekdayKeys = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+  const displayTodayName = t(`days.${weekdayKeys[todayIndex]}`, { default: daysEnFull[todayIndex] });
   let displayTodayHours = "Closed";
   if (todayWork) {
     const s = (todayWork.startTime ?? (todayWork as any).start ?? (todayWork as any).open_time) as string | undefined;
@@ -292,7 +297,7 @@ export default function ShopDetailPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[40vh] text-lg">
-          Loading shop data...
+          {t("shops.loading")}
       </div>
     );
   }
@@ -300,7 +305,7 @@ export default function ShopDetailPage() {
   if (!shop) {
     return (
       <div className="flex justify-center items-center min-h-[40vh] text-lg text-red-500 ">
-        لم يتم العثور على المتجر
+        {t("shops.notFound")}
       </div>
     );
   }
@@ -344,9 +349,9 @@ export default function ShopDetailPage() {
                 <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{shop.shop_name}</h1>
                 {/* Open/Close badge */}
                 {isOpen ? (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800">Open</span>
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800">{t("shops.open")}</span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-800">Closed</span>
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 text-red-800">{t("shops.closed")}</span>
                 )}
               </div>
               <Link href="#" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1 mt-1">
@@ -364,13 +369,13 @@ export default function ShopDetailPage() {
             </div>
           </div>
           
-          <div className="grid grid-cols-3 gap-4 mt-4 text-center border-t border-border pt-4">
+              <div className="grid grid-cols-3 gap-4 mt-4 text-center border-t border-border pt-4">
             <div>
-              <p className="text-sm text-muted-foreground">Products</p>
+              <p className="text-sm text-muted-foreground">{t("shops.products")}</p>
               <p className="font-bold text-foreground">{productsCount}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Delivery Time</p>
+              <p className="text-sm text-muted-foreground">{t("shops.deliveryTime")}</p>
               <p className="font-bold text-foreground">30 min</p>
             </div>
             <div>
@@ -381,10 +386,11 @@ export default function ShopDetailPage() {
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-3">
-            <button aria-label="Delivery" className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold flex items-center justify-center gap-3">
+            <button aria-label={t("shops.deliveryAria")}
+              className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold flex items-center justify-center gap-3">
               <div className="flex items-center gap-2">
                 <Truck size={20} />
-                <span className="text-sm font-medium">Delivery</span>
+                <span className="text-sm font-medium">{t("shops.delivery")}</span>
                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-800">
                   <Check size={14} />
                 </span>
@@ -393,7 +399,7 @@ export default function ShopDetailPage() {
             <button aria-label="Card Payment" className="w-full bg-secondary text-secondary-foreground py-3 rounded-lg font-semibold flex items-center justify-center gap-3">
               <div className="flex items-center gap-2">
                 <CreditCard size={20} />
-                <span className="text-sm font-medium">Card Payment</span>
+                <span className="text-sm font-medium">{t("shops.cardPayment")}</span>
                 <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-800">
                   <Check size={14} />
                 </span>
@@ -408,7 +414,7 @@ export default function ShopDetailPage() {
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* شريط تصنيفات المتجر */}
         <div className="mb-8 relative">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Categories</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t("shops.categories")}</h2>
           <div className="relative">
             {/* سهم يسار (ديسكتوب فقط) */}
             <button
@@ -417,16 +423,14 @@ export default function ShopDetailPage() {
                 const el = document.getElementById("shop-category-scroll");
                 if (el) el.scrollBy({ left: -150, behavior: "smooth" });
               }}
-              aria-label="Scroll Left"
+              aria-label={t("common.scrollLeft")}
             >
               <ChevronDown className="rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
             </button>
 
-            {/* تصنيفات المتجر */}
-            <div
-              id="shop-category-scroll"
-              className="flex overflow-x-auto gap-3 scrollbar-hide pb-2 scroll-smooth"
-            >
+            {/* تصنيفات المتجر - match BrandsStrip pill design */}
+            <div id="shop-category-scroll" className="flex overflow-x-auto gap-3 scrollbar-hide pb-2 scroll-smooth">
+              {/* All category pill */}
               <button
                 key="all"
                 onClick={() => {
@@ -439,15 +443,14 @@ export default function ShopDetailPage() {
               >
                 <div
                   className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
-                    selectedCategory === null ? "border-blue-600" : "border-transparent"
-                  } bg-gray-300 dark:bg-gray-700 flex items-center justify-center font-bold`}
+                    selectedCategory === null ? "border-blue-600" : "border-transparent bg-gray-300 dark:bg-gray-700"
+                  }`}
                 >
-                  <span className={selectedCategory === null ? "text-blue-600" : "text-gray-700 dark:text-gray-200"}>
-                    A
-                  </span>
+                  <div className="w-full h-full flex items-center justify-center text-white font-bold">{allInitial}</div>
                 </div>
-                <span className="text-sm font-medium mt-1">All</span>
+                <span className="text-sm font-medium mt-1">{t("common.all")}</span>
               </button>
+
               {uniqueCategories.map((cat) => (
                 <button
                   key={cat.id}
@@ -459,25 +462,21 @@ export default function ShopDetailPage() {
                     selectedCategory === cat.id ? "text-blue-600" : "text-gray-700 dark:text-gray-200"
                   }`}
                 >
-                  <div className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
-                    selectedCategory === cat.id ? "bg-blue-600 border-blue-600" : " border-transparent"
-                  }`}>
+                  <div
+                    className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
+                      selectedCategory === cat.id ? "bg-blue-600 border-blue-600" : "border-transparent bg-card"
+                    }`}
+                  >
                     {cat.image_url ? (
-                      <Image
-                        src={cat.image_url}
-                        alt={cat.title}
-                        fill
-                        className="object-cover rounded-full"
-                      />
+                      <Image src={cat.image_url} alt={cat.title} fill className="object-cover rounded-full" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white font-bold">
-                        {cat.title[0]}
-                      </div>
+                      <div className="w-full h-full flex items-center justify-center text-white font-bold">{(cat.title || "")[0]}</div>
                     )}
                   </div>
                   <span className="text-sm font-medium mt-1">{cat.title}</span>
                 </button>
               ))}
+            </div>
             </div>
 
             {/* سهم يمين (ديسكتوب فقط) */}
@@ -487,7 +486,7 @@ export default function ShopDetailPage() {
                 const el = document.getElementById("shop-category-scroll");
                 if (el) el.scrollBy({ left: 150, behavior: "smooth" });
               }}
-              aria-label="Scroll Right"
+              aria-label={t("common.scrollRight")}
             >
               <ChevronDown className="-rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
             </button>
@@ -512,7 +511,7 @@ export default function ShopDetailPage() {
 
             return (
               <div className="flex overflow-x-auto gap-3 mt-3 pb-2 scrollbar-hide scroll-smooth" id="shop-subcategory-scroll">
-                {/* All pill */}
+                {/* All subcategory pill */}
                 <button
                   onClick={() => setSelectedSubcategory(null)}
                   className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
@@ -524,9 +523,9 @@ export default function ShopDetailPage() {
                       selectedSubcategory === null ? "border-blue-600" : "border-transparent bg-gray-300 dark:bg-gray-700"
                     }`}
                   >
-                    <div className="w-full h-full flex items-center justify-center text-white font-bold">A</div>
+                    <div className="w-full h-full flex items-center justify-center text-white font-bold">{allInitial}</div>
                   </div>
-                  <span className="text-sm font-medium mt-1">All</span>
+                  <span className="text-sm font-medium mt-1">{t("common.all")}</span>
                 </button>
 
                 {subs.map((sub) => (
@@ -545,7 +544,7 @@ export default function ShopDetailPage() {
                       {sub.image_url ? (
                         <Image src={sub.image_url} alt={sub.title} fill className="object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-white font-bold">{sub.title[0]}</div>
+                        <div className="w-full h-full flex items-center justify-center text-white font-bold">{(sub.title || "")[0]}</div>
                       )}
                     </div>
                     <span className="text-sm font-medium mt-1">{sub.title}</span>
@@ -563,10 +562,10 @@ export default function ShopDetailPage() {
 
         {/* فلترة المنتجات حسب التصنيف المختار - عرض مجموعات أفقية كل 5 */}
         <div className="space-y-6">
-          {productsLoading ? (
-            <div className="text-center text-gray-400 py-8">Loading products...</div>
+                {productsLoading ? (
+            <div className="text-center text-gray-400 py-8">{t("products.loading", { default: "Loading products..." })}</div>
           ) : productsError ? (
-            <div className="text-center text-red-500 py-8">Error loading products: {productsError.message}</div>
+            <div className="text-center text-red-500 py-8">{t("products.error", { message: productsError?.message ?? t("common.unexpectedError") })}</div>
           ) : (
             (() => {
               const list = filteredSortedProducts.filter((product: Product) => {
@@ -581,7 +580,7 @@ export default function ShopDetailPage() {
               });
 
               if (list.length === 0) {
-                return <div className="text-center text-gray-400 py-8">No products found for this category</div>;
+                return <div className="text-center text-gray-400 py-8">{t("common.noProducts")}</div>;
               }
 
               // chunk into groups of 5
@@ -596,9 +595,9 @@ export default function ShopDetailPage() {
                   <div className="flex items-center justify-between mb-3 px-2 sm:px-6">
                     <div className="flex items-center gap-2">
                       <div className="w-1 h-4 sm:w-1.5 sm:h-6 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
-                      <h3 className="text-base sm:text-lg font-bold">{`عروض مميزة — مجموعة ${idx + 1}`}</h3>
+                      <h3 className="text-base sm:text-lg font-bold">{t("shops.featuredGroup", { index: idx + 1 })}</h3>
                     </div>
-                    <Link href="/products" className="text-sm text-blue-600 hover:text-blue-800">عرض الكل</Link>
+                    <Link href="/products" className="text-sm text-blue-600 hover:text-blue-800">{t("common.viewAll")}</Link>
                   </div>
                   {/* arrows for desktop */}
                   <button
@@ -607,7 +606,7 @@ export default function ShopDetailPage() {
                       const el = document.getElementById(`shop-product-scroll-${idx}`);
                       if (el) el.scrollBy({ left: -400, behavior: "smooth" });
                     }}
-                    aria-label="Scroll Left"
+                    aria-label={t("common.scrollLeft")}
                   >
                     <ChevronDown className="rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
                   </button>
@@ -633,7 +632,7 @@ export default function ShopDetailPage() {
                       const el = document.getElementById(`shop-product-scroll-${idx}`);
                       if (el) el.scrollBy({ left: 400, behavior: "smooth" });
                     }}
-                    aria-label="Scroll Right"
+                    aria-label={t("common.scrollRight")}
                   >
                     <ChevronDown className="-rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
                   </button>
@@ -646,8 +645,8 @@ export default function ShopDetailPage() {
                     <AdBanner
                       key={`ad-between-${i}`}
                       imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
-                      title="Fresh Deals"
-                      subtitle="Save more on your favorites"
+                      title={t("ad.freshDeals.title", { default: "Fresh Deals" })}
+                      subtitle={t("ad.freshDeals.subtitle", { default: "Save more on your favorites" })}
                     />
                   );
                 }
@@ -657,7 +656,6 @@ export default function ShopDetailPage() {
           )}
         </div>
       </div>
-    </div>
   );
 }
 

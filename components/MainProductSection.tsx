@@ -7,6 +7,7 @@ import { ProductCard } from "./ProductCard";
 import type { Product } from "@/lib/type";
 import { supabase } from "@/lib/supabase";
 import { ChevronRight } from "lucide-react";
+import { useI18n } from "../lib/i18n";
 
 interface MainProductSectionProps {
   title: string;
@@ -19,6 +20,7 @@ export default function MainProductSection({
   linkToAll = "/products",
   products: initialProducts = [],
 }: MainProductSectionProps) {
+  const { t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>(initialProducts);
 
@@ -84,10 +86,10 @@ export default function MainProductSection({
           </h2>
         </div>
          <Link
-          href="/products"
+          href={linkToAll}
           className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
         >
-          View All <ChevronRight className="h-4 w-4 ml-1" />
+          {t("common.viewAll")} <ChevronRight className="h-4 w-4 ml-1" />
       </Link>
       </div>
 
@@ -112,7 +114,7 @@ export default function MainProductSection({
               </div>
             ))
           ) : (
-            <div className="text-center py-10">No products</div>
+            <div className="text-center py-10">{t("common.noProducts")}</div>
           )}
         </div>
       </div>

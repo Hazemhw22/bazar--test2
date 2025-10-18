@@ -6,8 +6,10 @@ import Link from "next/link";
 import { useSwipeable } from "react-swipeable";
 import { supabase } from "../lib/supabase";
 import type { Shop } from "../lib/type";
+import { useI18n } from "../lib/i18n";
 
 export default function PopularRestaurants() {
+  const { t } = useI18n();
   const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -95,8 +97,8 @@ export default function PopularRestaurants() {
     <section className="py-6 px-1 md:px-4">
       <div className="mx-auto max-w-6xl">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Popular Restaurants</h3>
-          <Link href="/shops" className="text-sm text-primary">See All</Link>
+          <h3 className="text-lg font-semibold">{t("popular.restaurants.title")}</h3>
+          <Link href="/shops" className="text-sm text-primary">{t("popular.seeAll")}</Link>
         </div>
 
         <div

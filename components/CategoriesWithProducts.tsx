@@ -6,21 +6,31 @@ import Image from "next/image";
 import type { Product, CategoryShop } from "@/lib/type";
 import { supabase } from "@/lib/supabase";
 import { ProductCard } from "./ProductCard";
+import { useI18n } from "../lib/i18n";
 
 export default function CategoriesWithProducts() {
   const [categories, setCategories] = useState<CategoryShop[]>([]);
   const [productsMap, setProductsMap] = useState<Record<number, Product[]>>({});
+  const [excludedShopIds, setExcludedShopIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<number | "all">("all");
+  const { t } = useI18n();
 
   useEffect(() => {
     let mounted = true;
     async function load() {
       setLoading(true);
+
+      // fetch shops that belong to category_shop_id = 15 (restaurants) and exclude them
+      const { data: restShops } = await supabase.from("shops").select("id").eq("category_shop_id", 15);
+      const excludedShops = (restShops || []).map((s: any) => s.id as number);
+      setExcludedShopIds(excludedShops);
+
+      // fetch categories (include all categories) - we'll show featured categories
       const { data: cats } = await supabase
         .from("categories_shop")
         .select("*")
-        .neq("id", 15)
+        .neq("id", 15) // do not include category_shop id = 15
         .order("id", { ascending: true })
         .limit(12);
 
@@ -28,23 +38,42 @@ export default function CategoriesWithProducts() {
       if (!mounted) return;
       setCategories(categoriesList);
 
-      const promises = categoriesList.map((c: any) =>
-        supabase
+      const promises = categoriesList.map(async (c: any) => {
+        // fetch shops that belong to this category (shops.category_shop_id === c.id)
+        const { data: shopsOfCategory } = await supabase
+          .from("shops")
+          .select("id")
+          .eq("category_shop_id", c.id);
+
+        const shopIds = (shopsOfCategory || []).map((s: any) => Number(s.id));
+
+        // build products query: products where shop IN shopIds and active
+        if (shopIds.length > 0) {
+          const idsStr = shopIds.join(",");
+          return supabase
+            .from("products")
+            .select("id, created_at, shop, title, desc, price, images, category, sale_price, active")
+            .in("shop", shopIds)
+            .eq("active", true)
+            .limit(12);
+        }
+
+        // fallback: attempt to fetch products by category field if no shops found
+        return supabase
           .from("products")
           .select("id, created_at, shop, title, desc, price, images, category, sale_price, active")
           .eq("category", c.id)
           .eq("active", true)
-          .limit(12)
-      );
+          .limit(12);
+      });
 
       const results = await Promise.all(promises);
       const map: Record<number, Product[]> = {};
-      results.forEach((r: any, i: number) => {
-        // ensure we never include products belonging to category ids 15, 18, or 34
-        const excluded = new Set([15, 18, 56]);
-        const items = (r.data || []).filter((p: any) => !excluded.has(Number(p.category)));
-        map[categoriesList[i].id] = items as Product[];
-      });
+      // results may be array of promises resolved values
+      for (let i = 0; i < results.length; i++) {
+        const r = results[i];
+        map[categoriesList[i].id] = (r && r.data) ? (r.data as Product[]) : [];
+      }
       if (!mounted) return;
       setProductsMap(map);
       setLoading(false);
@@ -77,7 +106,7 @@ export default function CategoriesWithProducts() {
     return (
       <section className="py-8 bg-green-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center py-8">Loading categories and products...</p>
+          <p className="text-center py-8">{t("categories.loading")}</p>
         </div>
       </section>
     );
@@ -86,7 +115,7 @@ export default function CategoriesWithProducts() {
   return (
     <section className="py-8 bg-green-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-        <h2 className="text-xl font-bold mb-6"> Featured Categories</h2>
+  <h2 className="text-xl font-bold mb-6">{t("categories.featured")}</h2>
 
         {/* Categories bar (same UI/behavior as shop page) */}
         <div className="mb-6 relative">
@@ -111,7 +140,7 @@ export default function CategoriesWithProducts() {
                 <div className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${selected === "all" ? "border-blue-600" : "border-transparent"} bg-gray-300 dark:bg-gray-700 flex items-center justify-center font-bold`}>
                   <span className={selected === "all" ? "text-blue-600" : "text-gray-700 dark:text-gray-200"}>A</span>
                 </div>
-                <span className="text-sm font-medium mt-1">All</span>
+                  <span className="text-sm font-medium mt-1">{t("common.all")}</span>
               </button>
 
               {categories.map((cat) => (

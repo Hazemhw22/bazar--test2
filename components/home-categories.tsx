@@ -42,13 +42,13 @@ export function HomeCategories() {
         .order("id", { ascending: true });
 
       if (fetchError) {
-        setError("فشل تحميل التصنيفات، حاول مرة أخرى.");
+        setError(t("categories.loadError") || "فشل تحميل التصنيفات، حاول مرة أخرى.");
         return;
       }
 
       setCategories(data || []);
     } catch (err) {
-      setError("خطأ غير متوقع.");
+      setError(t("common.unexpectedError") || "خطأ غير متوقع.");
     } finally {
       setLoading(false);
     }
@@ -108,7 +108,7 @@ export function HomeCategories() {
   }, []);
 
   if (loading) {
-    return <p className="p-6 text-center">جارٍ تحميل التصنيفات...</p>;
+    return <p className="p-6 text-center">{t("common.loading")}</p>;
   }
 
   if (error) {
@@ -119,14 +119,14 @@ export function HomeCategories() {
           onClick={fetchCategories}
           className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
         >
-          إعادة المحاولة
+          {t("common.retry")}
         </button>
       </div>
     );
   }
 
   if (categories.length === 0) {
-    return <p className="p-6 text-center">لا يوجد تصنيفات حالياً.</p>;
+    return <p className="p-6 text-center">{t("categories.none")}</p>;
   }
 
   // أول 5 تصنيفات فقط للهاتف
@@ -141,7 +141,7 @@ export function HomeCategories() {
             {t("suggestedCategories")}
           </h2>
           <Link href="/categories_shop" className="text-sm font-medium text-primary hover:underline">
-            See All
+            {t("common.viewAll")}
           </Link>
         </div>
 

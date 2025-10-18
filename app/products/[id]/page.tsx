@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useI18n } from "../../../lib/i18n";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
 import type { Product } from "../../../lib/type";
@@ -8,6 +9,7 @@ import ProductDetail from "./product-page";
 
 export default function ProductPage() {
   const params = useParams();
+  const { t } = useI18n();
   const productId = params?.id as string;
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ export default function ProductPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[40vh] text-lg">
-  Loading product...
+  {t("common.loading")}
       </div>
     );
   }
@@ -48,7 +50,7 @@ export default function ProductPage() {
   if (error || !product) {
     return (
       <div className="flex justify-center items-center min-h-[40vh] text-lg text-red-500">
-  {error || "Product not found"}
+  {error || t("product.notFound")}
       </div>
     );
   }

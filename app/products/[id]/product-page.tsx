@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import SuggestedProductCard from "@/components/SuggestedProductCard";
 import { useEffect, useState } from "react";
+import { useI18n } from "../../../lib/i18n";
 import { supabase } from "../../../lib/supabase";
 import { ProductViewCounter } from "@/components/ProductViewCounter";
 
@@ -48,6 +49,7 @@ type ProductDetailProps = {
 };
 
 export default function ProductDetail({ product }: ProductDetailProps) {
+  const { t } = useI18n()
   const { addItem: addToCart } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites?.() ?? {
     isFavorite: () => false,
@@ -205,7 +207,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               <path d="M20.52 3.478A11.955 11.955 0 0012 0C5.373 0 .001 5.373 0 12c0 2.12.555 4.184 1.606 6.008L0 24l6.144-1.61A11.955 11.955 0 0012 24c6.627 0 12-5.373 12-12 0-3.207-1.247-6.213-3.48-8.522zM12 21.6c-1.95 0-3.86-.52-5.53-1.5l-.4-.24-3.64.95.97-3.55-.26-.41A9.6 9.6 0 012.4 12c0-5.31 4.29-9.6 9.6-9.6 2.56 0 4.95.99 6.75 2.79A9.498 9.498 0 0121.6 12c0 5.31-4.29 9.6-9.6 9.6z" />
               <path d="M17.22 14.83c-.32-.16-1.88-.93-2.17-1.03-.29-.11-.5-.16-.72.16-.23.32-.88 1.03-1.08 1.24-.2.2-.4.24-.73.08-.33-.16-1.39-.51-2.64-1.62-.98-.87-1.64-1.95-1.84-2.28-.2-.32-.02-.49.14-.65.15-.15.33-.4.5-.6.16-.2.22-.33.33-.55.11-.22.05-.41-.02-.57-.07-.16-.72-1.74-1-2.39-.26-.62-.52-.54-.72-.55-.18-.01-.39-.01-.59-.01-.2 0-.52.08-.79.39-.27.31-1.03 1.01-1.03 2.47 0 1.45 1.06 2.86 1.2 3.06.15.2 2.07 3.34 5.02 4.68 2.95 1.34 2.95.89 3.48.83.53-.06 1.72-.7 1.97-1.38.25-.68.25-1.27.18-1.38-.07-.11-.28-.17-.6-.33z" fill="#fff" />
             </svg>
-            <span className="text-xs text-[rgba(255,255,255,0.85)]">واتساب</span>
+            <span className="text-xs text-[rgba(255,255,255,0.85)]">{t("share.whatsapp")}</span>
           </button>
 
           <button
@@ -214,7 +216,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             className="flex flex-col items-center gap-1 px-3 py-1 rounded-lg text-white"
           >
             <Share2 size={28} />
-            <span className="text-xs text-[rgba(255,255,255,0.85)]">مشاركة</span>
+            <span className="text-xs text-[rgba(255,255,255,0.85)]">{t("share.share")}</span>
           </button>
 
           <button
@@ -235,7 +237,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             className="flex flex-col items-center gap-1 px-3 py-1 rounded-lg text-white"
           >
             <Heart size={28} className={isFavorite(Number(product.id)) ? 'text-rose-400' : 'text-white'} fill={isFavorite(Number(product.id)) ? 'currentColor' : 'none'} />
-            <span className="text-xs text-[rgba(255,255,255,0.85)]">المفضلة</span>
+            <span className="text-xs text-[rgba(255,255,255,0.85)]">{t("product.favorite")}</span>
           </button>
         </div>
       </div>
@@ -311,12 +313,12 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
       {/* Add to list button */}
       <div className="w-full max-w-md mb-6">
-        <button onClick={async () => {
+          <button onClick={async () => {
             addToCart({ id: Number(product.id), name: product.title, price: Number(product.sale_price ?? product.price), image: product.images?.[0] || '', quantity });
             await incrementProductCartCount(product.id);
           }}
           className="w-full py-3 rounded-xl bg-gradient-to-r from-[#3b66ff] to-[#7c8ca2] text-white font-bold shadow-[0_10px_30px_rgba(59,102,255,0.3)]">
-          Add to Cart
+          {t("product.addToCart")}
         </button>
       </div>
 

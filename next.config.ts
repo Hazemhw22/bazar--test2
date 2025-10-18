@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   i18n: {
     locales: ["ar", "en", "he"],
     defaultLocale: "ar",
-    localeDetection: true,
+    localeDetection: false,
   },
   webpack(config) {
     config.module.rules.push({

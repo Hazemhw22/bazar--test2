@@ -10,6 +10,7 @@ import { supabase } from "../lib/supabase";
 import Link from "next/link";
 import Image from "next/image";
 import { Star, MapPin, Clock, ChevronDown, Search, Filter, ShoppingBag, Award, Calendar, LayoutGrid, List, Eye, Heart } from "lucide-react";
+import { useI18n } from "../lib/i18n";
 
 // Render a single star that fills proportionally to value/5 using two layered SVGs
 function StarProgress({ value = 0, size = 14 }: { value?: number; size?: number }) {
@@ -114,6 +115,8 @@ export default function ShopsPage({
     if (viewModeProp === undefined) setViewModeState(m);
   };
 
+  const { t, locale } = useI18n();
+
   // كاتيجوري المتاجر وسوب كاتيجوري
   const [shopCategories, setShopCategories] = useState<CategoryShop[]>([]);
   const [shopSubCategories, setShopSubCategories] = useState<CategorySubShop[]>([]);
@@ -159,9 +162,9 @@ export default function ShopsPage({
             : 0;
           return {
             ...shop,
+            // don't resolve translations during fetch; store actual title or null
             categoryTitle:
-              cats.find((cat) => cat.id === shop.category_shop_id)?.title ||
-              "بدون تصنيف",
+              cats.find((cat) => cat.id === shop.category_shop_id)?.title || null,
             productsCount: count,
           };
         });
@@ -237,10 +240,8 @@ export default function ShopsPage({
     <div className="container mx-auto px-1 py-6">
       {/* Header and Search */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-pazar-dark dark:text-white mb-2">Shops</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Discover our verified shops and find what you need
-        </p>
+        <h1 className="text-2xl font-bold text-pazar-dark dark:text-white mb-2">{t("shops.title")}</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t("shops.subtitle")}</p>
       </div>
 
       {/* View mode + Filters (mobile friendly) */}
@@ -249,14 +250,14 @@ export default function ShopsPage({
           <button
             onClick={() => setViewMode("grid")}
             className={`p-2 rounded-md ${viewMode === "grid" ? "bg-pazar-primary text-white" : "text-gray-300 hover:bg-white/5"}`}
-            aria-label="Grid view"
+            aria-label={t("shops.gridView")}
           >
             <LayoutGrid className="w-5 h-5" />
           </button>
           <button
             onClick={() => setViewMode("list")}
             className={`p-2 rounded-md ${viewMode === "list" ? "bg-pazar-primary text-white" : "text-gray-300 hover:bg-white/5"}`}
-            aria-label="List view"
+            aria-label={t("shops.listView")}
           >
             <List className="w-5 h-5" />
           </button>
@@ -272,14 +273,14 @@ export default function ShopsPage({
             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-pazar-dark-accent text-sm"
           >
             <Filter className="w-4 h-4" />
-            <span>Filters</span>
+            <span>{t("shops.filters")}</span>
           </button>
         </div>
       </div>
       
       {/* Categories */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-pazar-dark dark:text-white mb-3">Categories</h2>
+  <h2 className="text-lg font-semibold text-pazar-dark dark:text-white mb-3">{t("shops.categories")}</h2>
         <div 
           ref={scrollRef} 
           className="flex overflow-x-auto pb-4 gap-3 cursor-grab scrollbar-hide"
@@ -296,7 +297,7 @@ export default function ShopsPage({
               <div className="w-7 h-7 relative rounded-full overflow-hidden bg-gray-100">
                 <Image src="/placeholder.svg" alt="All" fill className="object-cover" />
               </div>
-              <span>All</span>
+              <span>{t("common.all")}</span>
             </div>
           </button>
           {shopCategories.map((category) => (
@@ -375,10 +376,8 @@ export default function ShopsPage({
         ) : filteredAndSortedShops.length === 0 ? (
             <div className="col-span-full text-center py-12">
             <div className="text-5xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold text-pazar-dark dark:text-white mb-2">No shops found</h3>
-            <p className="text-gray-500 dark:text-gray-400">
-              Try adjusting your search or filter criteria
-            </p>
+            <h3 className="text-xl font-semibold text-pazar-dark dark:text-white mb-2">{t("shops.noResults.title")}</h3>
+            <p className="text-gray-500 dark:text-gray-400">{t("shops.noResults.description")}</p>
           </div>
           ) : (
             filteredAndSortedShops.map((shop) => (
@@ -397,10 +396,8 @@ export default function ShopsPage({
           ) : filteredAndSortedShops.length === 0 ? (
             <div className="col-span-full text-center py-12">
               <div className="text-5xl mb-4">🔍</div>
-              <h3 className="text-xl font-semibold text-pazar-dark dark:text-white mb-2">No shops found</h3>
-              <p className="text-gray-500 dark:text-gray-400">
-                Try adjusting your search or filter criteria
-              </p>
+              <h3 className="text-xl font-semibold text-pazar-dark dark:text-white mb-2">{t("shops.noResults.title")}</h3>
+              <p className="text-gray-500 dark:text-gray-400">{t("shops.noResults.description")}</p>
             </div>
           ) : (
             filteredAndSortedShops.map((shop) => (
@@ -415,6 +412,7 @@ export default function ShopsPage({
 
 // مثال مبسط لـ StoreCard (يمكنك تعديله حسب تصميمك)
 function StoreCard({ shop }: { shop: Shop }) {
+  const { t } = useI18n();
   return (
     <Link
       href={`/shops/${shop.id}`}
@@ -431,13 +429,11 @@ function StoreCard({ shop }: { shop: Shop }) {
 
 
         {/* Category badge */}
-        {shop.categoryTitle && (
-          <div className="absolute top-3 left-3 z-10">
-            <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-semibold shadow">
-              {shop.categoryTitle}
-            </span>
-          </div>
-        )}
+        <div className="absolute top-3 left-3 z-10">
+          <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-semibold shadow">
+            {shop.categoryTitle ?? t("shops.uncategorized")}
+          </span>
+        </div>
 
         
       </div>
@@ -450,14 +446,14 @@ function StoreCard({ shop }: { shop: Shop }) {
               {shop.shop_name}
             </h3>
             {/* Open/Close badge next to name */}
-            {renderOpenBadge(shop.work_hours)}
+            {renderOpenBadge(shop.work_hours, t)}
           </div>
           {shop.shop_desc && (
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{shop.shop_desc}</p>
           )}
         </div>
 
-        <div className="mt-3 flex items-center justify-between">
+            <div className="mt-3 flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
             <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800">
               <StarProgress value={(shop as any).rating ?? 4.7} size={12} />
@@ -523,20 +519,21 @@ function isOpenToday(work_hours: any): { open: boolean; label?: string } {
   }
 }
 
-function renderOpenBadge(work_hours: any) {
+function renderOpenBadge(work_hours: any, t: (k: string) => string) {
   const status = isOpenToday(work_hours);
   if (status.open) {
     return (
-      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-green-100 text-green-800">Open</span>
+      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-green-100 text-green-800">{t("shops.open")}</span>
     );
   }
   return (
-    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-red-100 text-red-800">Close</span>
+    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-red-100 text-red-800">{t("shops.closed")}</span>
   );
 }
 
 // Compact list row for list view
 function ListRow({ shop }: { shop: Shop }) {
+  const { t } = useI18n();
   return (
     <Link
       href={`/shops/${shop.id}`}
@@ -556,10 +553,10 @@ function ListRow({ shop }: { shop: Shop }) {
           <h4 className="font-semibold truncate">{shop.shop_name}</h4>
           {/* Open/Close badge moved to the top-right (replacing the stars) */}
           <div className="flex-shrink-0">
-            {renderOpenBadge(shop.work_hours)}
+            {renderOpenBadge(shop.work_hours, t)}
           </div>
         </div>
-        <p className="text-sm text-gray-300 truncate">{shop.categoryTitle}</p>
+  <p className="text-sm text-gray-300 truncate">{shop.categoryTitle ?? t("shops.uncategorized")}</p>
         <div className="text-xs text-muted-foreground mt-1 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3">

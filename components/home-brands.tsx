@@ -29,20 +29,20 @@ export function HomeBrands() {
         .order("id", { ascending: true });
 
       if (error) {
-        setError("فشل تحميل العلامات التجارية، حاول مرة أخرى.");
+        setError(t("brands.loadError") || "فشل تحميل العلامات التجارية، حاول مرة أخرى.");
         return;
       }
 
       setBrands(data || []);
     } catch (err) {
-      setError("خطأ غير متوقع.");
+      setError(t("common.unexpectedError") || "خطأ غير متوقع.");
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) {
-    return <p className="p-6 text-center">جارٍ تحميل العلامات التجارية...</p>;
+    return <p className="p-6 text-center">{t("common.loading")}</p>;
   }
 
   if (error) {
@@ -53,23 +53,23 @@ export function HomeBrands() {
           onClick={fetchBrands}
           className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg"
         >
-          إعادة المحاولة
+          {t("common.retry")}
         </button>
       </div>
     );
   }
 
   if (brands.length === 0) {
-    return <p className="p-6 text-center">لا توجد علامات تجارية حالياً.</p>;
+    return <p className="p-6 text-center">{t("brands.none")}</p>;
   }
 
   return (
     <section className="w-full py-4 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">{t("brands") ?? "Brands"}</h2>
+          <h2 className="text-xl font-bold">{t("brands.title") ?? t("brands") ?? "Brands"}</h2>
           <Link href="/brands_shop" className="text-sm font-medium text-primary hover:underline">
-            See All
+            {t("common.viewAll")}
           </Link>
         </div>
 

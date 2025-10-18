@@ -8,6 +8,7 @@ import { Product } from "@/lib/type";
 import { useFavorites } from "./favourite-items";
 import { useCart } from "./cart-provider";
 import Image from "next/image";
+import { useI18n } from "../lib/i18n";
 import ProductFeaturesModal from "./ProductFeaturesModal";
 
 export function NearToYou() {
@@ -18,6 +19,7 @@ export function NearToYou() {
   const [showRightArrow, setShowRightArrow] = useState(true);
   const { isFavorite, toggleFavorite } = useFavorites();
   const { addItem } = useCart();
+  const { t } = useI18n();
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
   useEffect(() => {
@@ -122,14 +124,14 @@ export function NearToYou() {
     <div className="relative">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <h2 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white">Near To You</h2>
+            <h2 className="text-base sm:text-xl font-bold text-gray-900 dark:text-white">{t("near.title")}</h2>
           <div className="w-4 h-4 sm:w-5 sm:h-5 bg-green-500 rounded-full flex items-center justify-center">
             <span className="text-white text-[10px] font-bold">◎</span>
           </div>
         </div>
-        <Link href="/products" className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium">
-          View All <ChevronRight className="h-4 w-4 ml-1" />
-        </Link>
+          <Link href="/products" className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium">
+            {t("common.viewAll")} <ChevronRight className="h-4 w-4 ml-1" />
+          </Link>
       </div>
 
       {loading ? (
@@ -143,18 +145,18 @@ export function NearToYou() {
           ))}
         </div>
       ) : error ? (
-        <div className="text-center text-red-500 py-4">{error}</div>
+        <div className="text-center text-red-500 py-4">{t("near.fetchError", { message: error })}</div>
       ) : products.length === 0 ? (
-        <div className="text-center text-gray-500 py-4">No products available</div>
+        <div className="text-center text-gray-500 py-4">{t("near.noProducts")}</div>
       ) : (
         <div className="relative">
-          {showLeftArrow && (
-            <button onClick={() => handleScroll("left")} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white/90 dark:bg-black/60 shadow-md" aria-label="Previous">
+            {showLeftArrow && (
+            <button onClick={() => handleScroll("left")} className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white/90 dark:bg-black/60 shadow-md" aria-label={t("common.prev")}>
               <ChevronLeft className="w-4 h-4" />
             </button>
           )}
           {showRightArrow && (
-            <button onClick={() => handleScroll("right")} className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white/90 dark:bg-black/60 shadow-md" aria-label="Next">
+            <button onClick={() => handleScroll("right")} className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-1.5 rounded-full bg-white/90 dark:bg-black/60 shadow-md" aria-label={t("common.next")}>
               <ChevronRight className="w-4 h-4" />
             </button>
           )}
@@ -185,7 +187,7 @@ export function NearToYou() {
                         rating: 0,
                         reviews: 0,
                       })} className="bg-white dark:bg-gray-800 p-1 rounded-full shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                        <Heart size={14} className={isFavorite(Number(product.id)) ? "fill-red-500 text-red-500" : "text-gray-500 dark:text-gray-400"} />
+                        <Heart size={14} className={isFavorite(Number(product.id)) ? "fill-red-500 text-red-500" : "text-gray-500 dark:text-gray-400"} aria-hidden />
                       </button>
                       <button onClick={() => setQuickViewProduct(product)} className="bg-white dark:bg-gray-800 p-1 rounded-full shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                         <Eye size={14} className="text-gray-500 dark:text-gray-400" />
@@ -197,14 +199,14 @@ export function NearToYou() {
                     <h3 className="font-medium text-xs mb-1 line-clamp-2 text-gray-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{product.title}</h3>
                   </Link>
 
-                  <div className="flex items-center mb-1">
-                    <div className="flex items-center gap-1"><Eye size={14} /><span className="ml-1 text-xs text-gray-600 dark:text-gray-400">Views</span></div>
+                    <div className="flex items-center mb-1">
+                    <div className="flex items-center gap-1"><Eye size={14} /><span className="ml-1 text-xs text-gray-600 dark:text-gray-400">{t("near.views")}</span></div>
                     <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({product.view_count || 0})</span>
                   </div>
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-semibold text-sm text-blue-600 dark:text-blue-400">{getDisplayPrice(product).toFixed(2)} ₪</span>
+                      <span className="font-semibold text-sm text-blue-600 dark:text-blue-400">{t("currency.symbol")}{Number(getDisplayPrice(product)).toFixed(2)}</span>
                     </div>
                     <button onClick={() => addItem({ id: Number(product.id), name: product.title, price: getDisplayPrice(product), image: (product.images && product.images[0]) || "/placeholder.svg" })} className="bg-blue-600 hover:bg-blue-700 text-white p-1 rounded-full transition-colors"><Plus size={14} /></button>
                   </div>

@@ -20,9 +20,11 @@ import { supabase } from "@/lib/supabase";
 import { ProductCard } from "../components/ProductCard";
 import AdBanner from "../components/AdBanner";
 import CategoriesWithProducts from "../components/CategoriesWithProducts";
+import { useI18n } from "../lib/i18n";
 
 export default function Home() {
   const { showLocationModal, setShowLocationModal, selectedCity, setSelectedCity } = useLocation();
+  const { t } = useI18n();
   
   // بيانات وهمية للمنتجات، استبدلها بالبيانات الحقيقية عند الفيتش من Supabase
   const offers: Product[] = [];
@@ -77,29 +79,29 @@ export default function Home() {
 
         {/* Product Sections with Banners */}
         <div className="px-1">
-          <MainProductSection title="Todays Best Deals For You!" products={offers} linkToAll="/products?filter=offers" />
+          <MainProductSection title={t("home.bestDeals") } products={offers} linkToAll="/products?filter=offers" />
         </div>
         <AdBanner
           imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
           href="/products?filter=deals"
-          title="Special Offers"
-          subtitle="Up to 50% off"
+          title={t("ad.specialOffers")}
+          subtitle={t("ad.upTo50")}
           className="bg-gradient-to-r from-pazar-primary/10 to-pazar-secondary/10"
         />
 
         <div className="px-1">
-          <MainProductSection title="Top Deals In" products={bestSellers} linkToAll="/products?filter=best" />
+          <MainProductSection title={t("home.topDealsIn")} products={bestSellers} linkToAll="/products?filter=best" />
         </div>
         <AdBanner
           imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
           href="/products?filter=deals"
-          title="Special Offers"
-          subtitle="Up to 50% off"
+          title={t("ad.specialOffers")}
+          subtitle={t("ad.upTo50")}
           className="bg-gradient-to-r from-pazar-primary/10 to-pazar-secondary/10"
         />
 
         <div className="px-1">
-          <MainProductSection title="Best Sellers In Beauty & Health" products={selected} linkToAll="/products?filter=selected" />
+          <MainProductSection title={t("home.bestSellersBeauty") } products={selected} linkToAll="/products?filter=selected" />
         </div>
    
       

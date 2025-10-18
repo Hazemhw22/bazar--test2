@@ -9,6 +9,7 @@ import { useFavorites } from "./favourite-items";
 import { Product } from "@/lib/type";
 import { incrementProductCartCount } from "@/lib/tracking";
 import ProductFeaturesModal from "./ProductFeaturesModal";
+import { useI18n } from "../lib/i18n";
 
 // Custom scrollbar and animation styles
 const customStyles = `
@@ -82,6 +83,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, compact = false }: ProductCardProps) {
+  const { t } = useI18n();
   // Apply custom styles
   useEffect(() => {
     const styleElement = document.createElement('style');
@@ -176,7 +178,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
           {/* Sales Tag (بدل عداد المشاهدات القديم) */}
           <div className="absolute top-3 left-3 z-10">
             <span className="bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow">
-              Sales
+              {t("product.salesTag")}
             </span>
           </div>
 
@@ -246,7 +248,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
                 handleAddToCart();
               }}
               className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow transition-colors"
-              title="إضافة للسلة"
+              title={t("product.addToCart")}
             >
               <Plus size={20} />
             </button>

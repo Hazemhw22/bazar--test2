@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo, useState, useEffect } from "react"
+import { useI18n } from "../../lib/i18n"
 import { useQuery } from "@tanstack/react-query"
 import Image from "next/image"
 import { HeroSales } from "../../components/hero-sales"
@@ -22,6 +23,7 @@ import SortIcon from "../../components/SortIcon"
 import { Category } from "../../lib/type"
 
 export default function Products() {
+  const { t } = useI18n()
   const [minPrice, setMinPrice] = useState(0)
   const [maxPrice, setMaxPrice] = useState(10000)
   const [rating, setRating] = useState<number[]>([])
@@ -150,7 +152,7 @@ export default function Products() {
 
       {/* Category Pills Section */}
       <div className="mb-8 relative">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Categories</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t("categories.title")}</h2>
 
         <div className="relative">
           {/* Left Arrow */}
@@ -239,7 +241,7 @@ export default function Products() {
                   : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700"
               }`}
             >
-              All
+              {t("common.all")}
             </button>
             {subcategories.map((sub) => (
               <button
@@ -276,14 +278,14 @@ export default function Products() {
         <aside className="hidden lg:block lg:w-1/5 sticky top-20 self-start bg-card rounded-2xl p-6 shadow-sm border border-border/50">
           <h2 className="text-xl font-bold flex items-center gap-2 mb-6">
             <SlidersHorizontal size={20} />
-            <span>Filters</span>
+            <span>{t("shops.filters")}</span>
           </h2>
 
           {/* Brands searchable */}
           <div className="mb-6">
-            <label className="font-semibold block mb-2">Shops</label>
+            <label className="font-semibold block mb-2">{t("shops.searchPlaceholder")}</label>
             <Input
-              placeholder="Search Shops"
+              placeholder={t("shops.searchPlaceholder")}
               value={brandSearch}
               onChange={(e) => setBrandSearch(e.target.value)}
               className="mb-3 text-sm"
@@ -310,10 +312,10 @@ export default function Products() {
 
           {/* Price */}
           <div className="space-y-4 mb-6">
-            <h3 className="font-medium">Price Range</h3>
+            <h3 className="font-medium">{t("product.priceRange")}</h3>
             <div className="flex justify-between text-sm">
-              <span>{minPrice} ₪</span>
-              <span>{maxPrice} ₪</span>
+              <span>{minPrice} {t("currency.symbol")}</span>
+              <span>{maxPrice} {t("currency.symbol")}</span>
             </div>
             <div className="px-2">
               <DualRangeSlider
@@ -332,7 +334,7 @@ export default function Products() {
 
           {/* Color */}
           <div className="mb-2">
-            <label className="font-semibold block mb-2">Color</label>
+            <label className="font-semibold block mb-2">{t("product.color")}</label>
             <div className="flex flex-wrap gap-2">
               {["#111827", "#ef4444", "#3b82f6", "#22c55e", "#f59e0b", "#e5e7eb", "#a855f7"].map((c) => {
                 const active = selectedColors.includes(c)
@@ -355,7 +357,7 @@ export default function Products() {
 
           {/* Rating */}
           <div className="mt-4">
-            <label className="font-semibold block mb-2">Rating</label>
+            <label className="font-semibold block mb-2">{t("products.rating")}</label>
             <div className="flex flex-col gap-2">
               {[5, 4, 3, 2, 1].map((star) => (
                 <label key={star} className="flex items-center gap-2 cursor-pointer select-none">
@@ -376,18 +378,18 @@ export default function Products() {
         <section className="w-full lg:w-4/5">
           {/* View Toggle */}
           <div className="flex items-center gap-2 mb-6">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Show by:</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t("products.showBy")}</span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
-                  New items
+                  {t("products.sort.new")}
                   <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem>New items</DropdownMenuItem>
-                <DropdownMenuItem>Popular items</DropdownMenuItem>
-                <DropdownMenuItem>On sale</DropdownMenuItem>
+                <DropdownMenuItem>{t("products.sort.new")}</DropdownMenuItem>
+                <DropdownMenuItem>{t("products.sort.popular")}</DropdownMenuItem>
+                <DropdownMenuItem>{t("products.sort.sale")}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             
@@ -399,36 +401,38 @@ export default function Products() {
                   variant="outline"
                   size="sm"
                   className="px-3"
-                  aria-label="Filters / الفلاتر"
-                  title="Filters / الفلاتر"
+                  aria-label={t("shops.filters")}
+                  title={t("shops.filters")}
                 >
-                  <SlidersHorizontal className="h-4 w-4" aria-hidden={true} />
-                  <span className="ml-2 text-sm">Filters</span>
+                  <SlidersHorizontal className="h-4 w-4 gap-2" aria-hidden={true} />
+                  <span className="ml-2 text-sm ">{t("shops.filters")}</span>
                 </Button>
               </div>
               <div className="flex rounded-md">
-              <Button
-                variant={viewMode === "list" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("list")}
-                className="rounded-r-none border-r border-gray-300 dark:border-gray-600"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === "grid" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setViewMode("grid")}
-                className="rounded-l-none"
-              >
-                <Grid3X3 className="h-4 w-4" />
-              </Button>
-            </div>
+                {/* Grid on the left, List on the right (consistent across locales) */}
+                  <Button
+                    variant={viewMode === "list" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                    className="rounded-l-none"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                <Button
+                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  className="rounded-r-none border-r border-gray-300 dark:border-gray-600"
+                >
+                  <Grid3X3 className="h-4 w-4" />
+                </Button>
+             
+              </div>
           </div>
         </div>
 
-          {isLoading && <div className="text-xl text-center py-12">Loading...</div>}
-          {error && <div className="text-xl text-center py-12 text-red-500">An error occurred while fetching products</div>}
+          {isLoading && <div className="text-xl text-center py-12">{t("common.loading")}</div>}
+          {error && <div className="text-xl text-center py-12 text-red-500">{t("products.fetchError")}</div>}
           
           {/* Products Display */}
           {viewMode === "list" ? (
@@ -445,7 +449,7 @@ export default function Products() {
           {filteredProducts.length > 0 && (
             <div className="text-center mt-8">
               <Button variant="outline" size="lg" className="flex items-center gap-2 mx-auto">
-                Show more products
+                {t("products.showMore")}
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </div>
@@ -464,10 +468,10 @@ export default function Products() {
           <div className="mx-auto h-1 w-10 rounded-full bg-muted-foreground/40 mb-4" />
           <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
             <SlidersHorizontal size={20} />
-            Filters
+            {t("shops.filters")}
           </h2>
-          <div className="space-y-4 mb-4">
-                <label className="font-semibold block mb-1">Shops</label>
+      <div className="space-y-4 mb-4">
+        <label className="font-semibold block mb-1">{t("filters.shops")}</label>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -504,7 +508,7 @@ export default function Products() {
 
 
           <div className="space-y-4 mb-4">
-            <h3 className="font-medium">Price Range</h3>
+            <h3 className="font-medium">{t("product.priceRange")}</h3>
             <div className="flex items-center gap-2">
               <input
                 type="number"
@@ -513,7 +517,7 @@ export default function Products() {
                 value={minPrice}
                 onChange={(e) => setMinPrice(Number(e.target.value))}
                 className="w-1/2  px-2 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg border"
-                placeholder="Min"
+                placeholder={t("filters.min")}
               />
               <span>-</span>
               <input
@@ -523,14 +527,14 @@ export default function Products() {
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
                 className="w-1/2 rounded-lg border px-2 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                placeholder="Max"
+                placeholder={t("filters.max")}
               />
-              <span className="text-xs text-gray-500">₪</span>
+              <span className="text-xs text-gray-500">{t("currency.symbol")}</span>
             </div>
           </div>
 
           <div>
-            <label className="font-semibold block mb-2">Rating</label>
+            <label className="font-semibold block mb-2">{t("products.rating")}</label>
             <div className="flex flex-col gap-2">
               {[5, 4, 3, 2, 1].map((star) => (
                 <label key={star} className="flex items-center gap-2 cursor-pointer select-none">
@@ -548,10 +552,10 @@ export default function Products() {
           <div className="sticky bottom-0 pt-3">
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1 rounded-full" onClick={() => setFilterOpen(false)}>
-                Close
+                {t("common.close")}
               </Button>
               <Button className="flex-1 rounded-full" onClick={() => setFilterOpen(false)}>
-                Apply
+                {t("common.apply")}
               </Button>
             </div>
           </div>

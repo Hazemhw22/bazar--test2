@@ -1,6 +1,8 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import type { Dispatch, SetStateAction } from "react";
+import type { City } from "../lib/location-types";
 
 // عرف cityIcon هنا فقط
 const cityIcon = new L.DivIcon({
@@ -10,7 +12,7 @@ const cityIcon = new L.DivIcon({
   iconAnchor: [16, 32],
 });
 
-export default function LocationMap({ israelCities, selectedCity, setSelectedCity }) {
+export default function LocationMap({ israelCities, selectedCity, setSelectedCity }: { israelCities: City[]; selectedCity: City | null; setSelectedCity: Dispatch<SetStateAction<City | null>> }) {
   return (
     <MapContainer
       center={[31.5, 34.75]}
@@ -18,7 +20,7 @@ export default function LocationMap({ israelCities, selectedCity, setSelectedCit
       style={{ height: "100%", width: "100%" }}
     >
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-      {israelCities.map(city => (
+  {israelCities.map((city: City) => (
         <Marker
           key={city.id}
           position={city.coordinates}

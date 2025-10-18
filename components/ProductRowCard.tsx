@@ -5,13 +5,14 @@ import { Heart, Plus, Eye, Star } from "lucide-react";
 import Link from "next/link";
 import { useCart } from "@/components/cart-provider";
 import { useFavorites } from "@/components/favourite-items";
+import { useI18n } from "../lib/i18n";
 
 type RowProduct = {
-  id: number;
+  id: string | number;
   title: string;
   desc: string;
-  price: number;
-  sale_price?: number | null;
+  price: number | string;
+  sale_price?: number | string | null;
   discount_type?: "fixed" | "percentage" | null;
   images?: string[];
   shops?: { shop_name: string } | null;
@@ -20,22 +21,26 @@ type RowProduct = {
   view_count?: number | null;
 };
 
-function formatPrice(amount: number | null | undefined): string {
+function formatPrice(amount: number | string | null | undefined): string {
   if (amount == null) return "";
-  // use a simple dollar format to match the design screenshots
-  return ` ${amount.toFixed(2)} ₪`;
+  const num = typeof amount === "string" ? parseFloat(amount) : amount;
+  if (Number.isNaN(num)) return "";
+  return ` ${num.toFixed(2)} ₪`;
 }
 
 export default function ProductRowCard({ product }: { product: RowProduct }) {
+  const { t } = useI18n();
   const imageSrc = product.images && product.images.length > 0 ? product.images[0] : "/placeholder.svg";
   // use product.rating rounded, default to 3/5 as requested
   const rating = Math.round(product.rating ?? 3);
-  const hasSale = product.sale_price != null && Number(product.sale_price) > 0 && Number(product.sale_price) < product.price;
+  const priceNum = typeof product.price === "string" ? parseFloat(product.price) : product.price;
+  const salePriceNum = product.sale_price != null ? (typeof product.sale_price === "string" ? parseFloat(product.sale_price) : product.sale_price) : null;
+  const hasSale = salePriceNum != null && salePriceNum > 0 && salePriceNum < priceNum;
 
   const discountLabel = (() => {
     if (!hasSale) return null;
     if (product.discount_type === "percentage") {
-      const pct = Math.round(((product.price - Number(product.sale_price)) / product.price) * 100);
+      const pct = Math.round(((priceNum - (salePriceNum ?? 0)) / priceNum) * 100);
       return `-${pct}%`;
     }
     return "-";
@@ -47,30 +52,30 @@ export default function ProductRowCard({ product }: { product: RowProduct }) {
 
   const handleAddToCart = () => {
     addItem({
-      id: product.id,
+      id: Number(product.id),
       name: product.title,
-      price: hasSale ? Number(product.sale_price) : product.price,
+      price: hasSale ? salePriceNum ?? priceNum : priceNum,
       image: imageSrc,
       quantity: 1,
     });
   };
 
-  const isFavorite = favorites.some(fav => fav.id === product.id);
+  const isFavorite = favorites.some(fav => fav.id === Number(product.id));
 
  const handleWishlist = () => {
   const favoriteItem = {
-    id: product.id,
+    id: Number(product.id),
     name: product.title,
     price: hasSale ? Number(product.sale_price) : product.price,
     discountedPrice: product.sale_price ?? product.price,
     image: imageSrc,
-    store: product.shops?.shop_name ?? "Unknown",
+    store: product.shops?.shop_name ?? t("common.unknown"),
     rating: product.rating ?? 0,
     reviews: product.reviews ?? 0,
   };
 
-  if (isFavorite) removeFromFavorites(product.id);
-  else addToFavorites(favoriteItem);
+  if (isFavorite) removeFromFavorites(Number(product.id));
+  else addToFavorites(favoriteItem as any);
 };
 
 
@@ -143,13 +148,13 @@ export default function ProductRowCard({ product }: { product: RowProduct }) {
         <button
           onClick={handleWishlist}
           className="absolute top-3 left-2 bg-white/90 backdrop-blur rounded-full p-1 shadow z-10"
-          aria-label="Toggle favorite"
+          aria-label={t("product.toggleFavorite")}
         >
           <Heart className={`w-4 h-4 ${isFavorite ? 'text-red-500' : 'text-green-600'}`} />
         </button>
 
         <button
-          aria-label="Add to cart"
+          aria-label={t("product.addToCart")}
           onClick={handleAddToCart}
           className="absolute bottom-3 left-2 w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center border border-gray-100 z-20"
         >

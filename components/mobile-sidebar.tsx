@@ -4,6 +4,7 @@ import Link from "next/link";
 import { X, User, History, Wallet, Bell, Heart, Gift, Headphones, Settings } from "lucide-react";
 import { useEffect } from "react";
 import { Profile } from "@/lib/type";
+import { useI18n } from "../lib/i18n";
 
 interface MobileSidebarProps {
   open: boolean;
@@ -12,12 +13,12 @@ interface MobileSidebarProps {
 }
 
 const menuItems = [
-  { href: "/account", label: "Profile", icon: User },
-  { href: "/orders", label: "Orders", icon: History },
-  { href: "/wallet", label: "Wallet", icon: Wallet },
-  { href: "/notifications", label: "Notifications", icon: Bell },
-  { href: "/favourite", label: "Favourite", icon: Heart },
-  { href: "/invite", label: "Invite Friends", icon: Gift },
+  { href: "/account", key: "menu.profile", icon: User },
+  { href: "/orders", key: "menu.orders", icon: History },
+  { href: "/wallet", key: "menu.wallet", icon: Wallet },
+  { href: "/notifications", key: "menu.notifications", icon: Bell },
+  { href: "/favourite", key: "menu.favourite", icon: Heart },
+  { href: "/invite", key: "menu.invite", icon: Gift },
 ];
 
 export default function MobileSidebar({ open, onClose, user }: MobileSidebarProps) {
@@ -31,6 +32,8 @@ export default function MobileSidebar({ open, onClose, user }: MobileSidebarProp
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  const { t } = useI18n();
 
   return (
     <div className={`fixed inset-0 z-[100] md:hidden ${open ? 'pointer-events-auto' : 'pointer-events-none'}`}>
@@ -60,26 +63,26 @@ export default function MobileSidebar({ open, onClose, user }: MobileSidebarProp
           </div>
         </div>
 
-        <div className="px-4 py-3 text-xs text-muted-foreground tracking-wide">MENU</div>
+  <div className="px-4 py-3 text-xs text-muted-foreground tracking-wide">{t("menu.title")}</div>
 
         <nav className="px-2 pb-4">
-          {menuItems.map(({ href, label, icon: Icon }) => (
+          {menuItems.map(({ href, key, icon: Icon }) => (
             <Link key={href} href={href} onClick={onClose} className="flex items-center gap-3 px-4 py-3 text-sm rounded-lg hover:bg-accent active:bg-accent/80">
               <Icon size={18} className="text-muted-foreground" />
-              <span>{label}</span>
+              <span>{t(key)}</span>
             </Link>
           ))}
         </nav>
 
-        <div className="px-4 py-3 text-xs text-muted-foreground tracking-wide">SETTINGS AND SUPPORT</div>
+        <div className="px-4 py-3 text-xs text-muted-foreground tracking-wide">{t("menu.supportTitle")}</div>
         <div className="px-2 pb-28">
           <Link href="/settings" onClick={onClose} className="flex items-center gap-3 px-4 py-3 text-sm rounded-lg hover:bg-accent">
             <Settings size={18} />
-            <span>Settings and Privacy</span>
+            <span>{t("menu.settings")}</span>
           </Link>
           <Link href="/help" onClick={onClose} className="flex items-center gap-3 px-4 py-3 text-sm rounded-lg hover:bg-accent">
             <Headphones size={18} />
-            <span>Help center</span>
+            <span>{t("menu.help")}</span>
           </Link>
         </div>
       </aside>

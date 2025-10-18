@@ -4,8 +4,10 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useSwipeable } from "react-swipeable"
+import { useI18n } from "../lib/i18n"
 
 export function HeroSection() {
+  const { t } = useI18n()
   const [activeSlide, setActiveSlide] = useState(0)
   const [isInteracting, setIsInteracting] = useState(false)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -13,8 +15,8 @@ export function HeroSection() {
   const slides = [
     {
       id: 1,
-      title: "Smart Watch",
-      subtitle: "Stay Connected, Stay Smart",
+      title: t("hero.slide1.title") || "Smart Watch",
+      subtitle: t("hero.slide1.subtitle") || "Stay Connected, Stay Smart",
       image: "/pngtree-smart-electronic-apple-watches-vector-set-png-image_5155507.png",
       bgColor: "bg-blue-100 dark:bg-blue-900/30",
     },
@@ -86,7 +88,7 @@ export function HeroSection() {
             href="/products"
             className="bg-primary text-primary-foreground px-5 py-2.5 rounded-full font-medium hover:bg-primary/90 transition-colors text-sm"
           >
-            Buy Now
+            {t("hero.buyNow")}
           </Link>
         </motion.div>
 
