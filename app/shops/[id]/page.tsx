@@ -411,7 +411,7 @@ export default function ShopDetailPage() {
 
 
       {/* Main Content Area */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-2">
         {/* شريط تصنيفات المتجر */}
         <div className="mb-8 relative">
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">{t("shops.categories")}</h2>
@@ -458,7 +458,7 @@ export default function ShopDetailPage() {
                     setSelectedCategory(cat.id);
                     setSelectedSubcategory(null);
                   }}
-                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
+                  className={`flex flex-col items-center gap-1 px-4 py-2 rounded-2xl whitespace-nowrap transition-all ${
                     selectedCategory === cat.id ? "text-blue-600" : "text-gray-700 dark:text-gray-200"
                   }`}
                 >
@@ -510,7 +510,7 @@ export default function ShopDetailPage() {
             if (subs.length === 0) return null;
 
             return (
-              <div className="flex overflow-x-auto gap-3 mt-3 pb-2 scrollbar-hide scroll-smooth" id="shop-subcategory-scroll">
+              <div className="flex overflow-x-auto gap-3 mt-1 pb-2 px-4 scrollbar-hide scroll-smooth" id="shop-subcategory-scroll">
                 {/* All subcategory pill */}
                 <button
                   onClick={() => setSelectedSubcategory(null)}
@@ -556,7 +556,7 @@ export default function ShopDetailPage() {
         )}
 
         {/* Brands associated with shop (or general brands) */}
-        <div className="mt-6">
+        <div className="mt-2 mb-8">
           <BrandsStrip selectedBrand={selectedBrand} setSelectedBrand={setSelectedBrand} shopId={shop ? Number(shop.id) : null} />
         </div>
 

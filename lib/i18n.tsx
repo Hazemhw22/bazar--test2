@@ -109,10 +109,10 @@ export function HtmlLangDirSync() {
   return null;
 }
 
-export const supportedLanguages: Array<{ code: SupportedLocale; label: string; flag: string }> = [
-  { code: "ar", label: "العربية", flag: "https://flagcdn.com/w40/ae.png" },
-  { code: "he", label: "עברית", flag: "https://flagcdn.com/w40/il.png" },
-  { code: "en", label: "English", flag: "https://flagcdn.com/w40/us.png" },
+export const supportedLanguages: Array<{ code: SupportedLocale; flag: string }> = [
+  { code: "ar", flag: "https://flagcdn.com/w40/ae.png" },
+  { code: "he", flag: "https://flagcdn.com/w40/il.png" },
+  { code: "en", flag: "https://flagcdn.com/w40/us.png" },
 ];
 
 

@@ -44,7 +44,7 @@ export default function BrandsStrip({ selectedBrand, setSelectedBrand, shopId }:
 
   return (
     <section className="w-full">
-      <div className="max-w-7xl mx-auto px-1 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold">{t("brands.title")}</h2>
         </div>
