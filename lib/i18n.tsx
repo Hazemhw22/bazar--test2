@@ -9,7 +9,7 @@ type Messages = Record<string, string>;
 type I18nContextValue = {
   locale: SupportedLocale;
   direction: "rtl" | "ltr";
-  t: (key: string, values?: Record<string, string | number>) => string;
+  t: (key: string, values?: Record<string, string | number | undefined> & { default?: string }) => string;
   setLocale: (locale: SupportedLocale) => void;
 };
 
@@ -67,12 +67,13 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const t = useCallback(
-  (key: string, values?: Record<string, string | number>) => {
-    let text = messages[key] ?? key;
+  (key: string, values?: Record<string, string | number | undefined> & { default?: string }) => {
+    let text = messages[key] ?? values?.default ?? key;
 
     if (values) {
       Object.entries(values).forEach(([k, v]) => {
         // Use split/join to avoid constructing potentially invalid RegExp patterns
+        if (k === "default") return; // don't interpolate default as a placeholder
         text = text.split("{" + k + "}").join(String(v));
       });
     }

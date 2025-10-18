@@ -41,7 +41,7 @@ import BrandsStrip from "@/components/BrandsStrip";
 import { useI18n } from "@/lib/i18n";
 
 export default function ShopDetailPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const allLabel = t("common.all");
   const allInitial = (allLabel && allLabel[0]) || "A";
   const params = useParams();
@@ -250,14 +250,45 @@ export default function ShopDetailPage() {
     "Friday",
     "Saturday",
   ];
+  const daysArFull = [
+    "الأحد",
+    "الإثنين",
+    "الثلاثاء",
+    "الأربعاء",
+    "الخميس",
+    "الجمعة",
+    "السبت",
+  ];
+  const daysHeFull = [
+    "ראשון",
+    "שני",
+    "שלישי",
+    "רביעי",
+    "חמישי",
+    "שישי",
+    "שבת",
+  ];
   const weekdayKeys = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
-  const displayTodayName = t(`days.${weekdayKeys[todayIndex]}`, { default: daysEnFull[todayIndex] });
-  let displayTodayHours = "Closed";
+
+  // Prefer locale-specific hardcoded day names (avoids race with async message load).
+  const localeDayNames: Record<string, string[]> = {
+    en: daysEnFull,
+    ar: daysArFull,
+    he: daysHeFull,
+  };
+
+  const dayKey = `days.${weekdayKeys[todayIndex]}`;
+  let displayTodayName = t(dayKey);
+  // If translation isn't loaded yet `t` will return the key — use locale arrays as graceful fallback
+  if (!displayTodayName || displayTodayName === dayKey) {
+    displayTodayName = localeDayNames[locale]?.[todayIndex] ?? daysEnFull[todayIndex];
+  }
+  let displayTodayHours = t("shops.closed");
   if (todayWork) {
     const s = (todayWork.startTime ?? (todayWork as any).start ?? (todayWork as any).open_time) as string | undefined;
     const e = (todayWork.endTime ?? (todayWork as any).end ?? (todayWork as any).close_time) as string | undefined;
     if (s && e) displayTodayHours = `${s} - ${e}`;
-    else displayTodayHours = todayWork.open ? "Open" : "Closed";
+    else displayTodayHours = todayWork.open ? t("shops.open") : t("shops.closed");
   }
 
   // استخدم categories_shop المسترجعة كتصنيفات المتجر (fallback: استخراج من products إذا لم تتوفر)
@@ -379,7 +410,7 @@ export default function ShopDetailPage() {
               <p className="font-bold text-foreground">30 min</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">{displayTodayName}</p>
+              <p className="text-sm text-muted-foreground">{t(dayKey, { default: displayTodayName })}</p>
               <p className="font-bold text-foreground">{displayTodayHours}</p>
             </div>
             <div />

@@ -33,9 +33,11 @@ import AccountPageWrapper from "@/components/AccountPageWrapper"
 import { useCart } from "@/components/cart-provider"
 import { useFavorites } from "@/components/favourite-items"
 import Link from "next/link"
+import { useI18n } from "@/lib/i18n"
 
 
 export default function EnhancedProfilePage() {
+  const { t, direction } = useI18n()
   const [profileData, setProfileData] = useState<Profile | null>(null)
   const [ordersData, setOrdersData] = useState<OrderData[]>([])
   const [addressesData, setAddressesData] = useState<Profile[]>([])
@@ -104,31 +106,31 @@ export default function EnhancedProfilePage() {
     }
   return (
     <AccountPageWrapper>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">My Account</h1>
-            <p className="text-gray-600 dark:text-gray-400">Manage your account settings and preferences</p>
+            <h1 className="text-3xl font-bold mb-2">{t("account.title")}</h1>
+            <p className="text-gray-600 dark:text-gray-400">{t("account.subtitle")}</p>
           </div>
 
           <Tabs defaultValue="account" className="space-y-6">
             {/* Tabs Navigation */}
             <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-auto p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
-              <TabsTrigger value="account" className="flex items-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-100">
-                <User size={20} /> <span>Account</span>
+              <TabsTrigger value="account" className={`flex items-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-100 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                <User size={20} /> <span>{t("tabs.account")}</span>
               </TabsTrigger>
-              <TabsTrigger value="orders" className="flex items-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200 data-[state=active]:bg-green-500 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-100">
-                <Package size={20} /> <span>Orders</span>
+              <TabsTrigger value="orders" className={`flex items-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200 data-[state=active]:bg-green-500 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-100 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                <Package size={20} /> <span>{t("tabs.orders")}</span>
               </TabsTrigger>
-              <TabsTrigger value="addresses" className="flex items-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200 data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-100">
-                <MapPin size={20} /> <span>Addresses</span>
+              <TabsTrigger value="addresses" className={`flex items-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200 data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-100 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                <MapPin size={20} /> <span>{t("tabs.addresses")}</span>
               </TabsTrigger>
-              <TabsTrigger value="wishlist" className="flex items-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200 data-[state=active]:bg-pink-500 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-100">
-                <Heart size={20} /> <span>Wishlist</span>
+              <TabsTrigger value="wishlist" className={`flex items-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200 data-[state=active]:bg-pink-500 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-100 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                <Heart size={20} /> <span>{t("tabs.wishlist")}</span>
               </TabsTrigger>
-              <TabsTrigger value="settings" className="flex items-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200 data-[state=active]:bg-red-500 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-100">
-                <Settings size={20} /> <span>Settings</span>
+              <TabsTrigger value="settings" className={`flex items-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200 data-[state=active]:bg-red-500 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-100 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                <Settings size={20} /> <span>{t("tabs.settings")}</span>
               </TabsTrigger>
             </TabsList>
 
@@ -136,10 +138,10 @@ export default function EnhancedProfilePage() {
             <TabsContent value="account" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Account Information</CardTitle>
+                  <CardTitle className={direction === "rtl" ? "text-right" : ""}>{t("account.title")}</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="flex flex-col sm:flex-row items-center gap-6">
+                <CardContent className={`${direction === "rtl" ? "text-right" : ""} space-y-6`}>
+                  <div className={`flex flex-col sm:flex-row items-center gap-6 ${direction === "rtl" ? "sm:flex-row-reverse" : ""}`}>
                     <div className="relative">
                       <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100">
                         <Image
@@ -161,22 +163,22 @@ export default function EnhancedProfilePage() {
                     <div className="text-center sm:text-left">
                       <h3 className="text-xl font-semibold">{profileData?.full_name}</h3>
                       <p className="text-gray-600 dark:text-gray-400">{profileData?.email}</p>
-                      <p className="text-sm text-gray-500">Member since {profileData?.registration_date}</p>
+                      <p className="text-sm text-gray-500">{t("account.memberSince", { date: profileData?.registration_date ?? "" })}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
-  {/* Orders Tab */}
+                  {/* Orders Tab */}
           <TabsContent value="orders" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className={`flex items-center gap-2 ${direction === "rtl" ? "flex-row-reverse text-right" : ""}`}>
                   <Package size={24} />
-                  Order History
+                  {t("account.orderHistory")}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className={`${direction === "rtl" ? "text-right" : ""} space-y-4`}>
                 {ordersData && ordersData.length > 0 ? (
                   ordersData.map((order: OrderData) => (
                     <div key={order.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
@@ -203,9 +205,9 @@ export default function EnhancedProfilePage() {
                         {/* Order Details */}
                         <div className="flex-1 space-y-3">
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                            <div>
+                            <div className={`${direction === "rtl" ? "text-right" : ""}`}>
                               <h4 className="font-semibold text-lg">{order.products?.title || "Product"}</h4>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">Order #{order.id}</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{t("account.order", { id: order.id })}</p>
                             </div>
                             <Badge className={`${getStatusColor(order.status)} flex items-center gap-1 w-fit`}>
                               {getStatusIcon(order.status)}
@@ -240,7 +242,7 @@ export default function EnhancedProfilePage() {
                             <div className="flex items-center gap-2">
                               <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                               <div>
-                                <p className="font-medium">Date</p>
+                                <p className="font-medium">{t("account.date")}</p>
                                 <p className="text-gray-600 dark:text-gray-400">
                                   {new Date(order.created_at).toLocaleDateString()}
                                 </p>
@@ -250,7 +252,7 @@ export default function EnhancedProfilePage() {
 
                           {/* Price */}
                           <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
-                            <span className="text-sm text-gray-600 dark:text-gray-400">Total Amount</span>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">{t("account.totalAmount")}</span>
                             <span className="font-bold text-lg">
                               ₪{order.products?.price || "0.00"}
                             </span>
@@ -260,10 +262,10 @@ export default function EnhancedProfilePage() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-12">
+                    <div className="text-center py-12">
                     <Package size={48} className="mx-auto text-gray-400 mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Orders Yet</h3>
-                    <p className="text-gray-600 dark:text-gray-400">You haven't placed any orders yet.</p>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t("account.noOrders")}</h3>
+                    <p className="text-gray-600 dark:text-gray-400">{t("account.noOrdersHint")}</p>
                   </div>
                 )}
               </CardContent>
@@ -273,9 +275,9 @@ export default function EnhancedProfilePage() {
             <TabsContent value="addresses" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><MapPin size={24} /> Saved Addresses</CardTitle>
+                <CardTitle className={`flex items-center gap-2 ${direction === "rtl" ? "flex-row-reverse text-right" : ""}`}><MapPin size={24} /> {t("account.savedAddresses")}</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className={direction === "rtl" ? "text-right" : ""}>
                   {addressesData.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {addressesData.map((address: Profile) => (
@@ -293,8 +295,8 @@ export default function EnhancedProfilePage() {
                   ) : (
                     <div className="text-center py-12">
                       <MapPin size={48} className="mx-auto text-gray-400 mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Addresses Saved</h3>
-                      <p className="text-gray-600 dark:text-gray-400">You haven't saved any addresses yet.</p>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t("account.noAddresses")}</h3>
+                      <p className="text-gray-600 dark:text-gray-400">{t("account.noAddressesHint")}</p>
                     </div>
                   )}
                 </CardContent>
@@ -305,20 +307,18 @@ export default function EnhancedProfilePage() {
           <TabsContent value="wishlist" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>My Wishlist ({favorites.length} items)</CardTitle>
+                <CardTitle className={direction === "rtl" ? "text-right" : ""}>{t("account.wishlistTitle", { count: String(favorites.length) })}</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className={direction === "rtl" ? "text-right" : ""}>
                 {favorites.length === 0 ? (
                   <div className="text-center py-12">
                     <Heart size={48} className="mx-auto text-gray-400 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No favorites yet</h3>
-                    <p className="text-gray-600 dark:text-gray-400 mb-6">
-                      Start adding products to your favorites by clicking the heart icon on any product you love.
-                    </p>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{t("account.noFavorites")}</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6">{t("account.noFavoritesDescription")}</p>
                     <Link href="/products">
                     <Button>
                       <ShoppingBag size={16} className="mr-2" />
-                      Start Shopping
+                      {t("account.startShopping")}
                     </Button>
                     </Link>
                   </div>
@@ -376,7 +376,7 @@ export default function EnhancedProfilePage() {
                                 variant="outline"
                                 className="text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800"
                               >
-                                In Stock
+                                {t("account.inStock")}
                               </Badge>
                             )}
                           </div>
@@ -427,7 +427,7 @@ export default function EnhancedProfilePage() {
                           <div className="flex gap-2 pt-2">
                             <Button className="flex-1" disabled={!item.inStock} onClick={() => handleAddToCart(item)}>
                               <ShoppingBag size={16} className="mr-2" />
-                              {item.inStock ? "Add to Cart" : "Out of Stock"}
+                              {item.inStock ? t("account.addToCart") : t("account.outOfStock")}
                             </Button>
                             <Button variant="outline" size="sm" className="px-3">
                               <Eye size={16} />
@@ -447,16 +447,16 @@ export default function EnhancedProfilePage() {
           <TabsContent value="settings" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Notification Preferences</CardTitle>
+                <CardTitle className={direction === "rtl" ? "text-right" : ""}>{t("account.notificationPreferences")}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className={`${direction === "rtl" ? "text-right" : ""} space-y-6`}>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className={`flex items-center justify-between ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                    <div className={`flex items-center gap-3 ${direction === "rtl" ? "flex-row-reverse text-right" : ""}`}>
                       <Mail size={20} />
                       <div>
-                        <p className="font-medium">Email Notifications</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Order updates and confirmations</p>
+                        <p className="font-medium">{t("account.emailNotifications")}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{t("account.emailNotificationsHint")}</p>
                       </div>
                     </div>
                     <Switch
@@ -465,12 +465,12 @@ export default function EnhancedProfilePage() {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className={`flex items-center justify-between ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                    <div className={`flex items-center gap-3 ${direction === "rtl" ? "flex-row-reverse text-right" : ""}`}>
                       <Phone size={20} />
                       <div>
-                        <p className="font-medium">SMS Notifications</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Delivery updates via SMS</p>
+                        <p className="font-medium">{t("account.smsNotifications")}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{t("account.smsNotificationsHint")}</p>
                       </div>
                     </div>
                     <Switch
@@ -479,12 +479,12 @@ export default function EnhancedProfilePage() {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className={`flex items-center justify-between ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                    <div className={`flex items-center gap-3 ${direction === "rtl" ? "flex-row-reverse text-right" : ""}`}>
                       <Bell size={20} />
                       <div>
-                        <p className="font-medium">Push Notifications</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Browser notifications</p>
+                        <p className="font-medium">{t("account.pushNotifications")}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{t("account.pushNotificationsHint")}</p>
                       </div>
                     </div>
                     <Switch
@@ -493,12 +493,12 @@ export default function EnhancedProfilePage() {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className={`flex items-center justify-between ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                    <div className={`flex items-center gap-3 ${direction === "rtl" ? "flex-row-reverse text-right" : ""}`}>
                       <Mail size={20} />
                       <div>
-                        <p className="font-medium">Marketing Emails</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Promotions and special offers</p>
+                        <p className="font-medium">{t("account.marketingEmails")}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{t("account.marketingEmailsHint")}</p>
                       </div>
                     </div>
                     <Switch
@@ -512,14 +512,14 @@ export default function EnhancedProfilePage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Preferences</CardTitle>
+                <CardTitle className={direction === "rtl" ? "text-right" : ""}>{t("account.preferences")}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className={`${direction === "rtl" ? "text-right" : ""} space-y-6`}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label htmlFor="language" className="flex items-center gap-2">
                       <Globe size={16} />
-                      Language
+                      {t("account.language")}
                     </Label>
                     <Select defaultValue="en">
                       <SelectTrigger className="mt-1">
@@ -534,7 +534,7 @@ export default function EnhancedProfilePage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="currency">Currency</Label>
+                    <Label htmlFor="currency">{t("account.currency")}</Label>
                     <Select defaultValue="usd">
                       <SelectTrigger className="mt-1">
                         <SelectValue />
@@ -549,23 +549,21 @@ export default function EnhancedProfilePage() {
                 </div>
 
                 <div className="flex justify-end">
-                  <Button>Save Preferences</Button>
+                  <Button>{t("account.savePreferences")}</Button>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-red-600">Danger Zone</CardTitle>
+                <CardTitle className={`${direction === "rtl" ? "text-right" : ""} text-red-600`}>{t("account.dangerZone")}</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className={direction === "rtl" ? "text-right" : ""}>
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-medium">Delete Account</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                      Once you delete your account, there is no going back. Please be certain.
-                    </p>
-                    <Button variant="destructive">Delete Account</Button>
+                    <h4 className="font-medium">{t("account.deleteAccountTitle")}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{t("account.deleteAccountHint")}</p>
+                    <Button variant="destructive">{t("account.deleteAccount")}</Button>
                   </div>
                 </div>
               </CardContent>
