@@ -9,8 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Package, CheckCircle, Truck, Clock, XCircle, AlertCircle } from "lucide-react";
 import QuickViewModal from "../../components/QuickViewModal";
+import { useI18n } from "@/lib/i18n";
 
 export default function OrdersPage() {
+  const { t } = useI18n();
   const [ordersData, setOrdersData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
@@ -88,7 +90,7 @@ export default function OrdersPage() {
     fetchOrders();
   }, []);
 
-  if (loading) return <div className="text-center py-12 text-gray-600 dark:text-gray-400">Loading orders...</div>;
+  if (loading) return <div className="text-center py-12 text-gray-600 dark:text-gray-400">{t("orders.loading")}</div>;
 
   // Filter orders based on active tab
   const filteredOrders = ordersData.filter(order => {
@@ -106,7 +108,7 @@ export default function OrdersPage() {
     <div className="space-y-6 mobile:max-w-[480px] mobile:mx-auto mobile:px-4">
       {/* Header with logo and search */}
       <div className="flex justify-between items-center pt-4">
-        <h1 className="text-xl font-bold">My Orders</h1>
+        <h1 className="text-xl font-bold">{t("orders.header.title")}</h1>
         <div className="flex gap-2">
           <Button variant="ghost" size="icon" className="rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -123,13 +125,13 @@ export default function OrdersPage() {
           className={`flex-1 py-3 text-center font-medium ${activeTab === 'ongoing' ? 'text-gray-900 dark:text-white border-b-2 border-gray-900 dark:border-white' : 'text-gray-500 dark:text-gray-400'}`}
           onClick={() => setActiveTab('ongoing')}
         >
-          Ongoing
+          {t("orders.tab.ongoing")}
         </button>
         <button
           className={`flex-1 py-3 text-center font-medium ${activeTab === 'completed' ? 'text-gray-900 dark:text-white border-b-2 border-gray-900 dark:border-white' : 'text-gray-500 dark:text-gray-400'}`}
           onClick={() => setActiveTab('completed')}
         >
-          Completed
+          {t("orders.tab.completed")}
         </button>
       </div>
 
@@ -160,16 +162,16 @@ export default function OrdersPage() {
                   {/* Order Details */}
                   <div className="flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="font-medium text-base">{order.products?.title || "Product"}</h3>
+                      <h3 className="font-medium text-base">{order.products?.title || t("orders.product.fallback")}</h3>
                       <div className="flex items-center gap-2 mt-1">
                         <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
                           <div className="w-3 h-3 rounded-full" style={{ backgroundColor: order.products?.color || '#8B4513' }}></div>
                         </div>
-                        <span className="text-xs text-gray-600 dark:text-gray-400">Color</span>
+                        <span className="text-xs text-gray-600 dark:text-gray-400">{t("orders.product.color")}</span>
                         <span className="text-xs">|</span>
-                        <span className="text-xs text-gray-600 dark:text-gray-400">Size = {order.products?.size || '40'}</span>
+                        <span className="text-xs text-gray-600 dark:text-gray-400">{t("orders.product.size", { size: order.products?.size || '40' })}</span>
                         <span className="text-xs">|</span>
-                        <span className="text-xs text-gray-600 dark:text-gray-400">Qty = 1</span>
+                        <span className="text-xs text-gray-600 dark:text-gray-400">{t("orders.product.qty", { qty: 1 })}</span>
                       </div>
                       <div className="mt-2">
                         <Badge className={`${getStatusColor(order.status)} font-normal text-xs px-2 py-1 inline-flex items-center gap-2`}>
@@ -178,11 +180,11 @@ export default function OrdersPage() {
                         </Badge>
                       </div>
                     </div>
-                    <div className="flex justify-between items-center mt-2">
+                      <div className="flex justify-between items-center mt-2">
                       <span className="font-bold">₪{order.products?.price || "0.00"}</span>
                       <Link href={`/orders/track/${order.id}`}>
                         <Button variant="secondary" size="sm" className="text-xs rounded-full px-4">
-                          Track Order
+                          {t("orders.trackButton")}
                         </Button>
                       </Link>
                     </div>
@@ -195,8 +197,8 @@ export default function OrdersPage() {
       ) : (
         <div className="text-center py-12">
           <Package size={48} className="mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No {activeTab === 'ongoing' ? 'Ongoing' : 'Completed'} Orders</h3>
-          <p className="text-gray-600 dark:text-gray-400">You don't have any {activeTab === 'ongoing' ? 'ongoing' : 'completed'} orders at the moment.</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{activeTab === 'ongoing' ? t("orders.empty.ongoing.title") : t("orders.empty.completed.title")}</h3>
+          <p className="text-gray-600 dark:text-gray-400">{activeTab === 'ongoing' ? t("orders.empty.ongoing.subtitle") : t("orders.empty.completed.subtitle")}</p>
         </div>
       )}
 

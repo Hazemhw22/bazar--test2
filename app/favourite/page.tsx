@@ -25,8 +25,10 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
+import { useI18n } from "@/lib/i18n"
 
 export default function FavouritePage() {
+  const { t } = useI18n()
   const { favorites, removeFromFavorites } = useFavorites()
   const { addItem } = useCart()
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
@@ -120,30 +122,36 @@ export default function FavouritePage() {
               href="/"
               className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
             >
-              <ArrowLeft size={16} className="mr-2" />
-              Back to Home
+              <span className="flex items-center gap-2">
+                <ArrowLeft size={16} />
+                {t("favourite.header.back")}
+              </span>
             </Link>
           </div>
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-blue-200 dark:border-blue-800 pb-4">
             <div>
-              <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">My Favorites</h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                {favorites.length} {favorites.length === 1 ? "item" : "items"} saved
-              </p>
+              <h1 className="text-3xl font-bold mb-2 text-gray-900 dark:text-white">{t("favourite.header.title")}</h1>
+              <p className="text-gray-600 dark:text-gray-400">{t("favourite.header.count", { count: favorites.length })}</p>
             </div>
             {favorites.length > 0 && (
               <div className="flex gap-2">
                 <Button onClick={addAllToCart} className="flex items-center gap-2">
-                  <ShoppingBag size={16} />
-                  Add All to Cart
+                  <span className="flex items-center gap-2">
+                    <ShoppingBag size={16} />
+                    {t("favourite.actions.addAllToCart")}
+                  </span>
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={clearAllFavorites}
+                  onClick={() => {
+                    if (confirm(t("favourite.confirm.clearAll"))) clearAllFavorites()
+                  }}
                   className="text-red-600 hover:text-red-700 border-2 border-blue-200 dark:border-blue-800"
                 >
-                  <Trash2 size={16} className="mr-2" />
-                  Clear All
+                  <span className="flex items-center gap-2">
+                    <Trash2 size={16} />
+                    {t("favourite.actions.clearAll")}
+                  </span>
                 </Button>
               </div>
             )}
@@ -154,14 +162,14 @@ export default function FavouritePage() {
           /* Empty State */
           <div className="text-center py-16 rounded-2xl bg-card">
             <Heart size={80} className="mx-auto text-gray-400 mb-6" />
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">No favorites yet</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
-              Start adding products to your favorites by clicking the heart icon on any product you love.
-            </p>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-3">{t("favourite.empty.title")}</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">{t("favourite.empty.subtitle")}</p>
             <Link href="/products">
               <Button size="lg">
-                <ShoppingBag size={20} className="mr-2" />
-                Start Shopping
+                <span className="flex items-center gap-2">
+                  <ShoppingBag size={20} />
+                  {t("favourite.actions.startShopping")}
+                </span>
               </Button>
             </Link>
           </div>
@@ -175,7 +183,7 @@ export default function FavouritePage() {
                   <div className="relative">
                     <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     <Input
-                      placeholder="Search favorites..."
+                      placeholder={t("favourite.search.placeholder")}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-10 border-2 border-blue-200 dark:border-blue-800"
@@ -186,12 +194,12 @@ export default function FavouritePage() {
                 {/* Filters */}
                 <div className="flex flex-wrap gap-2">
                   <Select value={filterBy} onValueChange={setFilterBy}>
-                    <SelectTrigger className="w-40 border-2 border-blue-200 dark:border-blue-800">
+                      <SelectTrigger className="w-40 border-2 border-blue-200 dark:border-blue-800">
                       <Filter size={16} className="mr-2" />
-                      <SelectValue placeholder="Filter by store" />
+                      <SelectValue placeholder={t("favourite.filter.placeholder")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Stores</SelectItem>
+                      <SelectItem value="all">{t("favourite.filter.allStores")}</SelectItem>
                       {uniqueStores.filter(Boolean).map((store) => (
                         <SelectItem key={store} value={store}>
                           {store}
@@ -201,14 +209,14 @@ export default function FavouritePage() {
                   </Select>
 
                   <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-32 border-2 border-blue-200 dark:border-blue-800">
-                      <SelectValue placeholder="Sort by" />
+                      <SelectTrigger className="w-32 border-2 border-blue-200 dark:border-blue-800">
+                      <SelectValue placeholder={t("favourite.sort.placeholder")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="name">Name</SelectItem>
-                      <SelectItem value="price">Price</SelectItem>
-                      <SelectItem value="rating">Rating</SelectItem>
-                      <SelectItem value="store">Store</SelectItem>
+                      <SelectItem value="name">{t("favourite.sort.name")}</SelectItem>
+                      <SelectItem value="price">{t("favourite.sort.price")}</SelectItem>
+                      <SelectItem value="rating">{t("favourite.sort.rating")}</SelectItem>
+                      <SelectItem value="store">{t("favourite.sort.store")}</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -247,7 +255,7 @@ export default function FavouritePage() {
             {searchQuery || filterBy !== "all" ? (
               <div className="mb-4">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Showing {filteredAndSortedFavorites.length} of {favorites.length} favorites
+                  {t("favourite.results.showing", { shown: filteredAndSortedFavorites.length, total: favorites.length })}
                 </p>
               </div>
             ) : null}
@@ -256,8 +264,8 @@ export default function FavouritePage() {
             {filteredAndSortedFavorites.length === 0 ? (
               <div className="text-center py-12 border border-border/50 rounded-2xl bg-card">
                 <Search size={48} className="mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No results found</h3>
-                <p className="text-gray-600 dark:text-gray-400">Try adjusting your search or filter criteria.</p>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">{t("favourite.emptyResults.title")}</h3>
+                <p className="text-gray-600 dark:text-gray-400">{t("favourite.emptyResults.subtitle")}</p>
               </div>
             ) : viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -295,14 +303,14 @@ export default function FavouritePage() {
                         </div>
                         {!item.inStock && (
                           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                            <Badge variant="secondary">Out of Stock</Badge>
+                            <Badge variant="secondary">{t("favourite.badge.outOfStock")}</Badge>
                           </div>
                         )}
                       </div>
 
                       {/* Product Info */}
                       <div className="space-y-2">
-                        <p className="text-xs text-blue-600 dark:text-blue-400 font-medium uppercase tracking-wide">
+                          <p className="text-xs text-blue-600 dark:text-blue-400 font-medium uppercase tracking-wide">
                           {item.store}
                         </p>
                         <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight">
@@ -341,12 +349,14 @@ export default function FavouritePage() {
 
                         {/* Actions */}
                         <div className="flex gap-2 pt-2">
-                          <Button className="flex-1" onClick={() => handleAddToCart(item)} disabled={!item.inStock}>
-                            <ShoppingBag size={16} className="mr-2" />
-                            Add to Cart
-                          </Button>
+                            <Button className="flex-1" onClick={() => handleAddToCart(item)} disabled={!item.inStock}>
+                              <span className="flex items-center gap-2">
+                                <ShoppingBag size={16} />
+                                {t("favourite.actions.addToCart")}
+                              </span>
+                            </Button>
                           <Link href={`/products/${item.id}`}>
-                            <Button
+                              <Button
                               variant="outline"
                               size="sm"
                               className="px-3 border-2 border-blue-200 dark:border-blue-800"
@@ -453,17 +463,19 @@ export default function FavouritePage() {
                             <div className="flex gap-2">
                               <Link href={`/products/${item.id}`}>
                                 <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="border-2 border-blue-200 dark:border-blue-800"
-                                >
-                                  <Eye size={16} className="mr-2" />
-                                  View
-                                </Button>
+                                    variant="outline"
+                                    size="sm"
+                                    className="border-2 border-blue-200 dark:border-blue-800"
+                                  >
+                                    <Eye size={16} className="mr-2" />
+                                    {t("favourite.actions.view")}
+                                  </Button>
                               </Link>
                               <Button onClick={() => handleAddToCart(item)} disabled={!item.inStock}>
-                                <ShoppingBag size={16} className="mr-2" />
-                                Add to Cart
+                                <span className="flex items-center gap-2">
+                                  <ShoppingBag size={16} />
+                                  {t("favourite.actions.addToCart")}
+                                </span>
                               </Button>
                             </div>
                           </div>

@@ -4,12 +4,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useI18n } from "@/lib/i18n";
 import { ChevronLeft, ShoppingCart } from "lucide-react";
 
 function CancelOrderForm() {
   const router = useRouter();
   const params = useSearchParams();
   const orderId = params?.get("orderId");
+  const { t } = useI18n();
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +19,7 @@ function CancelOrderForm() {
 
   const handleCancel = async () => {
     if (!reason) {
-      setError("Please provide a reason for cancellation.");
+      setError(t("orders.cancel.error.noReason"));
       return;
     }
     setSubmitting(true);
@@ -35,11 +37,11 @@ function CancelOrderForm() {
     <div className="min-h-screen bg-gradient-to-b from-[#1a0b2e] via-[#1a0b2e] to-[#110e24] text-white flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-[#1a0b2e]/80 backdrop-blur-sm">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <button onClick={() => router.back()} className="p-2">
             <ChevronLeft size={24} />
           </button>
-          <h1 className="text-lg font-semibold">Cancel order</h1>
+          <h1 className="text-lg font-semibold">{t("orders.cancel.title")}</h1>
           <button className="p-2">
             <ShoppingCart size={24} />
           </button>
@@ -49,12 +51,12 @@ function CancelOrderForm() {
       {/* Main Content */}
       <main className="flex-grow container mx-auto px-4 py-8 flex flex-col">
         <div className="space-y-2 mb-6">
-          <h2 className="text-2xl font-bold">We are sorry to hear this</h2>
+          <h2 className="text-2xl font-bold">{t("orders.cancel.sorry")}</h2>
           <p className="text-gray-400">
-            Tell us why you choose to cancel your order, is the reason from our side?
+            {t("orders.cancel.instructions")}
           </p>
            <p className="text-gray-400">
-            Write down your reason to cancel your order:
+            {t("orders.cancel.prompt")}
           </p>
         </div>
 
@@ -62,7 +64,7 @@ function CancelOrderForm() {
           <Textarea
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="Write here..."
+            placeholder={t("orders.cancel.placeholder")}
             maxLength={maxLength}
             className="w-full h-48 p-4 rounded-2xl bg-white/5 border border-white/10 focus:ring-2 focus:ring-purple-400 focus:outline-none resize-none"
           />
@@ -80,7 +82,7 @@ function CancelOrderForm() {
           disabled={submitting}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg text-lg"
         >
-          {submitting ? "Cancelling..." : "Cancel"}
+          {submitting ? t("orders.cancel.submitting") : t("orders.cancel.button")}
         </Button>
       </footer>
     </div>

@@ -41,6 +41,7 @@ export default function EnhancedProfilePage() {
   const [profileData, setProfileData] = useState<Profile | null>(null)
   const [ordersData, setOrdersData] = useState<OrderData[]>([])
   const [addressesData, setAddressesData] = useState<Profile[]>([])
+  const [tabNav, setTabNav] = useState<'account' | 'orders' | 'addresses' | 'wishlist' | 'settings'>('account')
     const { favorites, removeFromFavorites } = useFavorites()
       const { addItem } = useCart()
 
@@ -114,25 +115,40 @@ export default function EnhancedProfilePage() {
             <p className="text-gray-600 dark:text-gray-400">{t("account.subtitle")}</p>
           </div>
 
-          <Tabs defaultValue="account" className="space-y-6">
-            {/* Tabs Navigation */}
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 h-auto p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
-              <TabsTrigger value="account" className={`flex items-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-100 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
-                <User size={20} /> <span>{t("tabs.account")}</span>
-              </TabsTrigger>
-              <TabsTrigger value="orders" className={`flex items-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200 data-[state=active]:bg-green-500 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-100 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
-                <Package size={20} /> <span>{t("tabs.orders")}</span>
-              </TabsTrigger>
-              <TabsTrigger value="addresses" className={`flex items-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200 data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-100 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
-                <MapPin size={20} /> <span>{t("tabs.addresses")}</span>
-              </TabsTrigger>
-              <TabsTrigger value="wishlist" className={`flex items-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200 data-[state=active]:bg-pink-500 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-100 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
-                <Heart size={20} /> <span>{t("tabs.wishlist")}</span>
-              </TabsTrigger>
-              <TabsTrigger value="settings" className={`flex items-center gap-2 py-3 px-4 rounded-md text-sm font-medium transition-all duration-200 data-[state=active]:bg-red-500 data-[state=active]:text-white data-[state=inactive]:text-gray-600 data-[state=inactive]:hover:text-gray-900 dark:data-[state=inactive]:text-gray-400 dark:data-[state=inactive]:hover:text-gray-100 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
-                <Settings size={20} /> <span>{t("tabs.settings")}</span>
-              </TabsTrigger>
-            </TabsList>
+          <Tabs value={tabNav} onValueChange={(v) => setTabNav(v as any)} className="space-y-6">
+            {/* Tabs Navigation - contact page style (buttons) */}
+            <div className="bg-card border-b border-border/50 sticky top-0 z-10">
+              <div className="container mx-auto px-4">
+                <div className="flex overflow-x-auto">
+                  <div className={`flex items-center ${direction === 'rtl' ? 'flex-row-reverse' : ''}`}>
+                    {[
+                      { id: 'account', label: t('tabs.account'), Icon: User },
+                      { id: 'orders', label: t('tabs.orders'), Icon: Package },
+                      { id: 'addresses', label: t('tabs.addresses'), Icon: MapPin },
+                      { id: 'wishlist', label: t('tabs.wishlist'), Icon: Heart },
+                      { id: 'settings', label: t('tabs.settings'), Icon: Settings },
+                    ].map((tab) => {
+                      const active = tabNav === tab.id
+                      const Icon = (tab as any).Icon
+                      return (
+                        <button
+                          key={tab.id}
+                          onClick={() => setTabNav(tab.id as any)}
+                          className={`flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 ${
+                            active
+                              ? 'border-blue-500 text-blue-500 dark:text-blue-400'
+                              : 'border-transparent text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200'
+                          } ${direction === 'rtl' ? 'flex-row-reverse' : ''}`}
+                        >
+                          <Icon size={16} />
+                          <span>{tab.label}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Account Tab */}
             <TabsContent value="account" className="space-y-6">
