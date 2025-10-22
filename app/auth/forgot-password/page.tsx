@@ -175,10 +175,10 @@ export default function ForgotPasswordPage() {
                 <img src="/phishing-account-concept.png" alt="" />
               </div>
               <h3 className="text-2xl font-semibold text-blue-900 dark:text-blue-100">
-                Reset Your Password
+                {t("auth.reset.title")}
               </h3>
               <p className="text-blue-800 dark:text-blue-200">
-                We'll help you get back into your account quickly and securely.
+                {t("auth.reset.hint")}
               </p>
             </div>
           </div>

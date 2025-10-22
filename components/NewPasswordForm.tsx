@@ -9,8 +9,10 @@ import { Label } from "@/components/ui/label";
 import { VristoLogo } from "@/components/vristo-logo";
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { useI18n } from "@/lib/i18n";
 
 export default function NewPasswordForm() {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -187,9 +189,9 @@ export default function NewPasswordForm() {
           <div className="rounded-full flex items-center justify-center">
               <img src="/newpass.png" alt="" />
           </div>
-          <h3 className="text-2xl font-semibold text-green-900 dark:text-green-100">Secure Your Account</h3>
+          <h3 className="text-2xl font-semibold text-green-900 dark:text-green-100">{t("auth.newPassword.secureTitle")}</h3>
           <p className="text-green-800 dark:text-green-200">
-            Choose a strong password to keep your account safe and secure.
+            {t("auth.newPassword.secureHint")}
           </p>
         </div>
       </div>
