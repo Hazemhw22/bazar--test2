@@ -13,8 +13,10 @@ import { supabase } from "@/lib/supabase"
 import { FcGoogle } from "react-icons/fc"
 import { FaFacebook } from "react-icons/fa6"
 import { AiFillApple } from "react-icons/ai"
+import { useI18n } from "@/lib/i18n"
 
 export default function AuthPage() {
+  const { t } = useI18n()
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -55,17 +57,17 @@ export default function AuthPage() {
   const validateForm = () => {
     const newErrors = { fullName: "", email: "", password: "", confirmPassword: "" }
 
-    if (isSignUp && !formData.fullName) newErrors.fullName = "Full Name is required"
+    if (isSignUp && !formData.fullName) newErrors.fullName = t("auth.errors.fullNameRequired")
 
-    if (!formData.email) newErrors.email = "Email is required"
-    else if (!validateEmail(formData.email)) newErrors.email = "Please enter a valid email"
+    if (!formData.email) newErrors.email = t("auth.errors.emailRequired")
+    else if (!validateEmail(formData.email)) newErrors.email = t("auth.errors.emailInvalid")
 
-    if (!formData.password) newErrors.password = "Password is required"
-    else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters"
+    if (!formData.password) newErrors.password = t("auth.errors.passwordRequired")
+    else if (formData.password.length < 6) newErrors.password = t("auth.errors.passwordTooShort")
 
     if (isSignUp) {
-      if (!formData.confirmPassword) newErrors.confirmPassword = "Please confirm your password"
-      else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match"
+      if (!formData.confirmPassword) newErrors.confirmPassword = t("auth.errors.confirmPasswordRequired")
+      else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = t("auth.errors.passwordsDoNotMatch")
     }
 
     setErrors(newErrors)
@@ -178,8 +180,8 @@ export default function AuthPage() {
             </div>
 
             <div className="text-left space-y-2">
-              <h1 className="text-4xl font-extrabold leading-tight">{isSignUp ? "Create your" : "Login to your"}</h1>
-              <h2 className="text-4xl font-extrabold">Account</h2>
+              <h1 className="text-4xl font-extrabold leading-tight">{isSignUp ? t("auth.createYour") : t("auth.loginToYour")}</h1>
+              <h2 className="text-4xl font-extrabold">{t("auth.account")}</h2>
             </div>
 
             <div className="flex bg-card rounded-full p-1 border border-border/50">
@@ -191,7 +193,7 @@ export default function AuthPage() {
                     : "text-muted-foreground"
                 }`}
               >
-                Sign In
+                {t("auth.signIn")}
               </button>
               <button
                 onClick={() => setIsSignUp(true)}
@@ -201,7 +203,7 @@ export default function AuthPage() {
                     : "text-muted-foreground"
                 }`}
               >
-                Sign Up
+                {t("auth.signUp")}
               </button>
             </div>
 
@@ -227,7 +229,7 @@ export default function AuthPage() {
               {isSignUp && (
                 <div>
                   <Label htmlFor="fullName" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Full Name
+                    {t("auth.placeholders.fullName")}
                   </Label>
                   <div className="mt-1 relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -237,7 +239,7 @@ export default function AuthPage() {
                       value={formData.fullName}
                       onChange={(e) => handleInputChange("fullName", e.target.value)}
                       className={`pl-10 h-12 ${errors.fullName ? "border-red-500" : ""}`}
-                      placeholder="Enter your full name"
+                      placeholder={t("auth.placeholders.fullName")}
                     />
                   </div>
                   {errors.fullName && <p className="mt-1 text-sm text-red-500">{errors.fullName}</p>}
@@ -246,7 +248,7 @@ export default function AuthPage() {
 
               <div>
                 <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Email Address
+                  {t("auth.placeholders.email")}
                 </Label>
                 <div className="mt-1 relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -256,7 +258,7 @@ export default function AuthPage() {
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     className={`pl-10 h-12 ${errors.email ? "border-red-500" : ""}`}
-                    placeholder="Enter your email"
+                    placeholder={t("auth.placeholders.email")}
                   />
                 </div>
                 {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
@@ -264,7 +266,7 @@ export default function AuthPage() {
 
               <div>
                 <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Password
+                  {t("auth.placeholders.password")}
                 </Label>
                 <div className="mt-1 relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -274,7 +276,7 @@ export default function AuthPage() {
                     value={formData.password}
                     onChange={(e) => handleInputChange("password", e.target.value)}
                     className={`pl-10 pr-10 h-12 ${errors.password ? "border-red-500" : ""}`}
-                    placeholder="Enter your password"
+                    placeholder={t("auth.placeholders.password")}
                   />
                   <button
                     type="button"
@@ -290,7 +292,7 @@ export default function AuthPage() {
               {isSignUp && (
                 <div>
                   <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Confirm Password
+                    {t("auth.placeholders.confirmPassword")}
                   </Label>
                   <div className="mt-1 relative mb-6">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -300,7 +302,7 @@ export default function AuthPage() {
                       value={formData.confirmPassword}
                       onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                       className={`pl-10 h-12 ${errors.confirmPassword ? "border-red-500" : ""}`}
-                      placeholder="Confirm your password"
+                      placeholder={t("auth.placeholders.confirmPassword")}
                     />
                   </div>
                   {errors.confirmPassword && <p className="mt-1 text-sm text-red-500">{errors.confirmPassword}</p>}
@@ -316,14 +318,14 @@ export default function AuthPage() {
                       onCheckedChange={(checked) => handleInputChange("rememberMe", checked as boolean)}
                     />
                     <Label htmlFor="remember" className="text-sm text-muted-foreground">
-                      Remember me
+                      {t("auth.rememberMe")}
                     </Label>
                   </div>
                   <Link
                     href="/auth/forgot-password"
                     className="text-sm text-primary hover:underline mb-4 inline-block"
                   >
-                    Forgot Password?
+                    {t("auth.forgotPassword")}
                   </Link>
                 </div>
               )}
@@ -333,15 +335,15 @@ export default function AuthPage() {
                 className="w-full h-12 rounded-full"
                 disabled={isLoading}
               >
-                {isLoading ? "Loading..." : isSignUp ? "Sign Up" : "Login"}
+                {isLoading ? t("auth.loading") : isSignUp ? t("auth.signUp") : t("auth.signIn")}
               </Button>
             </form>
 
               {/* Social Auth */}
             <div className="space-y-4">
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <div className="flex-1 h-px bg-border" />
-                <span>or continue with</span>
+                <span>{t("auth.orContinueWith")}</span>
                 <div className="flex-1 h-px bg-border" />
               </div>
               <div className="flex items-center justify-center gap-4">
@@ -370,9 +372,9 @@ export default function AuthPage() {
               </div>
               <div className="text-center text-sm text-muted-foreground">
                 {isSignUp ? (
-                  <>Already have an account? <Link href="/auth" className="text-primary">Sign in</Link></>
+                  <>{t("auth.alreadyHaveAccount")} <Link href="/auth" className="text-primary">{t("auth.signIn")}</Link></>
                 ) : (
-                  <>Don't have an account? <button onClick={() => setIsSignUp(true)} className="text-primary">Sign up</button></>
+                  <>{t("auth.noAccount")} <button onClick={() => setIsSignUp(true)} className="text-primary">{t("auth.signUp")}</button></>
                 )}
               </div>
             </div>

@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Mail, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { useI18n } from "@/lib/i18n"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { VristoLogo } from "@/components/vristo-logo"
 
 export default function ForgotPasswordPage() {
+  const { t } = useI18n()
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [message, setMessage] = useState("")
@@ -89,10 +91,10 @@ export default function ForgotPasswordPage() {
             {/* Header */}
             <div className="text-left space-y-2">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Forgot Password?
+                {t("auth.forgotPassword")}
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                No worries! Enter your email address and we'll send you a link to reset your password.
+                {t("auth.forgot.hint")}
               </p>
             </div>
 
@@ -120,7 +122,7 @@ export default function ForgotPasswordPage() {
             <form onSubmit={handleReset} className="space-y-6">
               <div>
                 <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Email Address
+                  {t("auth.emailLabel")}
                 </Label>
                 <div className="mt-1 relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -130,7 +132,7 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 h-12"
-                    placeholder="Enter your email address"
+                    placeholder={t("auth.placeholders.email")}
                     disabled={isLoading}
                   />
                 </div>
@@ -144,10 +146,10 @@ export default function ForgotPasswordPage() {
                 {isLoading ? (
                   <div className="flex items-center justify-center">
                     <div className="loader"></div>
-                    <span className="ml-2">Sending...</span>
+                    <span className="ml-2">{t("auth.sending")}</span>
                   </div>
                 ) : (
-                  "Send Reset Link"
+                  t("auth.sendResetLink")
                 )}
               </Button>
             </form>
@@ -159,7 +161,7 @@ export default function ForgotPasswordPage() {
                 className="inline-flex items-center text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
               >
                 <ArrowLeft size={16} className="mr-1" />
-                Back to Login
+                {t("auth.backToLogin")}
               </Link>
             </div>
           </div>

@@ -337,29 +337,64 @@
   ,"restaurants.trending": "Trending Now"
   ,"restaurants.specialOffers": "Special Offers"
   ,"common.scrollLeft": "Scroll left"
-  ,"common.scrollRight": "Scroll right"
-  ,"shops.loading": "Loading shop data..."
-  ,"shops.notFound": "Shop not found"
-  ,"shops.deliveryTime": "Delivery Time"
-  ,"shops.deliveryAria": "Delivery options"
-  ,"shops.cardPayment": "Card Payment"
-  ,"shops.gridView": "Grid view"
-  ,"shops.listView": "List view"
-  ,"shops.categories": "Categories"
-  ,"shops.uncategorized": "Uncategorized"
-  ,"shops.featuredGroup": "Featured Deals — Group {index}"
-  ,"days.sun": "Sunday"
-  ,"days.mon": "Monday"
-  ,"days.tue": "Tuesday"
-  ,"days.wed": "Wednesday"
-  ,"days.thu": "Thursday"
-  ,"days.fri": "Friday"
-  ,"days.sat": "Saturday"
-  ,"shops.noResults.title": "No shops found"
-  ,"shops.noResults.description": "Try adjusting your search or filters"
-  ,"shops.closed": "Closed"
-  ,"shops.open": "Open"
-  ,"help.email.from": "From"
+  ,"common.scrollRight": "Scroll right",
+  "shops.loading": "Loading shop data...",
+  "shops.notFound": "Shop not found",
+  "shops.deliveryTime": "Delivery Time",
+  "shops.deliveryAria": "Delivery options",
+  "shops.cardPayment": "Card Payment",
+  "shops.gridView": "Grid view",
+  "shops.listView": "List view",
+  "shops.categories": "Categories",
+  "shops.uncategorized": "Uncategorized",
+  "shops.featuredGroup": "Featured Deals — Group {index}",
+  "days.sun": "Sunday",
+  "days.mon": "Monday",
+  "days.tue": "Tuesday",
+  "days.wed": "Wednesday",
+  "days.thu": "Thursday",
+  "days.fri": "Friday",
+  "days.sat": "Saturday",
+  "shops.noResults.title": "No shops found",
+  "shops.noResults.description": "Try adjusting your search or filters",
+  "shops.closed": "Closed",
+  "shops.open": "Open",
+
+  "help.email.from": "From",
+
+  "auth.createYour": "Create your",
+  "auth.loginToYour": "Login to your",
+  "auth.account": "Account",
+  "auth.signIn": "Sign In",
+  "auth.signUp": "Sign Up",
+  "auth.errors.fullNameRequired": "Full Name is required",
+  "auth.errors.emailRequired": "Email is required",
+  "auth.errors.emailInvalid": "Please enter a valid email",
+  "auth.errors.passwordRequired": "Password is required",
+  "auth.errors.passwordTooShort": "Password must be at least 6 characters",
+  "auth.errors.confirmPasswordRequired": "Please confirm your password",
+  "auth.errors.passwordsDoNotMatch": "Passwords do not match",
+  "auth.placeholders.fullName": "Enter your full name",
+  "auth.placeholders.email": "Enter your email",
+  "auth.placeholders.password": "Enter your password",
+  "auth.placeholders.confirmPassword": "Confirm your password",
+  "auth.emailLabel": "Email Address",
+  "auth.sendResetLink": "Send reset link",
+  "auth.backToLogin": "Back to Login",
+  "auth.sending": "Sending...",
+  "auth.orContinueWith": "or continue with",
+  "auth.alreadyHaveAccount": "Already have an account?",
+  "auth.noAccount": "Don't have an account?",
+  "auth.rememberMe": "Remember me",
+  "auth.forgotPassword": "Forgot Password?",
+  "auth.forgot.hint": "Enter your email and we'll send you a link to reset your password.",
+  "auth.loading": "Loading...",
+  "auth.success.login": "Login successful! Redirecting...",
+  "auth.success.accountCreated": "Account created! Check your email for verification.",
+  "auth.error.loginFailed": "Login failed. Please try again.",
+  "auth.error.failedToCreateUser": "Failed to create user.",
+  "auth.error.unexpected": "An unexpected error occurred. Please try again.",
+  "auth.error.google": "An unexpected error occurred with Google sign-in. Please try again."
 }
 
 
