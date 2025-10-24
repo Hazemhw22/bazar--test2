@@ -16,7 +16,7 @@ import { AiFillApple } from "react-icons/ai"
 import { useI18n } from "@/lib/i18n"
 
 export default function AuthPage() {
-  const { t } = useI18n()
+  const { t, direction } = useI18n()
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -179,7 +179,7 @@ export default function AuthPage() {
               </div>
             </div>
 
-            <div className="text-left space-y-2">
+            <div className={`${direction === "rtl" ? "text-right" : "text-left"} space-y-2`}>
               <h1 className="text-4xl font-extrabold leading-tight">{isSignUp ? t("auth.createYour") : t("auth.loginToYour")}</h1>
               <h2 className="text-4xl font-extrabold">{t("auth.account")}</h2>
             </div>
@@ -311,7 +311,7 @@ export default function AuthPage() {
 
               {!isSignUp && (
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2 mb-4">
+                  <div className="flex items-center gap-2 mb-4">
                     <Checkbox
                       id="remember"
                       checked={formData.rememberMe}
