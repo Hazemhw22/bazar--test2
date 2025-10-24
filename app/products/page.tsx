@@ -23,7 +23,7 @@ import SortIcon from "../../components/SortIcon"
 import { Category } from "../../lib/type"
 
 export default function Products() {
-  const { t } = useI18n()
+  const { t, direction } = useI18n()
   const [minPrice, setMinPrice] = useState(0)
   const [maxPrice, setMaxPrice] = useState(10000)
   const [rating, setRating] = useState<number[]>([])
@@ -408,28 +408,30 @@ export default function Products() {
                   <span className="ml-2 text-sm ">{t("shops.filters")}</span>
                 </Button>
               </div>
-              <div className="flex rounded-md">
-                {/* Grid on the left, List on the right (consistent across locales) */}
-                  <Button
-                    variant={viewMode === "list" ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode("list")}
-                    className="rounded-l-none"
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                <Button
-                  variant={viewMode === "grid" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setViewMode("grid")}
-                  className="rounded-r-none border-r border-gray-300 dark:border-gray-600"
-                >
-                  <Grid3X3 className="h-4 w-4" />
-                </Button>
+                <div className="flex rounded-md" dir="rtl">
+                  {/* Always render Grid | List (same order for all locales) */}
+                  <>
+                    <Button
+                      variant={viewMode === "grid" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("grid")}
+                      className="rounded-l-none"
+                    >
+                      <Grid3X3 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === "list" ? "default" : "ghost"}
+                      size="sm"
+                      onClick={() => setViewMode("list")}
+                      className="rounded-r-none border-r border-gray-300 dark:border-gray-600"
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </>
+                </div>
              
-              </div>
+            </div>
           </div>
-        </div>
 
           {isLoading && <div className="text-xl text-center py-12">{t("common.loading")}</div>}
           {error && <div className="text-xl text-center py-12 text-red-500">{t("products.fetchError")}</div>}
