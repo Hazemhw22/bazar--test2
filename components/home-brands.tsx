@@ -21,10 +21,9 @@ export function HomeBrands() {
       setLoading(true);
       setError(null);
 
-      // Assumption: brands are stored in a table called `categories_brands`.
-      // If your DB uses a different table name (e.g. `brands`), update this query accordingly.
+      // Use `products_brands` table for brands (schema provided)
       const { data, error } = await supabase
-        .from("categories_brands")
+        .from("products_brands")
         .select("*")
         .order("id", { ascending: true });
 

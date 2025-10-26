@@ -6,11 +6,12 @@ import {
   useMemo,
   useRef
 } from "react";
-import { supabase } from "../lib/supabase";
+import { supabase, publicStorageUrl } from "../lib/supabase";
 import Link from "next/link";
 import Image from "next/image";
 import { Star, MapPin, Clock, ChevronDown, Search, Filter, ShoppingBag, Award, Calendar, LayoutGrid, List, Eye, Heart } from "lucide-react";
 import { useI18n } from "../lib/i18n";
+import { Shop as LibShop } from "@/lib/types";
 
 // Render a single star that fills proportionally to value/5 using two layered SVGs
 function StarProgress({ value = 0, size = 14 }: { value?: number; size?: number }) {
@@ -55,14 +56,14 @@ function StarsRow({ rating = 4, size = 14 }: { rating?: number; size?: number })
 // أنواع التصنيفات
 interface CategoryShop {
   id: number;
-  title: string;
+  name: string;
   description: string;
   image_url: string;
   created_at: string;
 }
 interface CategorySubShop {
   id: number;
-  title: string;
+  name: string;
   description: string;
   category_id: number;
   image_url: string;
@@ -70,22 +71,7 @@ interface CategorySubShop {
 }
 
 // نوع المتجر (يمكنك تعديله حسب مشروعك)
-type Shop = {
-  id: number;
-  shop_name: string;
-  shop_desc?: string;
-  desc?: string;
-  address?: string;
-  logo_url?: string;
-  cover_image_url?: string;
-  category_shop_id?: number | null;
-  category_sub_shop_id?: number | null;
-  categoryTitle?: string;
-  productsCount?: number;
-  work_hours?: any;
-  profiles?: { full_name?: string };
-  owner?: string;
-};
+// Use shared Shop type from `lib/type.ts`
 
 type SortOption = "rating" | "products" | "alphabetical" | "newest";
 
@@ -98,7 +84,7 @@ export default function ShopsPage({
   onViewModeChange?: (m: "grid" | "list") => void;
   initialViewMode?: "grid" | "list";
 }) {
-  const [shopsData, setShopsData] = useState<Shop[]>([]);
+  const [shopsData, setShopsData] = useState<LibShop[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewModeState] = useState<"grid" | "list">(
     viewModeProp ?? initialViewMode ?? "grid"
@@ -123,20 +109,20 @@ export default function ShopsPage({
   const [selectedShopCategory, setSelectedShopCategory] = useState<number | null>(null);
   const [selectedShopSubCategory, setSelectedShopSubCategory] = useState<number | null>(null);
 
-  // جلب كاتيجوري المتاجر
+  // جلب كاتيجوري المتاجر (قاعدة البيانات الجديدة: `shops_categories`)
   useEffect(() => {
     async function fetchShopCategories() {
-      const { data } = await supabase.from("categories_shop").select("*").order("id", { ascending: true });
+      const { data } = await supabase.from("shops_categories").select("*").order("id", { ascending: true });
       setShopCategories(data || []);
     }
     fetchShopCategories();
   }, []);
 
-  // جلب سوب كاتيجوري عند اختيار كاتيجوري
+  // جلب سوب كاتيجوري عند اختيار كاتيجوري (قاعدة البيانات الجديدة: `shops_sub_categories`)
   useEffect(() => {
     if (selectedShopCategory) {
       supabase
-        .from("categories_sub_shop")
+        .from("shops_sub_categories")
         .select("*")
         .eq("category_id", selectedShopCategory)
         .then(({ data }) => setShopSubCategories(data || []));
@@ -150,21 +136,37 @@ export default function ShopsPage({
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      const { data: shops, error: shopsError } = await supabase
-        .from("shops")
-        .select("*");
-      const { data: cats } = await supabase.from("categories_shop").select("*");
-      const { data: products } = await supabase.from("products").select("shop");
+      const { data: shops, error: shopsError } = await supabase.from("shops").select("*");
+      const { data: cats } = await supabase.from("shops_categories").select("*");
+
+      // Try to fetch products' shop foreign key in a resilient way:
+      // prefer `shop_id` (newer schema) and fall back to legacy `shop` column.
+      let products: any[] | null = null;
+      try {
+        const { data } = await supabase.from("products").select("shop_id");
+        if (data) products = data;
+      } catch (err) {
+        // ignore and try fallback
+      }
+      if (!products) {
+        try {
+          const { data } = await supabase.from("products").select("shop");
+          if (data) products = data;
+        } catch (err) {
+          products = null;
+        }
+      }
+
       if (!shopsError && shops && cats) {
         const shopsWithCount = shops.map((shop) => {
           const count = products
-            ? products.filter((p) => p.shop === shop.id).length
+            ? products.filter((p) => (p.shop_id ?? p.shop) === shop.id).length
             : 0;
           return {
             ...shop,
-            // don't resolve translations during fetch; store actual title or null
+            // don't resolve translations during fetch; store actual name or null
             categoryTitle:
-              cats.find((cat) => cat.id === shop.category_shop_id)?.title || null,
+              cats.find((cat) => cat.id === shop.category_shop_id)?.name || null,
             productsCount: count,
           };
         });
@@ -312,14 +314,14 @@ export default function ShopsPage({
             >
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 relative rounded-full overflow-hidden bg-gray-100">
-                  <Image
-                    src={category.image_url || "/placeholder.svg"}
-                    alt={category.title}
-                    fill
-                    className="object-cover"
-                  />
+                    <Image
+                      src={resolveImage(category.image_url, "/placeholder.svg", "shop_categories")}
+                      alt={String(category.name ?? "")}
+                      fill
+                      className="object-cover"
+                    />
                 </div>
-                <span>{category.title}</span>
+                <span>{category.name}</span>
               </div>
             </button>
           ))}
@@ -340,9 +342,9 @@ export default function ShopsPage({
               >
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 relative rounded-full overflow-hidden bg-gray-100">
-                    <Image src={sub.image_url || "/placeholder.svg"} alt={sub.title} fill className="object-cover" />
+                    <Image src={resolveImage(sub.image_url, "/placeholder.svg", "shop_categories")} alt={String(sub.name ?? "")} fill className="object-cover" />
                   </div>
-                  <span>{sub.title}</span>
+                  <span>{sub.name}</span>
                 </div>
               </button>
             ))}
@@ -411,7 +413,7 @@ export default function ShopsPage({
 }
 
 // مثال مبسط لـ StoreCard (يمكنك تعديله حسب تصميمك)
-function StoreCard({ shop }: { shop: Shop }) {
+function StoreCard({ shop }: { shop: LibShop }) {
   const { t } = useI18n();
   return (
     <Link
@@ -421,9 +423,10 @@ function StoreCard({ shop }: { shop: Shop }) {
   {/* Image */}
   <div className="relative overflow-hidden bg-gray-50 dark:bg-gray-800 h-44 sm:h-52">
         <Image
-          src={shop.cover_image_url || "/placeholder.svg"}
-          alt={shop.shop_name}
+         src={shop.cover_url || "/placeholder.svg"}
+          alt={shop.name ?? shop.name ?? ""}
           fill
+          priority
           className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
         />
 
@@ -431,7 +434,7 @@ function StoreCard({ shop }: { shop: Shop }) {
         {/* Category badge */}
         <div className="absolute top-3 left-3 z-10">
           <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-semibold shadow">
-            {shop.categoryTitle ?? t("shops.uncategorized")}
+            {shop.categoryName ?? t("shops.uncategorized")}
           </span>
         </div>
 
@@ -443,13 +446,13 @@ function StoreCard({ shop }: { shop: Shop }) {
         <div>
           <div className="flex items-center justify-between gap-3">
             <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 text-lg">
-              {shop.shop_name}
+              {shop.name}
             </h3>
             {/* Open/Close badge next to name */}
             {renderOpenBadge(shop.work_hours, t)}
           </div>
-          {shop.shop_desc && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{shop.shop_desc}</p>
+          {shop.description && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{shop.description}</p>
           )}
         </div>
 
@@ -531,8 +534,18 @@ function renderOpenBadge(work_hours: any, t: (k: string) => string) {
   );
 }
 
+// Resolve image paths: if value is a full URL or starts with '/', return as-is.
+// Otherwise build a public storage URL using the given bucket name.
+function resolveImage(src: any, fallback: string, bucket: string) {
+  if (!src) return fallback;
+  const s = String(src);
+  if (s.startsWith("http") || s.startsWith("/")) return s;
+  const url = publicStorageUrl(bucket, s);
+  return url || fallback;
+}
+
 // Compact list row for list view
-function ListRow({ shop }: { shop: Shop }) {
+function ListRow({ shop }: { shop: LibShop }) {
   const { t } = useI18n();
   return (
     <Link
@@ -542,15 +555,16 @@ function ListRow({ shop }: { shop: Shop }) {
     >
       <div className="w-20 h-20 relative rounded-md overflow-hidden bg-gray-200">
         <Image
-          src={shop.cover_image_url || "/placeholder.svg"}
-          alt={shop.shop_name}
+          src={resolveImage(shop.cover_url, "/placeholder.svg", "shops")}
+          alt={String(shop.name ?? shop.name ?? t("shops.unnamed") ?? "Shop")}
           fill
+          priority
           className="object-cover"
         />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
-          <h4 className="font-semibold truncate">{shop.shop_name}</h4>
+          <h4 className="font-semibold truncate">{shop.name}</h4>
           {/* Open/Close badge moved to the top-right (replacing the stars) */}
           <div className="flex-shrink-0">
             {renderOpenBadge(shop.work_hours, t)}

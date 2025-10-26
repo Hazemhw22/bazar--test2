@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Category } from "@/lib/type";
+import { Category } from "@/lib/types";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -32,14 +32,14 @@ export default function CategoryMenu() {
           >
             <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
               <Image
-                src={cat.image_url || "/fallback.png"}
-                alt={cat.title}
+                src={String(cat.image_url ?? "/fallback.png")}
+                alt={String(cat.title ?? "")}
                 width={32}
                 height={32}
                 className="object-cover"
               />
             </div>
-            <span className="text-xs font-medium">{cat.title}</span>
+            <span className="text-xs font-medium">{String(cat.title ?? "")}</span>
           </Link>
         ))}
       </div>

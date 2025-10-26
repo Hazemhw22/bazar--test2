@@ -28,7 +28,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import type { Profile, OrderData } from "@/lib/type"
+import type { Profile, OrderData } from "@/lib/types"
 import AccountPageWrapper from "@/components/AccountPageWrapper"
 import { useCart } from "@/components/cart-provider"
 import { useFavorites } from "@/components/favourite-items"
@@ -225,9 +225,9 @@ export default function EnhancedProfilePage() {
                               <h4 className="font-semibold text-lg">{order.products?.title || "Product"}</h4>
                               <p className="text-sm text-gray-600 dark:text-gray-400">{t("account.order", { id: order.id })}</p>
                             </div>
-                            <Badge className={`${getStatusColor(order.status)} flex items-center gap-1 w-fit`}>
-                              {getStatusIcon(order.status)}
-                              {order.status}
+                            <Badge className={`${getStatusColor(String(order.status ?? ""))} flex items-center gap-1 w-fit`}>
+                              {getStatusIcon(String(order.status ?? ""))}
+                              {String(order.status ?? "")}
                             </Badge>
                           </div>
 
@@ -238,7 +238,7 @@ export default function EnhancedProfilePage() {
                               <div>
                                 <p className="font-medium">Payment</p>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                  {order.payment_method?.type || "Credit Card"}
+                                  {order.payment_method ?? "Credit Card"}
                                 </p>
                               </div>
                             </div>
@@ -249,7 +249,7 @@ export default function EnhancedProfilePage() {
                               <div>
                                 <p className="font-medium">Delivery</p>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                  {order.shipping_method?.type || "Standard"}
+                                  {order.shipping_method ?? "Standard"}
                                 </p>
                               </div>
                             </div>
@@ -260,7 +260,7 @@ export default function EnhancedProfilePage() {
                               <div>
                                 <p className="font-medium">{t("account.date")}</p>
                                 <p className="text-gray-600 dark:text-gray-400">
-                                  {new Date(order.created_at).toLocaleDateString()}
+                                  {new Date(String(order.created_at ?? "")).toLocaleDateString()}
                                 </p>
                               </div>
                             </div>

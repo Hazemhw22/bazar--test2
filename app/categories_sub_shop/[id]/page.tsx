@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ShoppingBag, Store, ChevronDown } from "lucide-react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import type { CategorySubShop, Product, Shop } from "@/lib/type";
+import type { CategorySubShop, Product, Shop } from "@/lib/types";
 import { ProductCard } from "@/components/ProductCard";
 
 export default function CategorySubShopDetail() {
@@ -23,18 +23,18 @@ export default function CategorySubShopDetail() {
     async function load() {
       setLoading(true);
       try {
-        const { data: sc } = await supabase.from("categories_sub_shop").select("*").eq("id", id).single();
+  const { data: sc } = await supabase.from("shops_sub_categories").select("*").eq("id", id).single();
         if (!mounted) return;
         setSubcat(sc as CategorySubShop);
 
         const { data: prods } = await supabase
           .from("products")
-          .select("id, created_at, shop, title, desc, price, images, category, sale_price, active, subcategory_id")
-          .eq("subcategory_id", id)
-          .eq("active", true)
-          .order("created_at", { ascending: false });
+          .select("id, created_at, shop_id, name, description, price, images, category_id, sale_price, onsale, sub_category_id")
+          .eq("sub_category_id", id)
+          .eq("onsale", true)
+          .order("id", { ascending: false });
         if (!mounted) return;
-        setProducts((prods || []) as Product[]);
+        setProducts((prods || []) as unknown as Product[]);
       } catch (err) {
         console.error(err);
       } finally {
@@ -64,10 +64,10 @@ export default function CategorySubShopDetail() {
     loadShops();
   }, [products]);
 
-  const productsByShop = useMemo(() => {
+    const productsByShop = useMemo(() => {
     const map: Record<string, Product[]> = {};
     for (const p of products) {
-      const key = String((p as any).shop || "");
+      const key = String((p as any).shop_id || "");
       map[key] = map[key] || [];
       map[key].push(p);
     }
@@ -83,10 +83,10 @@ export default function CategorySubShopDetail() {
         <div className="bg-card rounded-2xl p-4 sm:p-6 shadow-lg">
           <div className="flex items-start gap-4">
             <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 relative flex-shrink-0">
-              <Image src={subcat.image_url || "/placeholder.svg"} alt={subcat.title} fill className="object-cover" />
+              <Image src={subcat.image_url || "/placeholder.svg"} alt={subcat?.name ?? ""} fill className="object-cover" />
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold">{subcat.title}</h1>
+              <h1 className="text-2xl font-bold">{subcat.name}</h1>
               <p className="mt-1 text-sm text-muted-foreground max-w-xl">{subcat.description}</p>
             </div>
           </div>
@@ -150,7 +150,7 @@ export default function CategorySubShopDetail() {
                 <div key={s.id} className="flex flex-col bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3">
                     <div className="w-14 h-14 rounded-md overflow-hidden bg-gray-100 flex-shrink-0 relative">
-                      <Image src={(s.logo_url as string) || "/placeholder.svg"} alt={s.shop_name} fill className="object-cover" />
+                      <Image src={(s.logo_url as string) || "/placeholder.svg"} alt={s.shop_name ?? ""} fill className="object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium truncate">{s.shop_name}</div>
@@ -159,7 +159,7 @@ export default function CategorySubShopDetail() {
                     <div className="text-right">
                       <div className="text-sm text-muted-foreground">{count} Products</div>
                       <button
-                        onClick={() => setActiveShop((prev) => (prev?.id === s.id ? null : s))}
+                        onClick={() => setActiveShop((prev: Shop | null) => (prev?.id === s.id ? null : s))}
                         className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-primary text-white rounded-lg text-sm"
                       >{activeShop?.id === s.id ? 'Hide' : 'Show'}</button>
                     </div>

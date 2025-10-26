@@ -37,9 +37,10 @@ import { ProductCard } from "../../../components/ProductCard";
 import Link from "next/link";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
+import { normalizeProduct } from "@/lib/normalizers";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useParams } from "next/navigation";
-import type { Product, Shop } from "@/lib/type";
+import type { Product, Shop } from "@/lib/types";
 import { incrementCategoryViewCount } from "@/lib/tracking"
 import ProductRowCard from "@/components/ProductRowCard";
 
@@ -64,8 +65,8 @@ export default function CategoryDetailPage() {
   // جلب بيانات الكاتيجوري من قاعدة البيانات
   const [category, setCategory] = useState<{
     id: number;
-    title: string;
-    desc: string;
+    name: string;
+    description: string;
     image_url?: string;
   } | null>(null);
 
@@ -94,10 +95,11 @@ useEffect(() => {
   useEffect(() => {
     supabase
       .from("products")
-      .select("*, shops:shops(id,shop_name,logo_url,address)")
-      .eq("category", categoryId)
+      .select("*, shops:shops(id,name,logo_url,address)")
+      .eq("category_id", categoryId)
       .then(({ data }) => {
-        setProducts(data || []);
+        const rows = (data || []).map((r: any) => normalizeProduct(r));
+        setProducts(rows);
       });
   }, [categoryId]);
   
@@ -119,28 +121,26 @@ useEffect(() => {
   }, [products]);
 
   // استخراج الساب كاتيجوري (إذا كان لديك)
-  const subcategories = [...new Set(products.map((p) => p.desc))];
+  const subcategories = [...new Set(products.map((p) => p.description ?? ""))];
 
   // فلترة وفرز المنتجات
   const filteredAndSortedProducts = useMemo(() => {
-    const filtered = products.filter((product) => {
+      const filtered = products.filter((product) => {
       const matchesSearch =
-        product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (product.shops?.shop_name
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase()) ?? false);
+        (product.name ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.description ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ((product.shops?.name ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
 
       const price = Number(product.sale_price ?? product.price);
       const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
 
       const matchesRating =
         selectedRatings.length === 0 ||
-        selectedRatings.includes(product.rating ?? 0);
+        selectedRatings.includes((product as any).rating ?? 0);
 
       const matchesSubcategory =
         selectedSubcategories.length === 0 ||
-        selectedSubcategories.includes(product.desc);
+        selectedSubcategories.includes(product.description ?? "");
 
       return (
         matchesSearch && matchesPrice && matchesRating && matchesSubcategory
@@ -161,14 +161,14 @@ useEffect(() => {
         );
         break;
       case "rating":
-        filtered.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+        filtered.sort((a, b) => ((b as any).rating ?? 0) - ((a as any).rating ?? 0));
         break;
       case "newest":
         filtered.sort((a, b) => Number(b.id) - Number(a.id));
         break;
       case "name":
       default:
-        filtered.sort((a, b) => a.title.localeCompare(b.title));
+  filtered.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
         break;
     }
 
@@ -323,10 +323,10 @@ useEffect(() => {
                 </Link>
                 <div>
                   <h1 className="text-2xl sm:text-4xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">
-                    {category.title}
+                    {category.name}
                   </h1>
                   <p className="text-white/90 text-sm sm:text-base font-bold hidden sm:block drop-shadow">
-                    {category.desc}
+                    {category.description}
                   </p>
                   <div className="flex gap-2 mt-2">
                     <Badge className="bg-white/20 text-white border-white/30 text-xs sm:text-sm flex items-center gap-1">
@@ -341,11 +341,11 @@ useEffect(() => {
                 </div>
               </div>
               {/* صورة الكاتيجوري على يمين الهيدر */}
-              {category.image_url && (
+                  {category.image_url && (
                 <div className="w-16 h-16 sm:w-40 sm:h-20 rounded-lg overflow-hidden shadow-lg border-2 border-white">
                   <Image
                     src={category.image_url}
-                    alt={category.title}
+                    alt={category.name}
                     width={160}
                     height={160}
                     className="object-contain w-full h-full"
@@ -513,23 +513,9 @@ useEffect(() => {
                           : "grid-cols-1"
                       }`}
                     >
-                      {paginatedProducts.map((product) => {
-                        const { categories, ...restProduct } = product;
-                        return (
-                          <ProductCard
-                            key={Number(product.id)}
-                            product={{
-                              ...restProduct,
-                              id: product.id,
-                              price: product.price,
-                              shop:
-                                typeof product.shop === "string"
-                                  ? product.shop
-                                  : product.shop,
-                            }}
-                          />
-                        );
-                      })}
+                      {paginatedProducts.map((product) => (
+                        <ProductCard key={Number(product.id)} product={product} />
+                      ))}
                     </div>
                   )
                 )}
@@ -638,10 +624,10 @@ useEffect(() => {
                     Showing{" "}
                     {
                       shops.filter((shop) =>
-                        shop.shop_name
-                          .toLowerCase()
-                          .includes(searchQuery.toLowerCase())
-                      ).length
+                          (shop.name ?? "")
+                            .toLowerCase()
+                            .includes(searchQuery.toLowerCase())
+                        ).length
                     }{" "}
                     of {shops.length} shops
                   </div>
@@ -654,9 +640,9 @@ useEffect(() => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {shops
+                    {shops
                     .filter((shop) =>
-                      shop.shop_name
+                      (shop.name ?? "")
                         .toLowerCase()
                         .includes(searchQuery.toLowerCase())
                     )
@@ -670,17 +656,17 @@ useEffect(() => {
                           key={shop.id}
                           className="flex flex-col items-center p-4 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg transition-shadow bg-white dark:bg-gray-900"
                         >
-                          <div className="w-20 h-20 rounded-full overflow-hidden mb-2 border border-gray-300 dark:border-gray-700 bg-gray-100 flex items-center justify-center">
+                            <div className="w-20 h-20 rounded-full overflow-hidden mb-2 border border-gray-300 dark:border-gray-700 bg-gray-100 flex items-center justify-center">
                             <Image
                               src={shop.logo_url || "/placeholder.svg"}
-                              alt={shop.shop_name}
+                              alt={shop.name ?? ""}
                               width={80}
                               height={80}
                               className="object-cover"
                             />
                           </div>
                           <div className="font-semibold text-lg text-center">
-                            {shop.shop_name}
+                            {shop.name ?? ""}
                           </div>
                           {shop.address && (
                             <div className="text-xs text-gray-500 mt-1 text-center">

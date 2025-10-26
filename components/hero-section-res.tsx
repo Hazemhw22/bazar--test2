@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
-import type { Product } from "@/lib/type"
+import type { Product } from "@/lib/types"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { useSwipeable } from "react-swipeable"
@@ -49,8 +49,8 @@ export function HeroSectionRes() {
     async function load() {
       try {
         const CATEGORY_SHOP_ID = 15
-        const { data: catsById } = await supabase.from("categories_shop").select("*").eq("id", CATEGORY_SHOP_ID)
-        const { data: catsByTitle } = await supabase.from("categories_shop").select("*").eq("title", "מסעדות")
+  const { data: catsById } = await supabase.from("shops_categories").select("*").eq("id", CATEGORY_SHOP_ID)
+  const { data: catsByTitle } = await supabase.from("shops_categories").select("*").eq("title", "מסעדות")
         const catsCombined = Array.from(new Map([...(catsById || []), ...(catsByTitle || [])].map((c: any) => [c.id, c])).values())
         const categoryIds = (catsCombined || []).map((c: any) => c.id)
 
@@ -66,10 +66,20 @@ export function HeroSectionRes() {
         // fetch products either by shop or by category
         const prods: Product[] = []
         if (shopIds.length > 0) {
-          const { data: p1 } = await supabase.from("products").select("id,title,price,images,shop,category").in("shop", shopIds).eq("active", true).order("created_at", { ascending: false })
-          if (p1) prods.push(...(p1 as Product[]))
+          const { data: p1 } = await supabase
+            .from("products")
+            .select("id,name,price,images,shop_id,category_id,onsale,created_at,updated_at")
+            .in("shop_id", shopIds)
+            .eq("onsale", true)
+            .order("id", { ascending: false });
+          if (p1) prods.push(...(p1 as Product[]));
         }
-        const { data: p2 } = await supabase.from("products").select("id,title,price,images,shop,category").in("category", categoryIds).eq("active", true).order("created_at", { ascending: false })
+  const { data: p2 } = await supabase
+    .from("products")
+    .select("id,name,price,images,shop_id,category_id,onsale,created_at,updated_at")
+    .in("category_id", categoryIds)
+    .eq("onsale", true)
+    .order("id", { ascending: false });
         if (p2) prods.push(...(p2 as Product[]))
 
         // dedupe by id and map to slides
@@ -78,7 +88,7 @@ export function HeroSectionRes() {
         const merged = Array.from(map.values())
         const mapped: Slide[] = merged.slice(0, 10).map((p) => ({
           id: String((p as any).id),
-          title: p.title || "",
+          title: (p as any).name || (p as any).title || "",
           subtitle: p.price ? String((p as any).price) + "₪" : undefined,
           image: Array.isArray((p as any).images) && (p as any).images[0] ? (p as any).images[0] : "/placeholder.svg",
         }))

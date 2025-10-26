@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { X, User, History, Wallet, Bell, Heart, Gift, Headphones, Settings } from "lucide-react";
 import { useEffect } from "react";
-import { Profile } from "@/lib/type";
+import { Profile } from "@/lib/types";
 import { useI18n } from "../lib/i18n";
 
 interface MobileSidebarProps {

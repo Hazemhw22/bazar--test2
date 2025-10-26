@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useSwipeable } from "react-swipeable";
 import SuggestedProductCard from "@/components/SuggestedProductCard";
-import type { Product } from "../lib/type";
+import type { Product } from "../lib/types";
 
 interface SimilarProductsCarouselProps {
   products: Product[];
@@ -96,13 +96,13 @@ export default function SimilarProductsCarousel({ products }: SimilarProductsCar
                 <SuggestedProductCard
                   product={{
                     id: Number(p.id),
-                    name: p.title,
+                    name: String((p as any).name ?? (p as any).title ?? ""),
                     price: Number(p.price),
                     discountedPrice: Number(p.sale_price ?? p.price),
-                    rating: Number(p.rating ?? 0),
-                    reviews: Number(p.reviews ?? 0),
-                    image: p.images?.[0] || "",
-                    store: p.shops?.shop_name ?? "",
+                    rating: Number((p as any).rating ?? 0),
+                    reviews: Number((p as any).reviews ?? 0),
+                    image: String(p.images?.[0] ?? ""),
+                    store: (p.shops as any)?.name ?? (p.shops as any)?.shop_name ?? "",
                   }}
                 />
               </div>

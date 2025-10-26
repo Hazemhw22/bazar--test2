@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSwipeable } from "react-swipeable";
 import { supabase } from "../lib/supabase";
-import type { Shop } from "../lib/type";
+import type { Shop } from "../lib/types";
 import { useI18n } from "../lib/i18n";
 
 export default function PopularRestaurants() {
@@ -33,10 +33,10 @@ export default function PopularRestaurants() {
           return;
         }
 
-        const { data: productsData } = await supabase.from("products").select("shop");
-        const counts: Record<string | number, number> = {};
+        const { data: productsData } = await supabase.from("products").select("shop_id");
+        const counts: Record<string, number> = {};
         (productsData || []).forEach((p: any) => {
-          const key = p.shop;
+          const key = String((p as any).shop_id ?? p.shop ?? "");
           counts[key] = (counts[key] || 0) + 1;
         });
 
@@ -44,7 +44,7 @@ export default function PopularRestaurants() {
           id: s.id,
           shop_name: s.shop_name,
           cover_image_url: s.cover_image_url,
-          productsCount: counts[s.id] || 0,
+          productsCount: counts[String(s.id)] || 0,
         }));
 
         const withProducts = shopsWithCount.filter((s: any) => (s.productsCount || 0) > 0);

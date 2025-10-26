@@ -1,6 +1,6 @@
 "use client";
 
-import type { Product, ProductFeatureLabel, ProductFeatureValue } from "../../../lib/type";
+import type { Product, ProductFeatureLabel, ProductFeatureValue } from "../../../lib/types";
 import { useCart } from "../../../components/cart-provider";
 import { useFavorites } from "../../../components/favourite-items";
 import { ImageLightbox } from "@/components/image-lightbox";
@@ -80,15 +80,15 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   };
 
   useEffect(() => {
-    if (!product.category) return;
+    if (!product.category_id) return;
     supabase
       .from("products")
       .select("*")
-      .eq("category", product.category)
+      .eq("category_id", product.category_id)
       .neq("id", product.id)
       .limit(8)
-      .then(({ data }) => setSimilarProducts(data || []));
-  }, [product.category, product.id]);
+      .then(({ data }) => setSimilarProducts((data || []) as unknown as Product[]));
+  }, [product.category_id, product.id]);
 
   // جلب الميزات من Supabase
   useEffect(() => {
@@ -104,8 +104,20 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             const { data: values } = await supabase
               .from("products_features_values")
               .select("*")
-              .eq("feature_label_id", label.id);
-            return { ...label, values: values || [] };
+              // DB column is `feature_id` in the new schema
+              .eq("feature_id", label.id);
+            // normalize values to the UI shape used across the codebase
+            const normalizedValues = (values || []).map((v: any) => ({
+              ...v,
+              // old UI expects `value` and `image` fields
+              value: v.name ?? v.value ?? "",
+              image: v.image_url ?? v.image ?? null,
+            }));
+            return { ...label, // preserve original fields
+              // UI expects `label.label` in templates — mirror from `name`
+              label: String((label as any).name ?? (label as any).label ?? ""),
+              values: normalizedValues,
+            };
           })
         );
         setFeatureLabels(labelsWithValues);
@@ -118,10 +130,11 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   useEffect(() => {
     let sum = 0;
     featureLabels.forEach(label => {
-      const valueIds = selectedFeatures[label.id] || [];
+      const labelId = Number(label.id ?? -1);
+      const valueIds = selectedFeatures[labelId] || [];
       valueIds.forEach(valueId => {
-        const value = label.values?.find(v => v.id === valueId);
-        if (value) sum += value.price_addition;
+        const value = label.values?.find((v: any) => v.id === valueId);
+        if (value) sum += Number(value.price_addition ?? 0);
       });
     });
     setFeaturesPrice(sum);
@@ -142,7 +155,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
   const handleShare = (type: string) => {
     const url = typeof window !== "undefined" ? window.location.href : "";
-    const text = `شاهد هذا المنتج: ${product.title} - ₪${
+    const text = `شاهد هذا المنتج: ${product.name} - ₪${
       product.sale_price ?? product.price
     }`;
     switch (type) {
@@ -160,7 +173,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         break;
       case "share":
         if (navigator.share) {
-          navigator.share({ title: product.title, text, url });
+          navigator.share({ title: product.name, text, url });
         }
         break;
     }
@@ -183,14 +196,14 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         {/* Main image */}
         <div className="relative ">
           <div className="rounded-xl ">
-            <img src={product.images?.[activeImage] ?? "/pngimg.com - sony_playstation_PNG17546.png"} alt={product.title} className="w-full h-64 object-contain rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.6)]" />
+            <img src={String(product.images?.[activeImage] ?? "/pngimg.com - sony_playstation_PNG17546.png")} alt={String(product.name ?? "")} className="w-full h-64 object-contain rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.6)]" />
           </div>
 
           {/* small thumbnails (moved below image) */}
           <div className="mt-3 flex justify-center gap-3">
-            {product.images?.slice(0,3).map((img, idx) => (
+            {product.images?.slice(0,3).map((img: any, idx: number) => (
               <button key={idx} onClick={() => setActiveImage(idx)} className={`w-14 h-14 rounded-lg p-1 bg-[rgba(0,0,0,0.35)] border ${activeImage===idx? 'border-white':'border-[rgba(255,255,255,0.06)]'}`}>
-                <img src={img||'/placeholder.svg'} alt={`thumb-${idx}`} className="w-full h-full object-contain rounded-md" />
+                <img src={String(img ?? '/placeholder.svg')} alt={`thumb-${idx}`} className="w-full h-full object-contain rounded-md" />
               </button>
             ))}
           </div>
@@ -221,16 +234,16 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
           <button
             onClick={() =>
-              toggleFavorite({
+                toggleFavorite({
                 id: Number(product.id),
-                name: product.title,
+                name: String(product.name ?? ""),
                 price: Number(product.price) || 0,
-                discountedPrice: (product.sale_price ?? Number(product.price)) || 0,
-                image: product.images?.[0] || "",
-                store: product.shops?.shop_name || "",
-                rating: product.rating ?? 0,
-                reviews: product.reviews ?? 0,
-                inStock: product.active,
+                discountedPrice: Number(product.sale_price ?? product.price) || 0,
+                image: String(product.images?.[0] ?? ""),
+                store: String(product.shops?.name ?? ""),
+                rating: Number((product as any).rating ?? 0),
+                reviews: Number((product as any).reviews ?? 0),
+                inStock: Boolean(product.onsale),
               })
             }
             aria-label="Add to favorites"
@@ -246,10 +259,10 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
       {/* Title + Price */}
       <div className="w-full max-w-md flex items-center justify-between px-1 mb-3">
-        <h3 className="text-xl font-semibold">{product.title}</h3>
-        <div className="text-right">
+        <h3 className="text-xl font-semibold">{product.name}</h3>
+            <div className="text-right">
           <div className="text-xl font-bold">{totalPrice}₪</div>
-          <div className="text-sm text-[rgba(255,255,255,0.6)] mt-1">{product.shops?.shop_name ?? ''}</div>
+          <div className="text-sm text-[rgba(255,255,255,0.6)] mt-1">{String(product.shops?.name ?? '')}</div>
         </div>
       </div>
 
@@ -261,7 +274,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           </div>
 
           <div className="flex gap-3 flex-wrap items-center">
-            {(label.values || []).map((v) => {
+            {(label.values || []).map((v: any) => {
               const active = (selectedFeatures[label.id] || []).includes(v.id);
               const isNumber = /^\d+$/.test(String(v.value));
 
@@ -312,10 +325,10 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       {/* overall featuresPrice (hidden here since per-label badges are shown) */}
 
       {/* Add to list button */}
-      <div className="w-full max-w-md mb-6">
+        <div className="w-full max-w-md mb-6">
           <button onClick={async () => {
-            addToCart({ id: Number(product.id), name: product.title, price: Number(product.sale_price ?? product.price), image: product.images?.[0] || '', quantity });
-            await incrementProductCartCount(product.id);
+            addToCart({ id: Number(product.id), name: String(product.name ?? ''), price: Number(product.sale_price ?? product.price), image: String(product.images?.[0] ?? ''), quantity });
+              await incrementProductCartCount(String(product.id));
           }}
           className="w-full py-3 rounded-xl bg-gradient-to-r from-[#3b66ff] to-[#7c8ca2] text-white font-bold shadow-[0_10px_30px_rgba(59,102,255,0.3)]">
           {t("product.addToCart")}
@@ -324,18 +337,18 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
       {/* Tabs */}
       <div className="w-full max-w-md">
-        <ProductTabs
-          description={product.desc ?? ""}
-          specifications={featureLabels.map(label => ({
-            category: label.label,
-            features: (label.values || []).map(v => v.value),
+            <ProductTabs
+          description={String(product.description ?? "")}
+          specifications={featureLabels.map((label: any) => ({
+            category: String(label.label ?? ""),
+            features: (label.values || []).map((v: any) => String(v.value ?? "")),
           }))}
-          reviewsCount={product.reviews ?? 0}
+          reviewsCount={Number((product as any).reviews ?? 0)}
         />
       </div>
       
 
-      <ProductViewCounter productId={product.id} currentCount={product.view_count} />
+  <ProductViewCounter productId={String(product.id)} currentCount={(product as any).view_count} />
     </div>
   );
 }

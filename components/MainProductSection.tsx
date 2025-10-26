@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ProductCard } from "./ProductCard";
-import type { Product } from "@/lib/type";
+import type { Product } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 import { ChevronRight } from "lucide-react";
 import { useI18n } from "../lib/i18n";
@@ -30,46 +30,16 @@ export default function MainProductSection({
 
     async function fetchProducts() {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("products")
-        .select(`
-          id, created_at, shop, title, desc, price, images, category, sale_price, discount_type, discount_value, discount_start, discount_end, active,
-          shops:shops(shop_name),
-          categories:id, categories:title, categories:desc, categories:created_at
-        `)
-        .eq("active", true)
-        .limit(8);
-
-      if (error) {
-        console.error("Error fetching products:", error);
+      try {
+        const { fetchProducts } = await import("@/lib/products");
+        const prods = await fetchProducts({ limit: 8, orderBy: { column: "created_at", ascending: false } });
+        setProducts(prods || []);
+      } catch (err) {
+        console.error('Unexpected error fetching products:', err);
         setProducts([]);
-      } else {
-        // map products and filter out those whose shop is in category_shop_id = 15
-        const mapped = (data ?? []).map((product: any) => ({
-          ...product,
-          shops:
-            product.shops && Array.isArray(product.shops)
-              ? product.shops[0]
-              : product.shops,
-          categories:
-            product.categories && Array.isArray(product.categories)
-              ? product.categories[0]
-              : product.categories,
-        }));
-
-        // collect shop ids and remove products belonging to shops with category_shop_id = 15
-        const shopIds = Array.from(new Set(mapped.map((p: any) => p.shop).filter(Boolean)));
-        let allowedShopIds: any[] = shopIds;
-        if (shopIds.length > 0) {
-          const { data: shopsData } = await supabase.from('shops').select('id,category_shop_id').in('id', shopIds);
-          const filtered = (shopsData || []).filter((s: any) => Number(s.category_shop_id) !== 15).map((s: any) => s.id);
-          allowedShopIds = filtered;
-        }
-
-        const filteredProducts = mapped.filter((p: any) => allowedShopIds.includes(p.shop));
-        setProducts(filteredProducts);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
 
     fetchProducts();

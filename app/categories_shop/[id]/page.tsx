@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ShoppingBag, Store, ChevronDown } from "lucide-react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import type { CategoryShop, Product, Shop, CategorySubShop } from "@/lib/type";
+import type { CategoryShop, Product, Shop, CategorySubShop } from "@/lib/types";
 import { ProductCard } from "@/components/ProductCard";
 
 export default function CategoryShopDetail() {
@@ -25,18 +25,18 @@ export default function CategoryShopDetail() {
     async function load() {
       setLoading(true);
       try {
-        const { data: cats } = await supabase.from("categories_shop").select("*").eq("id", id).single();
+  const { data: cats } = await supabase.from("shops_categories").select("*").eq("id", id).single();
         if (!mounted) return;
         setCategory(cats as CategoryShop);
 
         const { data: prods } = await supabase
           .from("products")
-          .select("id, created_at, shop, title, desc, price, images, category, sale_price, active")
-          .eq("category", id)
-          .eq("active", true)
-          .order("created_at", { ascending: false });
+          .select("id, created_at, shop_id, name, description, price, images, category_id, sale_price, onsale")
+          .eq("category_id", id)
+          .eq("onsale", true)
+          .order("id", { ascending: false });
         if (!mounted) return;
-        setProducts((prods || []) as Product[]);
+        setProducts((prods || []) as unknown as Product[]);
       } catch (err) {
         console.error(err);
       } finally {
@@ -71,10 +71,10 @@ export default function CategoryShopDetail() {
     async function loadSubcats() {
       try {
         const { data } = await supabase
-          .from("categories_sub_shop")
+          .from("shops_sub_categories")
           .select("*")
           .eq("category_id", id)
-          .order("created_at", { ascending: true });
+          .order("id", { ascending: true });
         setSubcategories((data || []) as CategorySubShop[]);
       } catch (err) {
         console.error(err);
@@ -87,13 +87,13 @@ export default function CategoryShopDetail() {
   // filtered products when a subcategory is selected
   const filteredProducts = useMemo(() => {
     if (!selectedSubId) return products;
-    return products.filter((p) => p.subcategory_id === selectedSubId);
+    return products.filter((p) => p.sub_category_id === selectedSubId);
   }, [products, selectedSubId]);
 
   const productsByShop = useMemo(() => {
     const map: Record<string, Product[]> = {};
     for (const p of filteredProducts) {
-      const key = String((p as any).shop || "");
+      const key = String((p as any).shop_id || "");
       map[key] = map[key] || [];
       map[key].push(p);
     }
@@ -109,10 +109,10 @@ export default function CategoryShopDetail() {
         <div className="bg-card rounded-2xl p-4 sm:p-6 shadow-lg">
           <div className="flex items-start gap-4">
             <div className="w-20 h-20 rounded-full overflow-hidden bg-gray-100 relative flex-shrink-0">
-              <Image src={category.image_url || "/placeholder.svg"} alt={category.title} fill className="object-cover" />
+              <Image src={category.image_url || "/placeholder.svg"} alt={category?.name ?? ""} fill className="object-cover" />
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold">{category.title}</h1>
+              <h1 className="text-2xl font-bold">{category.name}</h1>
               <p className="mt-1 text-sm text-muted-foreground max-w-xl">{category.description}</p>
             </div>
                 
@@ -159,17 +159,17 @@ export default function CategoryShopDetail() {
               {subcategories.map((sub) => (
                 <button
                   key={sub.id}
-                  onClick={() => setSelectedSubId(sub.id)}
-                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl whitespace-nowrap transition-all ${selectedSubId === sub.id ? "text-blue-600" : "text-gray-700 dark:text-gray-200"}`}
+                  onClick={() => setSelectedSubId(sub.id ? Number(sub.id) : null)}
+                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl whitespace-nowrap transition-all ${selectedSubId === (sub.id ? Number(sub.id) : null) ? "text-blue-600" : "text-gray-700 dark:text-gray-200"}`}
                 >
                   <div className={`w-12 h-12 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${selectedSubId === sub.id ? "border-blue-600" : "border-transparent"}`}>
                     {sub.image_url ? (
-                      <Image src={sub.image_url} alt={sub.title} fill className="object-cover rounded-full" />
+                      <Image src={String(sub.image_url ?? "/placeholder.svg")} alt={String(sub.title ?? "")} fill className="object-cover rounded-full" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white font-bold bg-gray-400">{sub.title?.[0]}</div>
+                      <div className="w-full h-full flex items-center justify-center text-white font-bold bg-gray-400">{String(sub.title ?? "").charAt(0)}</div>
                     )}
                   </div>
-                  <span className="text-sm font-medium mt-1">{sub.title}</span>
+                  <span className="text-sm font-medium mt-1">{String(sub.title ?? "")}</span>
                 </button>
               ))}
             </div>
@@ -238,7 +238,7 @@ export default function CategoryShopDetail() {
                 <div key={s.id} className="flex flex-col bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3">
                     <div className="w-14 h-14 rounded-md overflow-hidden bg-gray-100 flex-shrink-0 relative">
-                      <Image src={(s.logo_url as string) || "/placeholder.svg"} alt={s.shop_name} fill className="object-cover" />
+                      <Image src={(s.logo_url as string) || "/placeholder.svg"} alt={s.shop_name ?? ""} fill className="object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium truncate">{s.shop_name}</div>
@@ -247,7 +247,7 @@ export default function CategoryShopDetail() {
                     <div className="text-right">
                       <div className="text-sm text-muted-foreground">{count} Products</div>
                       <button
-                        onClick={() => setActiveShop((prev) => (prev?.id === s.id ? null : s))}
+                        onClick={() => setActiveShop((prev: Shop | null) => (prev?.id === s.id ? null : s))}
                         className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-primary text-white rounded-lg text-sm"
                       >{activeShop?.id === s.id ? 'إخفاء' : 'عرض'}</button>
                     </div>

@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import type { Product, CategoryShop } from "@/lib/type";
+import type { Product, CategoryShop } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 import { ProductCard } from "./ProductCard";
 import { useI18n } from "../lib/i18n";
@@ -28,7 +28,7 @@ export default function CategoriesWithProducts() {
 
       // fetch categories (include all categories) - we'll show featured categories
       const { data: cats } = await supabase
-        .from("categories_shop")
+        .from("shops_categories")
         .select("*")
         .neq("id", 15) // do not include category_shop id = 15
         .order("id", { ascending: true })
@@ -49,21 +49,21 @@ export default function CategoriesWithProducts() {
 
         // build products query: products where shop IN shopIds and active
         if (shopIds.length > 0) {
-          const idsStr = shopIds.join(",");
           return supabase
             .from("products")
-            .select("id, created_at, shop, title, desc, price, images, category, sale_price, active")
-            .in("shop", shopIds)
-            .eq("active", true)
+            // prefer canonical columns: name, description, shop_id
+            .select("id, created_at, updated_at, shop_id, name, description, price, images, category_id, sale_price, onsale")
+            .in("shop_id", shopIds)
+            .eq("onsale", true)
             .limit(12);
         }
 
-        // fallback: attempt to fetch products by category field if no shops found
+        // fallback: attempt to fetch products by category_id if no shops found
         return supabase
           .from("products")
-          .select("id, created_at, shop, title, desc, price, images, category, sale_price, active")
-          .eq("category", c.id)
-          .eq("active", true)
+          .select("id, created_at, updated_at, shop_id, name, description, price, images, category_id, sale_price, onsale")
+          .eq("category_id", c.id)
+          .eq("onsale", true)
           .limit(12);
       });
 
@@ -72,7 +72,7 @@ export default function CategoriesWithProducts() {
       // results may be array of promises resolved values
       for (let i = 0; i < results.length; i++) {
         const r = results[i];
-        map[categoriesList[i].id] = (r && r.data) ? (r.data as Product[]) : [];
+        map[Number(categoriesList[i].id)] = (r && r.data) ? (r.data as Product[]) : [];
       }
       if (!mounted) return;
       setProductsMap(map);
@@ -87,15 +87,16 @@ export default function CategoriesWithProducts() {
   }, []);
 
   const allProducts = useMemo(() => {
-    const arr = Object.values(productsMap).flat();
+      const arr = Object.values(productsMap).flat();
     const seen = new Set<string>();
     const out: Product[] = [];
     for (const p of arr) {
       // skip products linked to excluded category ids (15, 18, 34)
       const catId = Number((p as any).category);
       if ([15, 18, 56].includes(catId)) continue;
-      if (!seen.has(p.id)) {
-        seen.add(p.id);
+      const pid = String(p.id);
+      if (!seen.has(pid)) {
+        seen.add(pid);
         out.push(p);
       }
     }
@@ -146,17 +147,17 @@ export default function CategoriesWithProducts() {
               {categories.map((cat) => (
                 <button
                   key={cat.id}
-                  onClick={() => setSelected(cat.id)}
-                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${selected === cat.id ? "text-blue-600" : "text-gray-700 dark:text-gray-200"}`}
+                  onClick={() => setSelected(Number(cat.id))}
+                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${selected === Number(cat.id) ? "text-blue-600" : "text-gray-700 dark:text-gray-200"}`}
                 >
-                  <div className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${selected === cat.id ? "bg-blue-600 border-blue-600" : "border-transparent"}`}>
+                  <div className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${selected === Number(cat.id) ? "bg-blue-600 border-blue-600" : "border-transparent"}`}>
                     {cat.image_url ? (
-                      <Image src={cat.image_url} alt={cat.title} fill className="object-cover rounded-full" />
+                      <Image src={String(cat.image_url ?? "/placeholder.svg")} alt={String(cat.name ?? "")} fill className="object-cover rounded-full" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white font-bold">{cat.title[0]}</div>
+                      <div className="w-full h-full flex items-center justify-center text-white font-bold">{String(cat.name ?? "").charAt(0)}</div>
                     )}
                   </div>
-                  <span className="text-sm font-medium mt-1">{cat.title}</span>
+                  <span className="text-sm font-medium mt-1">{String(cat.name ?? "")}</span>
                 </button>
               ))}
             </div>

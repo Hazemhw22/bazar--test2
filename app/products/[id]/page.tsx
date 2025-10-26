@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useI18n } from "../../../lib/i18n";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
-import type { Product } from "../../../lib/type";
+import type { Product } from "../../../lib/types";
 import ProductDetail from "./product-page";
 
 export default function ProductPage() {
@@ -23,7 +23,7 @@ export default function ProductPage() {
         setLoading(true);
         const { data, error } = await supabase
           .from("products")
-          .select("*, shops(*), categories(*)")
+          .select("*, shops(*), category")
           .eq("id", productId)
           .single();
 

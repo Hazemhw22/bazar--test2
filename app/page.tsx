@@ -15,7 +15,7 @@ import { LocationModal } from "../components/location-modal";
 import { useLocation } from "../components/location-provider";
 import { HomeCategories } from "../components/home-categories";
 import { HomeBrands } from "../components/home-brands";
-import type { Product, CategoryShop } from "@/lib/type";
+import type { Product, CategoryShop } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 import { ProductCard } from "../components/ProductCard";
 import AdBanner from "../components/AdBanner";

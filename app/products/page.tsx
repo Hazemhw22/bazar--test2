@@ -7,6 +7,7 @@ import Image from "next/image"
 import { HeroSales } from "../../components/hero-sales"
 import { Dialog } from "@headlessui/react"
 import { supabase } from "../../lib/supabase"
+import { fetchProducts } from "../../lib/products"
 import { ProductsList } from "../../components/product-list"
 import ProductRowCard from "../../components/ProductRowCard"
 import { DualRangeSlider } from "../../components/ui/dualrangeslider"
@@ -20,7 +21,7 @@ import {
 } from "../../components/ui/dropdown-menu"
 import { ChevronDown, SlidersHorizontal, Grid3X3, List } from "lucide-react"
 import SortIcon from "../../components/SortIcon"
-import { Category } from "../../lib/type"
+import { Category } from "../../lib/types"
 
 export default function Products() {
   const { t, direction } = useI18n()
@@ -32,7 +33,7 @@ export default function Products() {
   const [selectedBrand, setSelectedBrand] = useState("All")
   const [filterOpen, setFilterOpen] = useState(false)
   const [search, setSearch] = useState("")
-  const [categories, setCategories] = useState<Category[]>([{ id: 0, title: "All", desc: "", created_at: "" }])
+  const [categories, setCategories] = useState<Category[]>([{ id: 0, name: "All", description: "", shop_id: 0, created_at: "", updated_at: "" }])
   const [brands, setBrands] = useState<string[]>(["All"])
   const [brandSearch, setBrandSearch] = useState("")
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
@@ -44,20 +45,22 @@ export default function Products() {
   useQuery({
     queryKey: ["categories-brands"],
     queryFn: async () => {
-      const { data: cats } = await supabase.from("categories").select("title, id, image_url")
-      const { data: shops } = await supabase.from("shops").select("shop_name")
+      const { data: cats } = await supabase.from("categories").select("name, id, image_url, description, created_at, updated_at, shop_id")
+      const { data: shops } = await supabase.from("shops").select("name")
 
       setCategories([
-        { id: 0, title: "All", desc: "", created_at: "" },
+        { id: 0, name: "All", description: "", shop_id: 0, created_at: "", updated_at: "" },
         ...((cats ?? []).map((cat: any) => ({
           id: cat.id,
-          title: cat.title,
+          name: cat.name,
           image_url: cat.image_url,
-          desc: cat.desc ?? "",
+          description: cat.description ?? "",
           created_at: cat.created_at ?? "",
+          updated_at: cat.updated_at ?? "",
+          shop_id: cat.shop_id ?? 0,
         })))
       ])
-      setBrands(["All", ...(shops?.map((s: any) => s.shop_name).filter(Boolean) ?? [])])
+      setBrands(["All", ...(shops?.map((s: any) => s.name).filter(Boolean) ?? [])])
 
       return null
     },
@@ -88,48 +91,25 @@ export default function Products() {
   } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*, shops:shops(id, shop_name, category_shop_id), categories:categories(title), categories_sub:categories_sub(title)")
-        .order("created_at", { ascending: false })
-      if (error) throw error
-
-      const mapped = (data ?? []).map((product: any) => ({
-        ...product,
-        shops: product.shops && Array.isArray(product.shops) ? product.shops[0] : product.shops,
-        categories:
-          product.categories && Array.isArray(product.categories) ? product.categories[0] : product.categories,
-        categories_sub:
-          product.categories_sub && Array.isArray(product.categories_sub) ? product.categories_sub[0] : product.categories_sub,
-      }))
-
-      // Exclude products whose related shop belongs to category_shop_id = 15 or has shop_name 'מסעדות'
-      const excludedCategoryId = 15
-      const excludedShopName = "מסעדות"
-      const filtered = mapped.filter((product: any) => {
-        const shop = product.shops
-        if (!shop) return true
-        if (typeof shop.category_shop_id === "number" && shop.category_shop_id === excludedCategoryId) return false
-        if (typeof shop.shop_name === "string" && shop.shop_name === excludedShopName) return false
-        return true
-      })
-
-      return filtered
+      // Use centralized fetch that requests canonical columns and attaches shops safely.
+      const prods = await fetchProducts({ limit: 200, orderBy: { column: "created_at", ascending: false }, onlyActive: false, excludeShopCategoryId: 15 });
+      // fetchProducts returns normalized Product[] objects; we can apply additional client filters if needed
+      return prods as any[];
     },
     refetchInterval: 5000,
   })
 
   const filteredProducts = useMemo(() => {
     return products
-      .filter((product: any) =>
+        .filter((product: any) =>
         search
-          ? product.title?.toLowerCase().includes(search.toLowerCase()) ||
-            product.desc?.toLowerCase().includes(search.toLowerCase())
+          ? product.name?.toLowerCase().includes(search.toLowerCase()) ||
+            product.description?.toLowerCase().includes(search.toLowerCase())
           : true,
       )
-      .filter((product: any) => (selectedCategory !== "All" ? product.categories?.title === selectedCategory : true))
-      .filter((product: any) => (selectedSubcategory ? product.categories_sub?.title === selectedSubcategory : true))
-      .filter((product: any) => (selectedBrand !== "All" ? product.shops?.shop_name === selectedBrand : true))
+      .filter((product: any) => (selectedCategory !== "All" ? product.categories?.name === selectedCategory : true))
+      .filter((product: any) => (selectedSubcategory ? product.categories_sub?.name === selectedSubcategory : true))
+      .filter((product: any) => (selectedBrand !== "All" ? product.shops?.name === selectedBrand : true))
       .filter((product: any) => Number(product.price) >= minPrice && Number(product.price) <= maxPrice)
       .filter((product: any) => (rating.length > 0 ? rating.includes(Math.round(product.rating || 0)) : true))
       .filter((product: any) =>
@@ -177,10 +157,10 @@ export default function Products() {
               const title = isCategoryObject ? (cat as Category).title : (cat as string)
 
               return (
-                <button
+                  <button
                   key={isCategoryObject ? (cat as Category).id : (cat as string)}
                   onClick={() => {
-                    setSelectedCategory(title)
+                    setSelectedCategory(String(title))
                     setSelectedSubcategory(null)
                   }}
                   className="flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all"
@@ -193,14 +173,14 @@ export default function Products() {
                   >
                     {isCategoryObject && (cat as any).image_url ? (
                       <Image
-                        src={(cat as any).image_url}
-                        alt={title}
+                        src={String((cat as any).image_url)}
+                        alt={String(title ?? "")}
                         fill
                         className="object-cover rounded-full"
                       />
                     ) : (
                       <div className="w-full h-full bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold">
-                        {title[0]}
+                        {String(title ?? "").charAt(0)}
                       </div>
                     )}
                   </div>

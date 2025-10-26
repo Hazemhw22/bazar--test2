@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { useI18n } from "@/lib/i18n";
-import type { CategoryBrand } from "@/lib/type";
+import type { CategoryBrand } from "@/lib/types";
 
 interface Props {
   selectedBrand: number | null;
@@ -23,7 +23,8 @@ export default function BrandsStrip({ selectedBrand, setSelectedBrand, shopId }:
     let mounted = true;
     (async () => {
       try {
-        let q = supabase.from("categories_brands").select("*").order("id", { ascending: true });
+  // brands are now stored in `products_brands` (per schema)
+  let q = supabase.from("products_brands").select("*").order("id", { ascending: true });
         if (shopId) q = q.eq("shop_id", shopId as any);
         const { data } = await q;
         if (!mounted) return;
@@ -70,23 +71,23 @@ export default function BrandsStrip({ selectedBrand, setSelectedBrand, shopId }:
           {brands.slice(0, 12).map((brand) => (
             <button
               key={brand.id}
-              onClick={() => setSelectedBrand(selectedBrand === brand.id ? null : brand.id)}
+              onClick={() => setSelectedBrand(selectedBrand === Number(brand.id) ? null : Number(brand.id))}
               className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
-                selectedBrand === brand.id ? "text-blue-600" : "text-gray-700 dark:text-gray-200"
+                selectedBrand === Number(brand.id) ? "text-blue-600" : "text-gray-700 dark:text-gray-200"
               }`}
             >
               <div
                 className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
-                  selectedBrand === brand.id ? "bg-blue-600 border-blue-600" : "border-transparent bg-card"
+                  selectedBrand === Number(brand.id) ? "bg-blue-600 border-blue-600" : "border-transparent bg-card"
                 }`}
               >
                 {brand.image_url ? (
-                  <Image src={brand.image_url} alt={brand.brand || brand.description || "brand"} fill className="object-cover" />
+                  <Image src={String(brand.image_url ?? "/placeholder.svg")} alt={String(brand.brand ?? brand.description ?? "brand")} fill className="object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white font-bold">{(brand.brand || "")[0]}</div>
+                  <div className="w-full h-full flex items-center justify-center text-white font-bold">{String(brand.name ?? "").charAt(0)}</div>
                 )}
               </div>
-              <span className="text-sm font-medium mt-1">{brand.brand}</span>
+              <span className="text-sm font-medium mt-1">{String(brand.name ?? "")}</span>
             </button>
           ))}
         </div>

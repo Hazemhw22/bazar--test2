@@ -15,7 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useCart } from "./cart-provider";
 import { supabase } from "@/lib/supabase";
-import { Product, ProductFeatureLabel } from "@/lib/type";
+import { Product, ProductFeatureLabel } from "@/lib/types";
 import { XCircle, Minus, Plus, ShoppingBag, Eye } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -35,29 +35,29 @@ export default function ProductFeaturesModal({
   // selectionsPerUnit[index] = Record<labelId, valueIds[]>
   const [selectionsPerUnit, setSelectionsPerUnit] = useState<
     Record<number, number[]>[]
-  >([{}]);
+  >(Array.from({ length: 1 }, () => ({} as Record<number, number[]>)));
   const [currentUnitIndex, setCurrentUnitIndex] = useState(0);
   const [totalPrice, setTotalPrice] = useState<number>(Number(product.price) || 0);
   const [featureLabels, setFeatureLabels] = useState<ProductFeatureLabel[]>([]);
   const { addItem } = useCart();
   const [activeLabelId, setActiveLabelId] = useState<number | null>(null);
 
-  const mainImage = product.images?.[0] || "/placeholder.svg";
+  const mainImage = String(product.image_url ?? "/placeholder.svg");
   const basePrice = Number(product.price) || 0;
-  const discountedPrice = product.sale_price ?? basePrice;
+  const discountedPrice = Number(product.sale_price ?? basePrice);
 
   // compute price for the current unit whenever selections or labels change
   const computePriceForUnit = (index: number) => {
-    let newTotal = discountedPrice;
+  let newTotal = Number(discountedPrice || 0);
     const unitSelections = selectionsPerUnit[index] || {};
     if (featureLabels.length > 0 && unitSelections) {
       Object.entries(unitSelections).forEach(([labelId, valueIds]) => {
         const label = featureLabels.find((l) => l.id === Number(labelId));
         if (label) {
-          valueIds.forEach((valueId) => {
-            const value = label.values?.find((v) => v.id === valueId);
-            if (value) newTotal += value.price_addition;
-          });
+            valueIds.forEach((valueId) => {
+        const value = label.values?.find((v: any) => v.id === valueId);
+        if (value) newTotal += Number(value.price_addition ?? 0);
+      });
         }
       });
     }
@@ -84,15 +84,25 @@ export default function ProductFeaturesModal({
               const { data: values } = await supabase
                 .from("products_features_values")
                 .select("*")
-                .eq("feature_label_id", label.id);
-              return { ...label, values: values || [] };
+                // new schema uses `feature_id`
+                .eq("feature_id", label.id);
+              const normalizedValues = (values || []).map((v: any) => ({
+                ...v,
+                value: v.name ?? v.value ?? "",
+                image: v.image_url ?? v.image ?? null,
+              }));
+              return {
+                ...label,
+                label: String((label as any).name ?? (label as any).label ?? ""),
+                values: normalizedValues,
+              };
             })
           );
           setFeatureLabels(labelsWithValues);
           // set the first label active by default
           setActiveLabelId(labelsWithValues[0]?.id ?? null);
           // Reset selections when product changes
-          setSelectionsPerUnit(Array(quantity).fill(0).map(() => ({})));
+          setSelectionsPerUnit(Array.from({ length: quantity }, () => ({})));
         }
     }
     if (isOpen) {
@@ -100,11 +110,13 @@ export default function ProductFeaturesModal({
     }
   }, [product.id, isOpen]);
 
-  const handleSelectFeature = (labelId: number, valueId: number, isMultiSelect: boolean) => {
+  const handleSelectFeature = (labelId: number | undefined, valueId: number | undefined, isMultiSelect: boolean) => {
+    if (labelId == null || valueId == null) return;
     setSelectionsPerUnit((prev) => {
       const copy = prev.map((p) => ({ ...p }));
       const unit = copy[currentUnitIndex] || {};
-      const currentSelection = unit[labelId] || [];
+      const key = Number(labelId);
+      const currentSelection = unit[key] || [];
       let newSelection: number[];
       if (isMultiSelect) {
         newSelection = currentSelection.includes(valueId)
@@ -113,7 +125,7 @@ export default function ProductFeaturesModal({
       } else {
         newSelection = currentSelection.includes(valueId) ? [] : [valueId];
       }
-      unit[labelId] = newSelection;
+      unit[key] = newSelection;
       copy[currentUnitIndex] = unit;
       return copy;
     });
@@ -125,12 +137,13 @@ export default function ProductFeaturesModal({
     for (let i = 0; i < unitsToAdd; i++) {
       const priceForUnit = computePriceForUnit(i);
       addItem({
-        id: Number(product.id),
-        name: product.title,
-        price: priceForUnit,
-        image: mainImage,
-        quantity: 1,
-      });
+          id: Number(product.id),
+          // prefer canonical `name` but fall back to legacy `title`
+          name: String(product.name ??  ""),
+          price: priceForUnit,
+          image: String(mainImage ?? "/placeholder.svg"),
+          quantity: 1,
+        });
     }
     onClose();
   };
@@ -161,13 +174,13 @@ export default function ProductFeaturesModal({
             <div className="relative mb-6">
               <div className="rounded-t-2xl overflow-hidden h-64">
                 <Image
-                  src={mainImage}
-                  alt={product.title || "Product"}
-                  width={1200}
-                  height={640}
-                  className="w-full h-full object-cover"
-                  priority
-                />
+                              src={String(mainImage)}
+                              alt={String(product.name ?? "Product")}
+                              width={1200}
+                              height={640}
+                              className="w-full h-full object-cover"
+                              priority
+                            />
               </div>
 
               {/* overlapping header panel like the screenshot */}
@@ -178,8 +191,8 @@ export default function ProductFeaturesModal({
 
                 <div className="flex-1 text-right mr-6">
                   <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="text-lg font-bold text-foreground min-w-0 truncate">{product.title}</div>
+                      <div className="flex items-center gap-2 min-w-0">
+                      <div className="text-lg font-bold text-foreground min-w-0 truncate">{product.name}</div>
                       <button
                         aria-label="View product page"
                         onClick={() => {
@@ -212,7 +225,7 @@ export default function ProductFeaturesModal({
                       return (
                         <button
                           key={label.id}
-                          onClick={() => setActiveLabelId(label.id)}
+                          onClick={() => label.id != null && setActiveLabelId(label.id)}
                           className={`pb-3 text-sm font-medium min-w-max ${active ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground border-b-2 border-transparent'}`}
                         >
                           {label.label}
@@ -226,28 +239,29 @@ export default function ProductFeaturesModal({
                 <div className="mt-3 space-y-3">
                   {featureLabels.filter(l => l.id === (activeLabelId ?? featureLabels[0]?.id)).map((label) => (
                     <div key={label.id}>
-                      {label.values?.map((value) => {
+                      {label.values?.map((value: any) => {
                         const currentSelections = selectionsPerUnit[currentUnitIndex] || {};
-                        const isSelected = (currentSelections[label.id] || []).includes(value.id);
+                        const lid = Number(label.id ?? -1);
+                        const isSelected = (currentSelections[lid] || []).includes(value.id);
                         return (
                           <div
                             key={value.id}
                             className={`flex items-center p-3 rounded-lg border transition-all ${isSelected ? "border-primary bg-primary/10" : "border-border"} ${!value.available ? "opacity-50" : ""}`}
                           >
-                            <div className="flex items-center justify-center w-24 gap-2" onClick={() => value.available !== false && handleSelectFeature(label.id, value.id, isMultiSelect)}>
+                            <div className="flex items-center justify-center w-24 gap-2" onClick={() => value.available !== false && label.id != null && value.id != null && handleSelectFeature(label.id, value.id, isMultiSelect)}>
                               <Checkbox checked={isSelected} className="w-6 h-6" />
                               {value.price_addition ? (
                                 <div className="text-sm font-semibold">{value.price_addition}₪</div>
                               ) : null}
                             </div>
 
-                            <div className="flex-1 text-right pr-3" onClick={() => value.available !== false && handleSelectFeature(label.id, value.id, isMultiSelect)}>
+                            <div className="flex-1 text-right pr-3" onClick={() => value.available !== false && label.id != null && value.id != null && handleSelectFeature(label.id, value.id, isMultiSelect)}>
                               <div className="font-semibold text-black dark:text-white">{value.value}</div>
                             </div>
 
                             <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
                               {value.image ? (
-                                <Image src={value.image} alt={value.value} width={48} height={48} className="object-cover" />
+                                <Image src={String(value.image)} alt={String(value.value)} width={48} height={48} className="object-cover" />
                               ) : (
                                 <div className="w-full h-full" />
                               )}

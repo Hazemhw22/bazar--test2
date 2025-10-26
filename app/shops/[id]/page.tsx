@@ -34,7 +34,7 @@ import {
   incrementShopVisitCountClient,
 } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
-import type { Shop, Category, Product, WorkHours, CategoryShop, CategorySubShop } from "@/lib/type";
+import type { Shop, Category, Product, WorkHours, CategoryShop, CategorySubShop } from "@/lib/types";
 import { ProductCard } from "../../../components/ProductCard";
 import AdBanner from "@/components/AdBanner";
 import BrandsStrip from "@/components/BrandsStrip";
@@ -77,10 +77,20 @@ export default function ShopDetailPage() {
     queryKey: ["products", shop?.id],
     enabled: !!shop?.id,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*, categories(*)")
-        .eq("shop", shop?.id);
+      // Prefer shop_id FK; fall back to legacy `shop` column if necessary.
+  let query = supabase.from("products").select("*");
+      try {
+        // test presence of shop_id column (safe quick probe)
+        const test = await supabase.from("products").select("shop_id").limit(1).maybeSingle();
+        if (!(test as any).error) {
+          query = query.eq("shop_id", shop?.id as any);
+        } else {
+          query = query.eq("shop", shop?.id as any);
+        }
+      } catch (err) {
+        query = query.eq("shop", shop?.id as any);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data ?? [];
     },
@@ -88,25 +98,24 @@ export default function ShopDetailPage() {
 
   // جلب التصنيفات
   useEffect(() => {
-    supabase
-      .from("categories")
-      .select("*")
-      .then(({ data }) => setCategories(data ?? []));
+    supabase.from("categories").select("*").then(({ data }) => setCategories(data ?? []));
   }, []);
 
   
 
   // If the shop record declares a shop-category (category_shop_id), prefer loading that
   useEffect(() => {
-    const catId = (shop as any)?.category_shop_id;
+    // new schema: shops.category_id
+    const catId = (shop as any)?.category_id ?? (shop as any)?.category_shop_id;
     if (!catId) return;
 
     (async () => {
       try {
-        const { data: cat } = await supabase.from("categories_shop").select("*").eq("id", catId).single();
+        // new tables: shops_categories, shops_sub_categories
+        const { data: cat } = await supabase.from("shops_categories").select("*").eq("id", catId).single();
         setShopCategories(cat ? [cat as CategoryShop] : []);
 
-        const { data: subs } = await supabase.from("categories_sub_shop").select("*").eq("category_id", catId);
+        const { data: subs } = await supabase.from("shops_sub_categories").select("*").eq("category_id", catId);
         setShopSubcategories((subs as CategorySubShop[]) || []);
       } catch (err) {
         console.error("Error fetching shop's declared categories:", err);
@@ -295,7 +304,7 @@ export default function ShopDetailPage() {
   const uniqueCategories: Category[] = (shopCategories.length > 0
     ? shopCategories
     : products
-        .map((p: any) => p.categories)
+        .map((p: any) => p.products_categories)
         .filter((cat) => cat && cat.id)
         .filter((cat, idx, arr) => arr.findIndex((c) => c.id === cat.id) === idx)
   ) as any;
@@ -307,7 +316,7 @@ export default function ShopDetailPage() {
   // فلترة وتصفية المنتجات
   const filteredSortedProducts = products
     .filter((product: Product) =>
-      product.title?.toLowerCase().includes(productsSearch.toLowerCase())
+      product.name?.toLowerCase().includes(productsSearch.toLowerCase())
     )
     .sort((a: Product, b: Product) => {
       if (productsSort === "newest") {
@@ -346,8 +355,8 @@ export default function ShopDetailPage() {
 {/* Hero/Banner Section - 6am Mart Style */}
 <div className="relative w-full h-60 sm:h-72 md:h-80">
         <Image
-          src={shop.cover_image_url || "/placeholder.svg"}
-          alt={shop.shop_name}
+          src={String(shop.cover_url ?? "/placeholder.svg")}
+          alt={String(shop.name ?? "")}
           fill
           className="object-cover"
         />
@@ -368,16 +377,18 @@ export default function ShopDetailPage() {
       <div className="relative -mt-16 sm:-mt-20 z-10">
         <div className="max-w-4xl mx-auto bg-card rounded-2xl p-4 sm:p-6 shadow-lg">
           <div className="flex items-start gap-4">
-            <Image
-              src={shop.logo_url || "/placeholder.svg"}
-              alt={`${shop.shop_name} logo`}
-              width={80}
-              height={80}
-              className="rounded-full border-4 border-card"
-            />
+            <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-card flex-shrink-0">
+              <Image
+                src={String(shop.logo_url ?? "/placeholder.svg")}
+                alt={`${String(shop.name ?? shop.name ?? "")} logo`}
+                width={80}
+                height={80}
+                className="object-cover w-full h-full"
+              />
+            </div>
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{shop.shop_name}</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{shop.name}</h1>
                 {/* Open/Close badge */}
                 {isOpen ? (
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 text-green-800">{t("shops.open")}</span>
@@ -486,25 +497,25 @@ export default function ShopDetailPage() {
                 <button
                   key={cat.id}
                   onClick={() => {
-                    setSelectedCategory(cat.id);
+                    setSelectedCategory(Number(cat.id));
                     setSelectedSubcategory(null);
                   }}
                   className={`flex flex-col items-center gap-1 px-4 py-2 rounded-2xl whitespace-nowrap transition-all ${
-                    selectedCategory === cat.id ? "text-blue-600" : "text-gray-700 dark:text-gray-200"
+                    selectedCategory === Number(cat.id) ? "text-blue-600" : "text-gray-700 dark:text-gray-200"
                   }`}
                 >
                   <div
                     className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
-                      selectedCategory === cat.id ? "bg-blue-600 border-blue-600" : "border-transparent bg-card"
+                      selectedCategory === Number(cat.id) ? "bg-blue-600 border-blue-600" : "border-transparent bg-card"
                     }`}
                   >
                     {cat.image_url ? (
-                      <Image src={cat.image_url} alt={cat.title} fill className="object-cover rounded-full" />
+                      <Image src={String(cat.image_url ?? "/placeholder.svg")} alt={String(cat.title ?? "")} fill className="object-cover rounded-full" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white font-bold">{(cat.title || "")[0]}</div>
+                      <div className="w-full h-full flex items-center justify-center text-white font-bold">{String(cat.name ?? "").charAt(0)}</div>
                     )}
                   </div>
-                  <span className="text-sm font-medium mt-1">{cat.title}</span>
+                  <span className="text-sm font-medium mt-1">{String(cat.name ?? "")}</span>
                 </button>
               ))}
             </div>
@@ -562,23 +573,23 @@ export default function ShopDetailPage() {
                 {subs.map((sub) => (
                   <button
                     key={sub.id}
-                    onClick={() => setSelectedSubcategory(sub.id)}
+                    onClick={() => setSelectedSubcategory(Number(sub.id))}
                     className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
-                      selectedSubcategory === sub.id ? "text-blue-600" : "text-gray-700 dark:text-gray-200"
+                      selectedSubcategory === Number(sub.id) ? "text-blue-600" : "text-gray-700 dark:text-gray-200"
                     }`}
                   >
                     <div
                       className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
-                        selectedSubcategory === sub.id ? "bg-blue-600 border-blue-600" : "border-transparent bg-card"
+                        selectedSubcategory === Number(sub.id) ? "bg-blue-600 border-blue-600" : "border-transparent bg-card"
                       }`}
                     >
                       {sub.image_url ? (
-                        <Image src={sub.image_url} alt={sub.title} fill className="object-cover" />
+                        <Image src={String(sub.image_url ?? "/placeholder.svg")} alt={String(sub.title ?? "")} fill className="object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-white font-bold">{(sub.title || "")[0]}</div>
+                        <div className="w-full h-full flex items-center justify-center text-white font-bold">{String(sub.title ?? "").charAt(0)}</div>
                       )}
                     </div>
-                    <span className="text-sm font-medium mt-1">{sub.title}</span>
+                    <span className="text-sm font-medium mt-1">{String(sub.title ?? "")}</span>
                   </button>
                 ))}
               </div>
@@ -601,7 +612,7 @@ export default function ShopDetailPage() {
             (() => {
               const list = filteredSortedProducts.filter((product: Product) => {
                 // match category if selected
-                const matchCat = selectedCategory === null ? true : product.categories?.id === selectedCategory;
+                const matchCat = selectedCategory === null ? true : (product as any).products_categories?.id === selectedCategory || Number(product.category_id) === Number(selectedCategory);
                 // match subcategory if selected
                 const matchSub = selectedSubcategory === null ? true : Number((product as any).subcategory_id || (product as any).subcategory || 0) === Number(selectedSubcategory);
                 // match brand if selected (check common product fields)
@@ -645,14 +656,7 @@ export default function ShopDetailPage() {
                   <div id={`shop-product-scroll-${idx}`} className="flex gap-3 overflow-x-auto snap-x snap-mandatory py-2 px-2 scroll-smooth">
                     {chunk.map((product) => (
                       <div key={product.id} className="snap-center flex-shrink-0 w-44 sm:w-52 md:w-56">
-                        <ProductCard
-                          product={{
-                            ...product,
-                            id: typeof product.id === "string" ? product.id : product.id,
-                            shop: typeof product.shop === "string" ? product.shop : product.shop,
-                            price: typeof product.price === "string" ? product.price : product.price,
-                          }}
-                        />
+                        <ProductCard product={product as any} />
                       </div>
                     ))}
                   </div>

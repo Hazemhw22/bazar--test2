@@ -5,7 +5,7 @@
     import Link from "next/link";
     import { useSwipeable } from "react-swipeable";
     import { supabase } from "../lib/supabase";
-    import type { Shop } from "../lib/type";
+  import type { Shop } from "../lib/types";
     import { useI18n } from "../lib/i18n";
 
     export default function PopularStores() {
@@ -20,14 +20,11 @@
 
         const fetchShops = async () => {
           setLoading(true);
-          try {
-            // fetch the specific shops by id in desired order
-            const wantedIds = [64, 63, 62];
+            try {
+            // fetch shops using canonical column names from the new schema
             const { data: shopsData, error: shopsError } = await supabase
               .from("shops")
-              .select("id,shop_name,cover_image_url,category_shop_id")
-              .in("id", wantedIds);
-
+              .select("id,name,logo_url,cover_url,category_id");
             if (!mounted) return;
             if (shopsError || !shopsData) {
               setShops([]);
@@ -35,18 +32,20 @@
             }
 
             // fetch products and compute counts per shop
-            const { data: productsData } = await supabase.from("products").select("shop");
-            const counts: Record<string | number, number> = {};
+            const { data: productsData } = await supabase.from("products").select("shop_id");
+            const counts: Record<string, number> = {};
             (productsData || []).forEach((p: any) => {
-              const key = p.shop;
+              const key = String((p as any).shop_id ?? "");
               counts[key] = (counts[key] || 0) + 1;
             });
 
             const shopsWithCount = (shopsData || []).map((s: any) => ({
               id: s.id,
-              shop_name: s.shop_name,
-              cover_image_url: s.cover_image_url,
-              productsCount: counts[s.id] || 0,
+              name: s.name,
+              cover_url: s.cover_url,
+              logo_url: s.logo_url,
+              category_id: s.category_id,
+              productsCount: counts[String(s.id)] || 0,
             }));
 
             // keep only the shops that were returned, and preserve the order of wantedIds
@@ -55,11 +54,18 @@
               byId[s.id] = s;
             });
 
-            const top3 = wantedIds.map((id) => byId[id] || null).filter(Boolean);
+            // Determine top3: prefer global wantedIds if provided, otherwise use first 3 shops returned
+            const globalWanted: any = (globalThis as any).wantedIds;
+            let top3: any[] = [];
+            if (Array.isArray(globalWanted) && globalWanted.length > 0) {
+              top3 = globalWanted.map((id: any) => byId[id] || null).filter(Boolean);
+            } else {
+              top3 = shopsWithCount.slice(0, 3);
+            }
 
             // fill with placeholders if fewer than 3
             while (top3.length < 3) {
-              top3.push({ id: `placeholder-${top3.length}`, shop_name: "", cover_image_url: "/placeholder.svg", productsCount: 0 } as any);
+              top3.push({ id: `placeholder-${top3.length}`, name: "", logo_url: "/placeholder.svg", productsCount: 0 } as any);
             }
 
       if (mounted) setShops(top3 as unknown as Shop[]);
@@ -135,7 +141,7 @@
                         style={{ zIndex: 10 }}
                       >
                         <Link href={`/shops/${left.id}`} className="block w-full h-full">
-                          <Image src={(left as any).cover_image_url || "/placeholder.svg"} alt={(left as any).shop_name || ""} width={320} height={320} className="object-cover w-full h-full" />
+                          <Image src={(left as any).logo_url || "/placeholder.svg"} alt={(left as any).name || ""} width={320} height={320} className="object-cover w-full h-full" />
                         </Link>
                       </div>
 
@@ -146,14 +152,14 @@
                         style={{ zIndex: 10 }}
                       >
                         <Link href={`/shops/${right.id}`} className="block w-full h-full">
-                          <Image src={(right as any).cover_image_url || "/placeholder.svg"} alt={(right as any).shop_name || ""} width={320} height={320} className="object-cover w-full h-full" />
+                          <Image src={(right as any).logo_url || "/placeholder.svg"} alt={(right as any).name || ""} width={320} height={320} className="object-cover w-full h-full" />
                         </Link>
                       </div>
 
                       {/* center - front */}
                       <div className="relative w-52 h-52 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-3xl overflow-hidden shadow-2xl transform scale-100 z-20">
                         <Link href={`/shops/${center.id}`} className="block w-full h-full">
-                          <Image src={(center as any).cover_image_url || "/placeholder.svg"} alt={(center as any).shop_name || ""} width={420} height={420} className="object-cover w-full h-full rounded-3xl" />
+                          <Image src={(center as any).logo_url|| "/placeholder.svg"} alt={(center as any).name || ""} width={420} height={420} className="object-cover w-full h-full rounded-3xl" />
                         </Link>
                       </div>
                     </div>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Profile } from "@/lib/type";
+import { Profile } from "@/lib/types";
 import {
   Search,
   User as UserIcon,

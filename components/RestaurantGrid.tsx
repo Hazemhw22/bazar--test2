@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { MapPin, Clock, Heart } from "lucide-react"
-import type { Shop } from "@/lib/type"
+import type { Shop } from "@/lib/types"
 
 interface Props {
   shops: Shop[]
@@ -41,7 +41,7 @@ export default function RestaurantGrid({ shops }: Props) {
                 <div className={`${color.bg} relative h-28`}> 
                   {/* overlapping image */}
                   <div className="absolute left-4 top-4 w-20 h-20 rounded-full overflow-hidden border-white shadow-sm ">
-                    <Image src={(s.logo_url as string) || "/placeholder.svg"} alt={s.shop_name} fill className="object-cover" />
+                    <Image src={String((s.logo_url as string) || "/placeholder.svg")} alt={String(s.shop_name ?? "")} fill className="object-cover" />
                   </div>
 
                   {/* heart button top-right */}
@@ -55,7 +55,7 @@ export default function RestaurantGrid({ shops }: Props) {
                   <div className="h-full flex items-center pl-28 pr-4">
                     <div className="text-left">
                       <h3 className={`${color.text} font-semibold text-lg leading-tight`}>{s.shop_name}</h3>
-                      {s.desc && <div className="mt-1 text-xs text-muted-foreground">{s.desc}</div>}
+                      {s.description && <div className="mt-1 text-xs text-muted-foreground">{s.description}</div>}
                     </div>
                   </div>
                 </div>

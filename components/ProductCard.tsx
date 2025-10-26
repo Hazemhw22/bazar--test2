@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Heart, Plus, ShoppingBag, Eye } from "lucide-react";
 import { useCart } from "./cart-provider";
 import { useFavorites } from "./favourite-items";
-import { Product } from "@/lib/type";
+import { Product } from "@/lib/types";
 import { incrementProductCartCount } from "@/lib/tracking";
 import ProductFeaturesModal from "./ProductFeaturesModal";
 import { useI18n } from "../lib/i18n";
@@ -101,41 +101,49 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
   const { addItem } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
 
-  const mainImage = product.images?.[0] || "/placeholder.svg";
+  // Prefer canonical `image_url`, fall back to first `images` entry, then placeholder
+  const mainImage = String(product.image_url ?? product.images?.[0] ?? "/placeholder.svg");
   const basePrice = Number(product.price) || 0;
-  const discountedPrice = product.sale_price ?? basePrice;
-  const category_name = product.categories?.title;
+  const discountedPrice = Number(product.sale_price ?? basePrice);
+  const category_name = (product as any).products_categories?.name ?? (product as any).category_name ?? undefined;
   const [activeImage, setActiveImage] = useState(mainImage);
 
   const handleAddToCart = async () => {
     addItem({
       id: Number(product.id),
-      name: product.title,
+      // prefer canonical `name`
+  name: String(product.name ?? ""),
       price: discountedPrice,
-      image: mainImage,
+      image: String(mainImage ?? "/placeholder.svg"),
       quantity,
     });
     setQuantity(1);
-    await incrementProductCartCount(product.id);
+    await incrementProductCartCount(String(product.id));
   };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
-    toggleFavorite({
+      toggleFavorite({
       id: Number(product.id),
-      name: product.title,
+        name: String(product.name ??  ""),
       price: basePrice,
       discountedPrice,
-      image: mainImage,
-      store: product.shops?.shop_name || "",
-      inStock: product.active,
-      rating: product.rating ?? 0,
-      reviews: product.reviews ?? 0,
+      image: String(mainImage ?? "/placeholder.svg"),
+        // prefer shops.name but keep legacy shop_name if present
+        store: (product.shops as any)?.name ?? (product.shops as any)?.shop_name ?? "",
+  inStock: (product as any).active ?? product.onsale ?? true,
+  rating: (product as any).rating ?? 0,
+  reviews: (product as any).reviews ?? 0,
     });
   };
 
-  const additionalImages =
-    product.images?.length > 0 ? product.images : [mainImage];
+  const additionalImages = (() => {
+    const imgs: string[] = [];
+    if (product.image_url) imgs.push(String(product.image_url));
+    if (product.images && product.images.length > 0) imgs.push(...(product.images as any[]).map((i: any) => String(i)));
+    if (imgs.length === 0) imgs.push("/placeholder.svg");
+    return imgs;
+  })();
 
   useEffect(() => {
     if (isModalOpen) {
@@ -184,8 +192,8 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
 
           {/* Product Image */}
           <Image
-            src={mainImage}
-            alt={product.title}
+            src={String(mainImage)}
+            alt={String(product.name ?? "")}
             fill
             className={`object-cover transition-transform duration-500 ${compact ? '' : 'group-hover:scale-110'}`}
             priority
@@ -214,20 +222,20 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
           {/* Product Name + View Count */}
           <div className="flex items-center justify-between mb-2 gap-4">
             <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-2 leading-tight flex-1">
-              {product.title}
+              {String(product.name ?? "")}
             </h3>
             {/* View Count (Eye icon) */}
             <div className="flex items-center gap-1 bg-white/80 dark:bg-gray-800/80 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full shadow">
               <Eye size={16} />
-              <span className="text-xs font-medium">{product.view_count ?? 0}</span>
+              <span className="text-xs font-medium">{(product as any).view_count ?? 0}</span>
             </div>
           </div>
 
           {/* Shop & Category */}
           <div className="flex items-center gap-1 sm:gap-2 text-xs text-gray-500 dark:text-gray-400 mb-1 sm:mb-2">
-            {product.shops?.shop_name && (
+            {((product.shops as any)?.name ?? (product.shops as any)?.shop_name) && (
               <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">
-                {product.shops.shop_name}
+                {(product.shops as any).name ?? (product.shops as any).shop_name}
               </span>
             )}
             {category_name && (
@@ -239,7 +247,7 @@ export function ProductCard({ product, compact = false }: ProductCardProps) {
 
           {/* Price & Add to Cart */}
           <div className="flex items-center justify-between mt-auto">
-            <p className={`${compact ? 'text-sm font-semibold' : 'text-lg font-bold'} text-gray-900 dark:text-white`}>
+              <p className={`${compact ? 'text-sm font-semibold' : 'text-lg font-bold'} text-gray-900 dark:text-white`}>
               {discountedPrice.toFixed()} ₪
             </p>
             <button

@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import type { Product, Shop } from "./type";
+import type { Product, Shop } from "./types";
 
 // Avoid direct import of next/headers to prevent issues with pages directory
 // We'll dynamically import it when needed in server component functions
@@ -98,12 +98,25 @@ export const fetchProductById = async (id: string | number) => {
 // Helper function to fetch shops (with work_hours as string[])
 export const fetchShops = async () => {
   const supabase = createServerSupabaseClient();
-  const { data: shops, error } = await supabase
-    .from("shops")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) throw new Error(error.message);
+  // Try ordering by created_at if present; fall back to ordering by id or no order.
+  let shops: any[] | null = null;
+  try {
+    const res = await supabase.from("shops").select("*").order("created_at", { ascending: false });
+    if (res.error) throw res.error;
+    shops = res.data as any[];
+  } catch (err) {
+    // created_at may not exist in this schema - try ordering by id instead
+    try {
+      const res2 = await supabase.from("shops").select("*").order("id", { ascending: false });
+      if (res2.error) throw res2.error;
+      shops = res2.data as any[];
+    } catch (err2) {
+      // final fallback: plain select without order
+      const res3 = await supabase.from("shops").select("*");
+      if (res3.error) throw res3.error;
+      shops = res3.data as any[];
+    }
+  }
 
   // جلب أوقات العمل لكل متجر وتطبيعها فقط إذا كانت غير موجودة في shops.work_hours
   for (const shop of shops) {
@@ -146,30 +159,51 @@ export const fetchShops = async () => {
 export const incrementShopVisitCountClient = async (shopId: string) => {
   const supabase = getSupabaseBrowserClient();
 
-  // First get the current visit_count
-  const { data: currentShop, error: fetchError } = await supabase
-    .from("shops")
-    .select("visit_count")
-    .eq("id", shopId)
-    .single();
+  // First try to fetch visit_count; if missing try view_count; otherwise abort gracefully
+  try {
+    let currentCount = 0;
+    // attempt visit_count
+    const { data: currentShop, error: fetchError } = await supabase
+      .from("shops")
+      .select("visit_count")
+      .eq("id", shopId)
+      .maybeSingle();
 
-  if (fetchError) {
-    console.error("Error fetching shop:", fetchError);
-    return;
-  }
+    if (!fetchError && currentShop && (currentShop as any).visit_count !== undefined) {
+      currentCount = Number((currentShop as any).visit_count) || 0;
+    } else {
+      // fallback to view_count
+      const { data: altShop, error: altErr } = await supabase
+        .from("shops")
+        .select("view_count")
+        .eq("id", shopId)
+        .maybeSingle();
 
-  // Increment the visit_count (handle null/undefined case)
-  const currentCount = Number(((currentShop as any)?.visit_count) ?? 0) || 0;
-  const newVisitCount = currentCount + 1;
+      if (!altErr && altShop && (altShop as any).view_count !== undefined) {
+        currentCount = Number((altShop as any).view_count) || 0;
+      } else if (fetchError && (fetchError as any).code === '42703') {
+        // column doesn't exist; nothing to update
+        return;
+      }
+    }
 
-  // Update the visit_count
-  const { error: updateError } = await (supabase as any)
-    .from("shops")
-    .update({ visit_count: newVisitCount })
-    .eq("id", shopId);
+    const newVisitCount = currentCount + 1;
 
-  if (updateError) {
-    console.error("Error updating visit count:", updateError);
+    // Try updating visit_count first, then view_count
+    let updateResult = await (supabase as any)
+      .from("shops")
+      .update({ visit_count: newVisitCount })
+      .eq("id", shopId);
+
+    if (updateResult.error && (updateResult.error as any).code === '42703') {
+      // visit_count column doesn't exist - try view_count
+      await (supabase as any)
+        .from("shops")
+        .update({ view_count: newVisitCount })
+        .eq("id", shopId);
+    }
+  } catch (err) {
+    console.error("Error fetching/updating shop visit count:", err);
   }
 };
 
@@ -188,3 +222,17 @@ export const supabase = createClient(
   supabaseUrl || 'https://placeholder.supabase.co',
   supabaseKey || 'placeholder-key'
 );
+
+// Helper to build public storage URL for a given bucket and path.
+// Usage: publicStorageUrl('shops', 'path/to/file.jpg') => https://<supabase>.supabase.co/storage/v1/object/public/shops/path%2Fto%2Ffile.jpg
+export function publicStorageUrl(bucket: string, path?: string) {
+  try {
+    if (!bucket || !path) return "";
+    const base = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/$/, '');
+    if (!base) return '';
+    const p = String(path).replace(/^\/+/, '');
+    return `${base}/storage/v1/object/public/${bucket}/${encodeURIComponent(p)}`;
+  } catch (err) {
+    return '';
+  }
+}

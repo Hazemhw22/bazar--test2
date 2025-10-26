@@ -21,7 +21,8 @@ export function HeroSales() {
         // Fetch products that are on sale (avoid complex join filters)
         const { data: productsData, error: productsError } = await supabase
           .from("products")
-          .select("id, title, price, sale_price, onsale, images, shop")
+          // select canonical columns; use shop_id (foreign key) rather than legacy `shop`
+          .select("id, name, price, sale_price, onsale, images, shop_id")
           .eq("onsale", true)
           .order("created_at", { ascending: false })
           .limit(50) // fetch extra so we can filter out unwanted shops and still have results
@@ -29,20 +30,23 @@ export function HeroSales() {
         if (productsError) throw productsError
         if (!mounted) return
 
-        // Fetch shops that belong to category_shop_id = 15 (we want to exclude products from these shops)
+        // Fetch shops that belong to category_id = 15 (restaurants) and exclude their products
         const { data: excludedShops, error: shopsError } = await supabase
           .from("shops")
-          .select("id, shop_name, category_shop_id")
-          .eq("category_shop_id", 15)
+          .select("id, name, category_id")
+          .eq("category_id", 15)
 
-        if (shopsError) throw shopsError
+        if (shopsError) {
+          console.error("hero-sales: shopsError", shopsError)
+          throw shopsError
+        }
         if (!mounted) return
 
         // Coerce ids to strings to avoid number/string mismatch
         const excludedIds = new Set((excludedShops ?? []).map((s: any) => String(s.id)))
         const shopNameMap: Record<string, string> = {}
         ;(excludedShops ?? []).forEach((s: any) => {
-          shopNameMap[String(s.id)] = s.shop_name
+          shopNameMap[String(s.id)] = s.name
         })
 
         // Debug logs to inspect shapes at runtime
@@ -50,7 +54,8 @@ export function HeroSales() {
         console.debug("hero-sales: excluded shops:", excludedShops)
 
         // Filter out products that belong to excluded shops (compare as strings)
-        const filtered = (productsData ?? []).filter((p: any) => !excludedIds.has(String(p.shop)))
+  // filter using shop_id which is the canonical foreign key on Product
+  const filtered = (productsData ?? []).filter((p: any) => !excludedIds.has(String(p.shop_id)))
 
         // Debug filtered counts
         console.debug("hero-sales: filtered products count:", filtered.length)
@@ -62,10 +67,11 @@ export function HeroSales() {
           const displayPrice = p.onsale && p.sale_price ? p.sale_price : p.price
           return {
             id: p.id,
-            title: p.title || "Untitled",
+            // prefer `name` (DB) but fall back to legacy `title` if present
+            name: p.name ?? p.title ?? "Untitled",
             subtitle: `₪${displayPrice ?? "0"} ${
-              shopNameMap[String(p.shop)] ? "- " + shopNameMap[String(p.shop)] : ""
-            }`,
+                shopNameMap[String(p.shop_id)] ? "- " + shopNameMap[String(p.shop_id)] : ""
+              }`,
             image: p.images && p.images.length > 0 ? p.images[0] : "/placeholder.svg",
           }
         })
@@ -130,13 +136,13 @@ export function HeroSales() {
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 items-center py-4 sm:py-10">
         <motion.div
-          key={current?.title}
+          key={current?.name}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
           className="flex flex-col items-center md:items-start text-center md:text-left order-2 md:order-1"
         >
-          <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-2 sm:mb-3">{current?.title}</h1>
+          <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-2 sm:mb-3">{current?.name}</h1>
           <p className="text-sm sm:text-lg md:text-xl mb-4 sm:mb-5 text-muted-foreground">{current?.subtitle}</p>
           <Link
             href={`/products/${current.id}`}
@@ -155,7 +161,7 @@ export function HeroSales() {
         >
           <img
             src={current?.image}
-            alt={current?.title}
+            alt={current?.name}
             className="h-40 sm:h-72 md:h-96 w-auto object-contain"
           />
         </motion.div>

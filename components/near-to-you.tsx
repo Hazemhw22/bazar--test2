@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { ChevronRight, ChevronLeft, Heart, Plus, Star, Eye } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { Product } from "@/lib/type";
+import { Product } from "@/lib/types";
+import { normalizeProduct } from "@/lib/normalizers";
 import { useFavorites } from "./favourite-items";
 import { useCart } from "./cart-provider";
 import Image from "next/image";
@@ -30,45 +31,10 @@ export function NearToYou() {
     try {
       setLoading(true);
       setError(null);
-
-      // For now fetch latest active products (placeholder for proximity-based query)
-      const { data, error: fetchError } = await supabase
-        .from("products")
-        .select(`
-          id,
-          title,
-          price,
-          sale_price,
-          discount_type,
-          discount_value,
-          images,
-          view_count,
-          created_at
-        `)
-        .eq("active", true)
-        .not("category", "in", "(18,56)")
-        .order("created_at", { ascending: false })
-        .limit(12);
-
-      if (fetchError) {
-        console.error("Supabase error:", fetchError.message);
-        setError("Failed to fetch products.");
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        setProducts([]);
-        return;
-      }
-
-      const transformedProducts = data.map((product: any) => ({
-        ...product,
-        price: product.price || "0",
-        images: product.images || [],
-        view_count: product.view_count || 0,
-      }));
-
-      setProducts(transformedProducts);
+  // Use centralized product fetcher without legacy filters (do not request removed `active` column)
+  const { fetchProducts } = await import("@/lib/products");
+  const prods = await fetchProducts({ limit: 12, orderBy: { column: "created_at", ascending: false } });
+      setProducts(prods || []);
     } catch (err) {
       console.error("Error fetching products:", err);
       setError("Something went wrong while fetching products.");
@@ -77,12 +43,13 @@ export function NearToYou() {
     }
   };
 
-  const getDisplayPrice = (product: Product) => {
-    if (product.sale_price && product.price) {
-      const originalPrice = parseFloat(product.price as unknown as string);
-      return product.sale_price < originalPrice ? product.sale_price : originalPrice;
+  const getDisplayPrice = (product: Product): number => {
+    const priceNum = Number(product.price ?? 0);
+    const saleNum = Number(product.sale_price ?? 0);
+    if (saleNum && priceNum) {
+      return saleNum < priceNum ? saleNum : priceNum;
     }
-    return parseFloat((product.price as any) || "0");
+    return priceNum;
   };
 
   const handleScroll = (dir: "left" | "right") => {
@@ -188,8 +155,8 @@ export function NearToYou() {
                   <div className="relative mb-3 pt-[100%]">
                     <Link href={`/products/${product.id}`}>
                       <div className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-md">
-                        {product.images && product.images.length > 0 ? (
-                          <img src={product.images[0]} alt={product.title} className="object-cover w-full h-full transition-transform hover:scale-105" />
+                        {(product.image_url || (product.images && product.images.length > 0)) ? (
+                          <img src={String(product.image_url ?? product.images?.[0])} alt={String(product.name ?? product.name ?? "")} className="object-cover w-full h-full transition-transform hover:scale-105" />
                         ) : (
                           <div className="bg-gray-200 dark:bg-gray-700 w-full h-full flex items-center justify-center"><span className="text-gray-500 dark:text-gray-400">No image</span></div>
                         )}
@@ -199,10 +166,10 @@ export function NearToYou() {
                     <div className={`absolute top-2 ${direction === "rtl" ? "left-2" : "right-2"} flex flex-col gap-1`}>
                       <button onClick={() => toggleFavorite({
                         id: Number(product.id),
-                        name: product.title,
+                        name: String(product.name ?? product.name ?? ""),
                         price: getDisplayPrice(product),
-                        discountedPrice: product.sale_price ?? getDisplayPrice(product),
-                        image: (product.images && product.images[0]) || "/placeholder.svg",
+                        discountedPrice: Number(product.sale_price ?? getDisplayPrice(product)),
+                        image: String(product.image_url ?? product.images?.[0] ?? "/placeholder.svg"),
                         store: "",
                         rating: 0,
                         reviews: 0,
@@ -216,19 +183,19 @@ export function NearToYou() {
                   </div>
 
                   <Link href={`/products/${product.id}`} className="flex-grow">
-                    <h3 className="font-medium text-xs mb-1 line-clamp-2 text-gray-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{product.title}</h3>
+                    <h3 className="font-medium text-xs mb-1 line-clamp-2 text-gray-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{String( product.name ?? "")}</h3>
                   </Link>
 
                     <div className="flex items-center mb-1">
                     <div className="flex items-center gap-1"><Eye size={14} /><span className="ml-1 text-xs text-gray-600 dark:text-gray-400">{t("near.views")}</span></div>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({product.view_count || 0})</span>
+                    {/* <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({Number(product.view_count || 0)})</span> */}
                   </div>
 
-                  <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-sm text-blue-600 dark:text-blue-400">{t("currency.symbol")}{Number(getDisplayPrice(product)).toFixed(2)}</span>
                     </div>
-                    <button onClick={() => addItem({ id: Number(product.id), name: product.title, price: getDisplayPrice(product), image: (product.images && product.images[0]) || "/placeholder.svg" })} className="bg-blue-600 hover:bg-blue-700 text-white p-1 rounded-full transition-colors"><Plus size={14} /></button>
+                    <button onClick={() => addItem({ id: Number(product.id), name: String( product.name ??""), price: getDisplayPrice(product), image: String(product.image_url ?? product.images?.[0] ?? "/placeholder.svg") })} className="bg-blue-600 hover:bg-blue-700 text-white p-1 rounded-full transition-colors"><Plus size={14} /></button>
                   </div>
                 </div>
               </div>

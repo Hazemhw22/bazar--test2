@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ShoppingBag, Store } from "lucide-react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import type { Product, Shop } from "@/lib/type";
+import type { Product, Shop } from "@/lib/types";
 import { ProductCard } from "@/components/ProductCard";
 
 export default function BrandDetail() {
@@ -21,20 +21,21 @@ export default function BrandDetail() {
     async function load() {
       setLoading(true);
       try {
-        const { data: b } = await supabase.from("categories_brands").select("*").eq("id", id).single();
+  const { data: b } = await supabase.from("products_brands").select("*").eq("id", id).single();
         if (!mounted) return;
-        setBrand(b || null);
+  setBrand(b || null);
 
         // fetch products by brand - assumption: products table has a `brand_id` or `brand` column
         const { data: prods } = await supabase
           .from("products")
-          .select("id, created_at, shop, title, desc, price, images, category, sale_price, active, brand_id, brand")
-          .or(`brand_id.eq.${id},brand.eq.${b?.brand ?? b?.name ?? ''}`)
+          .select("id, shop_id, title, desc, price, images, category, sale_price, active, brand_id, brand")
+          .or(`brand_id.eq.${id},brand.eq.${b?.name ?? b?.brand ?? ''}`)
           .eq("active", true)
-          .order("created_at", { ascending: false });
+          .order("id", { ascending: false });
 
         if (!mounted) return;
-        setProducts((prods || []) as Product[]);
+        // supabase returns a loose object shape — cast via unknown first to satisfy TypeScript when shapes don't fully overlap
+        setProducts((prods || []) as unknown as Product[]);
       } catch (err) {
         console.error(err);
       } finally {
@@ -45,11 +46,11 @@ export default function BrandDetail() {
     return () => { mounted = false; };
   }, [id]);
 
-  // fetch shops for products
   useEffect(() => {
     async function loadShops() {
       try {
-        const shopIds = Array.from(new Set(products.map((p) => String((p as any).shop))));
+        // products may contain either `shop_id` or `shop` depending on selection; normalize both
+        const shopIds = Array.from(new Set(products.map((p) => String(((p as any).shop_id ?? (p as any).shop)))));
         if (shopIds.length === 0) {
           setShops([]);
           return;

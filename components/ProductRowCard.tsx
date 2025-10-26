@@ -6,20 +6,7 @@ import Link from "next/link";
 import { useCart } from "@/components/cart-provider";
 import { useFavorites } from "@/components/favourite-items";
 import { useI18n } from "../lib/i18n";
-
-type RowProduct = {
-  id: string | number;
-  title: string;
-  desc: string;
-  price: number | string;
-  sale_price?: number | string | null;
-  discount_type?: "fixed" | "percentage" | null;
-  images?: string[];
-  shops?: { shop_name: string } | null;
-  rating?: number | null;
-  reviews?: number | null;
-  view_count?: number | null;
-};
+import type { Product } from "@/lib/types";
 
 function formatPrice(amount: number | string | null | undefined): string {
   if (amount == null) return "";
@@ -28,22 +15,19 @@ function formatPrice(amount: number | string | null | undefined): string {
   return ` ${num.toFixed(2)} ₪`;
 }
 
-export default function ProductRowCard({ product }: { product: RowProduct }) {
+export default function ProductRowCard({ product }: { product: Product }) {
   const { t } = useI18n();
-  const imageSrc = product.images && product.images.length > 0 ? product.images[0] : "/placeholder.svg";
+  const imageSrc = (product.images && product.images.length > 0 ? product.images[0] : "/placeholder.svg") as string;
   // use product.rating rounded, default to 3/5 as requested
-  const rating = Math.round(product.rating ?? 3);
-  const priceNum = typeof product.price === "string" ? parseFloat(product.price) : product.price;
-  const salePriceNum = product.sale_price != null ? (typeof product.sale_price === "string" ? parseFloat(product.sale_price) : product.sale_price) : null;
+  const rating = Math.round((product as any).rating ?? 3);
+  const priceNum = typeof product.price === "string" ? parseFloat(String(product.price)) : (product.price as number);
+  const salePriceNum = product.sale_price != null ? (typeof product.sale_price === "string" ? parseFloat(String(product.sale_price)) : (product.sale_price as number)) : null;
   const hasSale = salePriceNum != null && salePriceNum > 0 && salePriceNum < priceNum;
 
   const discountLabel = (() => {
     if (!hasSale) return null;
-    if (product.discount_type === "percentage") {
-      const pct = Math.round(((priceNum - (salePriceNum ?? 0)) / priceNum) * 100);
-      return `-${pct}%`;
-    }
-    return "-";
+    const pct = Math.round(((priceNum - (salePriceNum ?? 0)) / priceNum) * 100);
+    return `-${pct}%`;
   })();
 
   // Cart & Favorites
@@ -53,25 +37,25 @@ export default function ProductRowCard({ product }: { product: RowProduct }) {
   const handleAddToCart = () => {
     addItem({
       id: Number(product.id),
-      name: product.title,
-      price: hasSale ? salePriceNum ?? priceNum : priceNum,
-      image: imageSrc,
+      name: String(product.name ?? ""),
+      price: hasSale ? (salePriceNum ?? priceNum) : priceNum,
+      image: String(imageSrc ?? "/placeholder.svg"),
       quantity: 1,
     });
   };
 
   const isFavorite = favorites.some(fav => fav.id === Number(product.id));
 
- const handleWishlist = () => {
+  const handleWishlist = () => {
   const favoriteItem = {
     id: Number(product.id),
-    name: product.title,
-    price: hasSale ? Number(product.sale_price) : product.price,
+    name: String(product.name ?? ""),
+    price: hasSale ? Number(product.sale_price) : Number(product.price as any),
     discountedPrice: product.sale_price ?? product.price,
-    image: imageSrc,
-    store: product.shops?.shop_name ?? t("common.unknown"),
-    rating: product.rating ?? 0,
-    reviews: product.reviews ?? 0,
+    image: String(imageSrc ?? "/placeholder.svg"),
+    store: (product.shops as any)?.name ?? (product.shops as any)?.shop_name ?? t("common.unknown"),
+    rating: (product as any).rating ?? 0,
+    reviews: (product as any).reviews ?? 0,
   };
 
   if (isFavorite) removeFromFavorites(Number(product.id));
@@ -96,16 +80,16 @@ export default function ProductRowCard({ product }: { product: RowProduct }) {
         <div className="flex-1 min-w-0">
           <Link href={`/products/${product.id}`}>
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm sm:text-base line-clamp-2 text-right hover:underline">
-              {product.title}
+              {String( product.name ?? "")}
             </h3>
           </Link>
             <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400  text-right">
-            {product.shops?.shop_name ?? ""}
+            {(product.shops as any)?.shop_name ?? ""}
           </div>
 
             <div className="text-xs text-gray-500 dark:text-gray-400 text-right flex items-center justify-end gap-2">
               <Eye className="w-4 h-4 text-gray-500" />
-              <span>{product.view_count ?? 0}</span>
+              <span>{(product as any).view_count ?? 0}</span>
             </div>
 
             <div className=" text-right">
@@ -138,7 +122,7 @@ export default function ProductRowCard({ product }: { product: RowProduct }) {
         <div className="flex-shrink-0 w-24">
           <div className="relative w-24 h-24 rounded-lg overflow-hidden">
             <Link href={`/products/${product.id}`}>
-              <Image src={imageSrc} alt={product.title} fill className="object-cover" />
+              <Image src={imageSrc} alt={String( product.name ?? "")} fill className="object-cover" />
             </Link>
           </div>
         </div>

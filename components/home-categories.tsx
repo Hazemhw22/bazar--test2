@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { CategoryShop, CategorySubShop } from "@/lib/type";
+import { CategoryShop, CategorySubShop } from "@/lib/types";
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
@@ -36,7 +36,7 @@ export function HomeCategories() {
       setError(null);
 
       const { data, error: fetchError } = await supabase
-        .from("categories_shop")
+        .from("shops_categories")
         .select("*")
         .neq("id", 15)
         .order("id", { ascending: true });
@@ -56,7 +56,7 @@ export function HomeCategories() {
 
   const fetchSubcategories = async (categoryId: number) => {
     const { data, error } = await supabase
-      .from("categories_sub_shop")
+      .from("shops_sub_categories")
       .select("*")
       .eq("category_id", categoryId);
 
@@ -157,8 +157,8 @@ export function HomeCategories() {
                   {category.image_url ? (
                     <div className="relative w-full h-full">
                       <Image
-                        src={category.image_url}
-                        alt={category.title}
+                        src={String(category.image_url ?? "/placeholder.svg")}
+                        alt={String(category.title ?? "")}
                         fill
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                       />
@@ -168,7 +168,7 @@ export function HomeCategories() {
                   )}
                 </div>
               <h3 className="text-xs sm:text-sm font-medium text-foreground truncate w-full">
-                {category.title}
+                {String(category.name ?? "")}
               </h3>
             </Link>
           ))}

@@ -4,7 +4,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import type { CategorySubShop, Shop, Product } from "@/lib/type";
+import type { CategorySubShop, Shop, Product } from "@/lib/types";
 import { ProductCard } from "@/components/ProductCard";
 import AdBanner from "@/components/AdBanner";
 import MainProductSection from "@/components/MainProductSection";
@@ -27,18 +27,18 @@ export default function RestaurantsPage() {
       setLoading(true);
       try {
         // fetch categories by id or by title 'מסעדות' to find restaurants category ids
-        const { data: catsById } = await supabase.from("categories_shop").select("*").eq("id", CATEGORY_SHOP_ID);
-        const { data: catsByTitle } = await supabase.from("categories_shop").select("*").eq("title", "מסעדות");
+  const { data: catsById } = await supabase.from("shops_categories").select("*").eq("id", CATEGORY_SHOP_ID);
+  const { data: catsByTitle } = await supabase.from("shops_categories").select("*").eq("title", "מסעדות");
         const catsCombined = Array.from(new Map([...(catsById || []), ...(catsByTitle || [])].map((c: any) => [c.id, c])).values());
         const categoryIds = (catsCombined || []).map((c: any) => c.id);
 
         // fetch subcategories for those category ids
         if (categoryIds.length > 0) {
           const { data: subs } = await supabase
-            .from("categories_sub_shop")
+            .from("shops_sub_categories")
             .select("*")
             .in("category_id", categoryIds)
-            .order("created_at", { ascending: true });
+            .order("id", { ascending: true });
           setSubcats((subs || []) as CategorySubShop[]);
 
           // fetch shops attached to these category ids
@@ -52,9 +52,9 @@ export default function RestaurantsPage() {
             const { data: prods } = await supabase
               .from("products")
               .select("*")
-              .in("shop", shopIds)
+              .in("shop_id", shopIds)
               .eq("active", true)
-              .order("created_at", { ascending: false });
+              .order("id", { ascending: false });
             prodsFromSh = (prods || []) as Product[];
           }
 
@@ -65,7 +65,7 @@ export default function RestaurantsPage() {
             .select("*")
             .in("category", categoryIds)
             .eq("active", true)
-            .order("created_at", { ascending: false });
+            .order("id", { ascending: false });
           prodsFromCategory = (prodsCat || []) as Product[];
 
           // merge products (dedupe by id)
@@ -77,7 +77,7 @@ export default function RestaurantsPage() {
           setProducts(mergedProducts as Product[]);
 
           // ensure shops referenced by merged products are included
-          const productShopIds = Array.from(new Set(mergedProducts.map((p) => String((p as any).shop))));
+          const productShopIds = Array.from(new Set(mergedProducts.map((p) => String((p as any).shop_id ?? (p as any).shop))));
           const missingShopIds = productShopIds.filter((id) => !fetchedShops.find((s) => String(s.id) === id));
           if (missingShopIds.length > 0) {
             const { data: extraSh } = await supabase.from("shops").select("*").in("id", missingShopIds);
@@ -130,7 +130,7 @@ export default function RestaurantsPage() {
                 <Link key={sc.id} href={`/categories_sub_shop/${sc.id}`} className="flex flex-col items-center gap-2">
                   <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100 relative">
                     {sc.image_url ? (
-                      <Image src={sc.image_url} alt={sc.title} fill className="object-cover" />
+                      <Image src={sc.image_url} alt={sc.title ?? ""} fill className="object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">{sc.title?.[0]}</div>
                     )}
@@ -150,11 +150,11 @@ export default function RestaurantsPage() {
               {shops.map((s) => (
                 <div key={s.id} className="flex-shrink-0 w-28 text-center">
                   <button
-                    onClick={() => setActiveShop((prev) => (prev?.id === s.id ? null : s))}
+                    onClick={() => setActiveShop((prev: Shop | null) => (prev?.id === s.id ? null : s))}
                     className="flex flex-col items-center gap-2 w-full"
                   >
                     <div className={`w-16 h-16 rounded-full overflow-hidden bg-gray-100 relative border ${activeShop?.id === s.id ? 'ring-2 ring-primary' : ''}`}>
-                      <Image src={(s.logo_url as string) || "/placeholder.svg"} alt={s.shop_name} fill className="object-cover" />
+                      <Image src={(s.logo_url as string) || "/placeholder.svg"} alt={s.shop_name ?? ""} fill className="object-cover" />
                     </div>
                     <div className="text-sm truncate w-full">{s.shop_name}</div>
                   </button>
