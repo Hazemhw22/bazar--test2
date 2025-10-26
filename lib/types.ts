@@ -344,9 +344,6 @@ export interface ProductCategory {
     name: string;
     logo_url?: string;
   };
-  // compatibility
-  title?: string;
-  desc?: string;
 }
 
 export interface ProductSubCategory {

@@ -33,13 +33,13 @@ export default function CategoryMenu() {
             <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
               <Image
                 src={String(cat.image_url ?? "/fallback.png")}
-                alt={String(cat.title ?? "")}
+                alt={String(cat.name ?? "")}
                 width={32}
                 height={32}
                 className="object-cover"
               />
             </div>
-            <span className="text-xs font-medium">{String(cat.title ?? "")}</span>
+            <span className="text-xs font-medium">{String(cat.name ?? "")}</span>
           </Link>
         ))}
       </div>

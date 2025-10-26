@@ -17,7 +17,8 @@ function formatPrice(amount: number | string | null | undefined): string {
 
 export default function ProductRowCard({ product }: { product: Product }) {
   const { t } = useI18n();
-  const imageSrc = (product.images && product.images.length > 0 ? product.images[0] : "/placeholder.svg") as string;
+  // Prefer canonical `image_url`, fall back to first item in `images` array, then placeholder
+  const imageSrc = (product.image_url ?? (product.images && product.images.length > 0 ? product.images[0] : "/placeholder.svg")) as string;
   // use product.rating rounded, default to 3/5 as requested
   const rating = Math.round((product as any).rating ?? 3);
   const priceNum = typeof product.price === "string" ? parseFloat(String(product.price)) : (product.price as number);
@@ -39,7 +40,7 @@ export default function ProductRowCard({ product }: { product: Product }) {
       id: Number(product.id),
       name: String(product.name ?? ""),
       price: hasSale ? (salePriceNum ?? priceNum) : priceNum,
-      image: String(imageSrc ?? "/placeholder.svg"),
+  image: String(imageSrc ?? "/placeholder.svg"),
       quantity: 1,
     });
   };
@@ -52,7 +53,7 @@ export default function ProductRowCard({ product }: { product: Product }) {
     name: String(product.name ?? ""),
     price: hasSale ? Number(product.sale_price) : Number(product.price as any),
     discountedPrice: product.sale_price ?? product.price,
-    image: String(imageSrc ?? "/placeholder.svg"),
+  image: String(imageSrc ?? "/placeholder.svg"),
     store: (product.shops as any)?.name ?? (product.shops as any)?.shop_name ?? t("common.unknown"),
     rating: (product as any).rating ?? 0,
     reviews: (product as any).reviews ?? 0,

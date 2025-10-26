@@ -45,8 +45,9 @@ export default function Products() {
   useQuery({
     queryKey: ["categories-brands"],
     queryFn: async () => {
-      const { data: cats } = await supabase.from("categories").select("name, id, image_url, description, created_at, updated_at, shop_id")
-      const { data: shops } = await supabase.from("shops").select("name")
+  // fetch product categories (products_categories) to populate category pills
+  const { data: cats } = await supabase.from("products_categories").select("name, id, image_url, description, created_at, updated_at, shop_id")
+  const { data: shops } = await supabase.from("shops").select("name")
 
       setCategories([
         { id: 0, name: "All", description: "", shop_id: 0, created_at: "", updated_at: "" },
@@ -69,7 +70,7 @@ export default function Products() {
   // Fetch subcategories when category changes
   useEffect(() => {
     if (selectedCategory !== "All") {
-      const catObj = categories.find((cat) => cat.title === selectedCategory)
+      const catObj = categories.find((cat) => cat.name === selectedCategory)
       if (catObj) {
         supabase
           .from("categories_sub")
@@ -100,24 +101,56 @@ export default function Products() {
   })
 
   const filteredProducts = useMemo(() => {
+    // Find selected category object (if any) to compare by id first
+    const selCat = selectedCategory !== "All" ? categories.find((c) => String(c.name) === String(selectedCategory)) : null
     return products
-        .filter((product: any) =>
+      .filter((product: any) =>
         search
           ? product.name?.toLowerCase().includes(search.toLowerCase()) ||
             product.description?.toLowerCase().includes(search.toLowerCase())
           : true,
       )
-      .filter((product: any) => (selectedCategory !== "All" ? product.categories?.name === selectedCategory : true))
-      .filter((product: any) => (selectedSubcategory ? product.categories_sub?.name === selectedSubcategory : true))
+      .filter((product: any) => {
+        if (selectedCategory === "All") return true
+        // if we found the category object, prefer comparing by category_id
+        if (selCat) {
+          const catId = Number(selCat.id)
+          if (Number(product.category_id) === catId) return true
+          // product may include a joined category under different keys
+          if (product.products_categories) {
+            // could be object or array
+            if (Array.isArray(product.products_categories)) {
+              if (product.products_categories.some((pc: any) => Number(pc.id) === catId || String(pc.name) === String(selectedCategory))) return true
+            } else if (Number(product.products_categories.id) === catId || String(product.products_categories.name) === String(selectedCategory)) {
+              return true
+            }
+          }
+          return false
+        }
+        // fallback: compare by joined names if category object not found
+        return (
+          (product.products_categories && (String(product.products_categories.name) === String(selectedCategory))) ||
+          (product.categories && String(product.categories.name) === String(selectedCategory)) ||
+          false
+        )
+      })
+      .filter((product: any) => {
+        if (!selectedSubcategory) return true
+        // Try several common join names for product subcategory
+        if (product.products_sub_categories) {
+          if (Array.isArray(product.products_sub_categories)) {
+            return product.products_sub_categories.some((sc: any) => String(sc.name) === String(selectedSubcategory))
+          }
+          return String(product.products_sub_categories.name) === String(selectedSubcategory)
+        }
+        if (product.categories_sub) return String(product.categories_sub.name) === String(selectedSubcategory)
+        return true
+      })
       .filter((product: any) => (selectedBrand !== "All" ? product.shops?.name === selectedBrand : true))
       .filter((product: any) => Number(product.price) >= minPrice && Number(product.price) <= maxPrice)
       .filter((product: any) => (rating.length > 0 ? rating.includes(Math.round(product.rating || 0)) : true))
-      .filter((product: any) =>
-        selectedSizes.length > 0 && product.size ? selectedSizes.includes(String(product.size)) : true,
-      )
-      .filter((product: any) =>
-        selectedColors.length > 0 && product.color ? selectedColors.includes(String(product.color)) : true,
-      )
+      .filter((product: any) => (selectedSizes.length > 0 && product.size ? selectedSizes.includes(String(product.size)) : true))
+      .filter((product: any) => (selectedColors.length > 0 && product.color ? selectedColors.includes(String(product.color)) : true))
   }, [products, search, selectedCategory, selectedSubcategory, selectedBrand, minPrice, maxPrice, rating, selectedSizes, selectedColors])
 
   const toggleRating = (star: number) => {
@@ -154,7 +187,7 @@ export default function Products() {
           >
             {categories.map((cat: Category | string) => {
               const isCategoryObject = typeof cat !== "string"
-              const title = isCategoryObject ? (cat as Category).title : (cat as string)
+              const title = isCategoryObject ? (cat as Category).name : (cat as string)
 
               return (
                   <button

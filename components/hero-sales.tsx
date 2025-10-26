@@ -18,67 +18,44 @@ export function HeroSales() {
 
     ;(async () => {
       try {
-        // Fetch products that are on sale (avoid complex join filters)
+        // Fetch recent products (no special filters) and include canonical image_url
         const { data: productsData, error: productsError } = await supabase
           .from("products")
-          // select canonical columns; use shop_id (foreign key) rather than legacy `shop`
-          .select("id, name, price, sale_price, onsale, images, shop_id")
-          .eq("onsale", true)
+          .select("id, name, price, sale_price, onsale, images, image_url, shop_id")
           .order("created_at", { ascending: false })
-          .limit(50) // fetch extra so we can filter out unwanted shops and still have results
+          .limit(50)
 
         if (productsError) throw productsError
         if (!mounted) return
 
-        // Fetch shops that belong to category_id = 15 (restaurants) and exclude their products
-        const { data: excludedShops, error: shopsError } = await supabase
-          .from("shops")
-          .select("id, name, category_id")
-          .eq("category_id", 15)
+        const all = (productsData ?? []) as any[]
 
-        if (shopsError) {
-          console.error("hero-sales: shopsError", shopsError)
-          throw shopsError
-        }
-        if (!mounted) return
-
-        // Coerce ids to strings to avoid number/string mismatch
-        const excludedIds = new Set((excludedShops ?? []).map((s: any) => String(s.id)))
+        // Fetch shops for the collected shop_ids so we can display shop names
+        const shopIds = Array.from(new Set(all.map((p) => p.shop_id).filter(Boolean)))
         const shopNameMap: Record<string, string> = {}
-        ;(excludedShops ?? []).forEach((s: any) => {
-          shopNameMap[String(s.id)] = s.name
-        })
+        if (shopIds.length > 0) {
+          const { data: shops } = await supabase.from("shops").select("id, name").in("id", shopIds)
+          ;(shops ?? []).forEach((s: any) => {
+            shopNameMap[String(s.id)] = s.name
+          })
+        }
 
-        // Debug logs to inspect shapes at runtime
-        console.debug("hero-sales: fetched products count:", (productsData ?? []).length)
-        console.debug("hero-sales: excluded shops:", excludedShops)
-
-        // Filter out products that belong to excluded shops (compare as strings)
-  // filter using shop_id which is the canonical foreign key on Product
-  const filtered = (productsData ?? []).filter((p: any) => !excludedIds.has(String(p.shop_id)))
-
-        // Debug filtered counts
-        console.debug("hero-sales: filtered products count:", filtered.length)
-
-        // If still no products, we can fall back to the original unfiltered list (optional)
-        const finalProducts = filtered.length > 0 ? filtered.slice(0, 4) : (productsData ?? []).slice(0, 4)
+        // pick first 4 products as hero slides (no exclusions)
+        const finalProducts = all.slice(0, 4)
 
         const mapped = finalProducts.map((p: any) => {
           const displayPrice = p.onsale && p.sale_price ? p.sale_price : p.price
           return {
             id: p.id,
-            // prefer `name` (DB) but fall back to legacy `title` if present
             name: p.name ?? p.title ?? "Untitled",
-            subtitle: `₪${displayPrice ?? "0"} ${
-                shopNameMap[String(p.shop_id)] ? "- " + shopNameMap[String(p.shop_id)] : ""
-              }`,
-            image: p.images && p.images.length > 0 ? p.images[0] : "/placeholder.svg",
+            subtitle: `₪${displayPrice ?? "0"} ${shopNameMap[String(p.shop_id)] ? "- " + shopNameMap[String(p.shop_id)] : ""}`,
+            image: p.image_url ?? (p.images && p.images.length > 0 ? p.images[0] : "/placeholder.svg"),
           }
         })
 
         setProducts(mapped)
       } catch (err) {
-    console.error("❌ Failed to load products:", err)
+        console.error("❌ Failed to load products:", err)
       }
     })()
 

@@ -17,7 +17,7 @@ export async function fetchShopsMapAndFilter(ids: Array<string | number>, exclud
   // select canonical and common legacy fields; avoid requesting columns that may not exist (e.g. category_shop_id)
   const { data, error } = await supabase
     .from('shops')
-    .select('id, name, shop_name, category_id, logo_url')
+    .select('id, name, category_id, logo_url')
     .in('id', ids);
 
   if (error) {
@@ -29,7 +29,7 @@ export async function fetchShopsMapAndFilter(ids: Array<string | number>, exclud
   result.list = data || [];
   result.list.forEach((s: any) => {
     // normalize name from either `name` (canonical) or `shop_name` (legacy)
-    const normalized = { ...s, display_name: s.name ?? s.shop_name };
+    const normalized = { ...s, display_name: s.name ?? s.name };
     result.map[s.id] = normalized;
     const shopCategory = Number(s.category_shop_id ?? s.category_id ?? 0);
     if (excludeCategoryId == null || shopCategory !== excludeCategoryId) {

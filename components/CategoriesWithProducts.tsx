@@ -3,15 +3,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import type { Product, CategoryShop } from "@/lib/types";
+import type { Product, Category } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 import { ProductCard } from "./ProductCard";
 import { useI18n } from "../lib/i18n";
 
 export default function CategoriesWithProducts() {
-  const [categories, setCategories] = useState<CategoryShop[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [productsMap, setProductsMap] = useState<Record<number, Product[]>>({});
-  const [excludedShopIds, setExcludedShopIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<number | "all">("all");
   const { t } = useI18n();
@@ -21,50 +20,23 @@ export default function CategoriesWithProducts() {
     async function load() {
       setLoading(true);
 
-      // fetch shops that belong to category_shop_id = 15 (restaurants) and exclude them
-      const { data: restShops } = await supabase.from("shops").select("id").eq("category_shop_id", 15);
-      const excludedShops = (restShops || []).map((s: any) => s.id as number);
-      setExcludedShopIds(excludedShops);
-
-      // fetch categories (include all categories) - we'll show featured categories
+      // fetch product categories from Supabase table `products_categories`
+      // (note: table name is plural according to your schema)
       const { data: cats } = await supabase
-        .from("shops_categories")
+        .from("products_categories")
         .select("*")
-        .neq("id", 15) // do not include category_shop id = 15
-        .order("id", { ascending: true })
-        .limit(12);
+        .order("id", { ascending: true });
 
-      const categoriesList = (cats || []) as CategoryShop[];
+      const categoriesList = (cats || []) as Category[];
       if (!mounted) return;
       setCategories(categoriesList);
 
       const promises = categoriesList.map(async (c: any) => {
-        // fetch shops that belong to this category (shops.category_shop_id === c.id)
-        const { data: shopsOfCategory } = await supabase
-          .from("shops")
-          .select("id")
-          .eq("category_shop_id", c.id);
+        // Fetch products for this product category directly
+        const selectFields =
+          "id, created_at, updated_at, shop_id, name, description, price, image_url, images, category_id, sale_price, onsale";
 
-        const shopIds = (shopsOfCategory || []).map((s: any) => Number(s.id));
-
-        // build products query: products where shop IN shopIds and active
-        if (shopIds.length > 0) {
-          return supabase
-            .from("products")
-            // prefer canonical columns: name, description, shop_id
-            .select("id, created_at, updated_at, shop_id, name, description, price, images, category_id, sale_price, onsale")
-            .in("shop_id", shopIds)
-            .eq("onsale", true)
-            .limit(12);
-        }
-
-        // fallback: attempt to fetch products by category_id if no shops found
-        return supabase
-          .from("products")
-          .select("id, created_at, updated_at, shop_id, name, description, price, images, category_id, sale_price, onsale")
-          .eq("category_id", c.id)
-          .eq("onsale", true)
-          .limit(12);
+        return supabase.from("products").select(selectFields).eq("category_id", c.id);
       });
 
       const results = await Promise.all(promises);
@@ -91,8 +63,8 @@ export default function CategoriesWithProducts() {
     const seen = new Set<string>();
     const out: Product[] = [];
     for (const p of arr) {
-      // skip products linked to excluded category ids (15, 18, 34)
-      const catId = Number((p as any).category);
+      // skip products linked to excluded product category ids if any (15, 18, 56)
+      const catId = Number((p as any).category_id);
       if ([15, 18, 56].includes(catId)) continue;
       const pid = String(p.id);
       if (!seen.has(pid)) {

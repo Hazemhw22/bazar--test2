@@ -510,7 +510,7 @@ export default function ShopDetailPage() {
                     }`}
                   >
                     {cat.image_url ? (
-                      <Image src={String(cat.image_url ?? "/placeholder.svg")} alt={String(cat.title ?? "")} fill className="object-cover rounded-full" />
+                      <Image src={String(cat.image_url ?? "/placeholder.svg")} alt={String(cat.name ?? "")} fill className="object-cover rounded-full" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-white font-bold">{String(cat.name ?? "").charAt(0)}</div>
                     )}
