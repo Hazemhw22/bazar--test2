@@ -107,16 +107,16 @@ export default function ProductRowCard({ product }: { product: Product }) {
                     );
                   })}
               </div>
+              {hasSale && (
+                <div className="text-sm text-gray-400 mt-1">
+                  <span className="line-through">{formatPrice(product.price)}</span>
+                </div>
+              )}
             </div>
 
               <div className="text-base font-bold text-gray-900 dark:text-gray-100 text-right">
               {formatPrice(hasSale ? Number(product.sale_price) : product.price)}
             </div>
-          {hasSale && (
-            <div className="text-sm text-gray-400">
-              <span className="line-through">{formatPrice(product.price)}</span>
-            </div>
-          )}
         </div>
 
         {/* Right - Image */}

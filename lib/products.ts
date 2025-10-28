@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { createServiceClient } from './supabase/service';
 import { fetchShopsMapAndFilter } from './shops';
 import { normalizeProduct } from './normalizers';
 
@@ -19,6 +19,9 @@ export async function fetchProducts(options: FetchProductsOptions = {}) {
     excludeCategoryIds,
     excludeShopCategoryId = null,
   } = options;
+
+  // Use service client to bypass RLS
+  const supabase = createServiceClient();
 
   // Only request actual DB columns (avoid legacy aliases like `title`/`desc` which may not exist)
   let query = supabase

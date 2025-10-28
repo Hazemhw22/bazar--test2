@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createServiceClient } from './supabase/service';
 import type { Product, Shop } from "./types";
 
 // Avoid direct import of next/headers to prevent issues with pages directory
@@ -97,7 +98,8 @@ export const fetchProductById = async (id: string | number) => {
 
 // Helper function to fetch shops (with work_hours as string[])
 export const fetchShops = async () => {
-  const supabase = createServerSupabaseClient();
+  // Use service client to bypass RLS
+  const supabase = createServiceClient();
   // Try ordering by created_at if present; fall back to ordering by id or no order.
   let shops: any[] | null = null;
   try {

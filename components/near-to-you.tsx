@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { ChevronRight, ChevronLeft, Heart, Plus, Star, Eye } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { getProducts } from "@/lib/actions/products";
 import { Product } from "@/lib/types";
 import { normalizeProduct } from "@/lib/normalizers";
 import { useFavorites } from "./favourite-items";
@@ -31,9 +32,8 @@ export function NearToYou() {
     try {
       setLoading(true);
       setError(null);
-  // Use centralized product fetcher without legacy filters (do not request removed `active` column)
-  const { fetchProducts } = await import("@/lib/products");
-  const prods = await fetchProducts({ limit: 12, orderBy: { column: "created_at", ascending: false } });
+      // Use server action to bypass RLS
+      const prods = await getProducts({ limit: 12, orderBy: { column: "created_at", ascending: false } });
       setProducts(prods || []);
     } catch (err) {
       console.error("Error fetching products:", err);

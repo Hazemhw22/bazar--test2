@@ -33,6 +33,11 @@ import {
   supabase,
   incrementShopVisitCountClient,
 } from "@/lib/supabase";
+import { 
+  getProductsByShop, 
+  getAllShops, 
+  getShopSubcategories 
+} from "@/lib/actions/products";
 import { useQuery } from "@tanstack/react-query";
 import type { Shop, Category, Product, WorkHours, CategoryShop, CategorySubShop } from "@/lib/types";
 import { ProductCard } from "../../../components/ProductCard";
@@ -77,22 +82,9 @@ export default function ShopDetailPage() {
     queryKey: ["products", shop?.id],
     enabled: !!shop?.id,
     queryFn: async () => {
-      // Prefer shop_id FK; fall back to legacy `shop` column if necessary.
-  let query = supabase.from("products").select("*");
-      try {
-        // test presence of shop_id column (safe quick probe)
-        const test = await supabase.from("products").select("shop_id").limit(1).maybeSingle();
-        if (!(test as any).error) {
-          query = query.eq("shop_id", shop?.id as any);
-        } else {
-          query = query.eq("shop", shop?.id as any);
-        }
-      } catch (err) {
-        query = query.eq("shop", shop?.id as any);
-      }
-      const { data, error } = await query;
-      if (error) throw error;
-      return data ?? [];
+      // Use server action to bypass RLS
+      if (!shop?.id) return [];
+      return await getProductsByShop(shop.id);
     },
   });
 
@@ -111,11 +103,12 @@ export default function ShopDetailPage() {
 
     (async () => {
       try {
-        // new tables: shops_categories, shops_sub_categories
-        const { data: cat } = await supabase.from("shops_categories").select("*").eq("id", catId).single();
-        setShopCategories(cat ? [cat as CategoryShop] : []);
-
-        const { data: subs } = await supabase.from("shops_sub_categories").select("*").eq("category_id", catId);
+        // Use server action to bypass RLS
+        const [cat, subs] = await Promise.all([
+          supabase.from("shops_categories").select("*").eq("id", catId).single(),
+          getShopSubcategories(catId)
+        ]);
+        setShopCategories(cat.data ? [cat.data as CategoryShop] : []);
         setShopSubcategories((subs as CategorySubShop[]) || []);
       } catch (err) {
         console.error("Error fetching shop's declared categories:", err);
@@ -126,7 +119,7 @@ export default function ShopDetailPage() {
   // جلب بيانات المتجر
   useEffect(() => {
     setLoading(true);
-    fetchShops()
+    getAllShops()
       .then((shops) => {
         const found = shops.find((s) => String(s.id) === shopId);
         setShop(found ?? null);

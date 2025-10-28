@@ -1,87 +1,43 @@
     "use client";
 
-    import React, { useEffect, useMemo, useState } from "react";
-    import Image from "next/image";
-    import Link from "next/link";
-    import { useSwipeable } from "react-swipeable";
-    import { supabase } from "../lib/supabase";
-  import type { Shop } from "../lib/types";
-    import { useI18n } from "../lib/i18n";
+import React, { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useSwipeable } from "react-swipeable";
+import { supabase } from "../lib/supabase";
+import { getPopularStores } from "../lib/actions/products";
+import type { Shop } from "../lib/types";
+import { useI18n } from "../lib/i18n";
 
-    export default function PopularStores() {
-      const { t } = useI18n();
-      const [shops, setShops] = useState<Shop[]>([]);
-      const [loading, setLoading] = useState(true);
-      const [currentIndex, setCurrentIndex] = useState(0);
-      const [isPaused, setIsPaused] = useState(false);
+export default function PopularStores() {
+  const { t } = useI18n();
+  const [shops, setShops] = useState<Shop[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
-      useEffect(() => {
-        let mounted = true;
+  useEffect(() => {
+    let mounted = true;
 
-        const fetchShops = async () => {
-          setLoading(true);
-            try {
-            // fetch shops using canonical column names from the new schema
-            const { data: shopsData, error: shopsError } = await supabase
-              .from("shops")
-              .select("id,name,logo_url,cover_url,category_id");
-            if (!mounted) return;
-            if (shopsError || !shopsData) {
-              setShops([]);
-              return;
-            }
+    const fetchShops = async () => {
+      setLoading(true);
+      try {
+        // Use server action to bypass RLS
+        const top3 = await getPopularStores();
+        if (mounted) setShops(top3 as unknown as Shop[]);
+      } catch (err) {
+        console.error("Error fetching popular shops:", err);
+        if (mounted) setShops([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
 
-            // fetch products and compute counts per shop
-            const { data: productsData } = await supabase.from("products").select("shop_id");
-            const counts: Record<string, number> = {};
-            (productsData || []).forEach((p: any) => {
-              const key = String((p as any).shop_id ?? "");
-              counts[key] = (counts[key] || 0) + 1;
-            });
-
-            const shopsWithCount = (shopsData || []).map((s: any) => ({
-              id: s.id,
-              name: s.name,
-              cover_url: s.cover_url,
-              logo_url: s.logo_url,
-              category_id: s.category_id,
-              productsCount: counts[String(s.id)] || 0,
-            }));
-
-            // keep only the shops that were returned, and preserve the order of wantedIds
-            const byId: Record<string | number, any> = {};
-            shopsWithCount.forEach((s: any) => {
-              byId[s.id] = s;
-            });
-
-            // Determine top3: prefer global wantedIds if provided, otherwise use first 3 shops returned
-            const globalWanted: any = (globalThis as any).wantedIds;
-            let top3: any[] = [];
-            if (Array.isArray(globalWanted) && globalWanted.length > 0) {
-              top3 = globalWanted.map((id: any) => byId[id] || null).filter(Boolean);
-            } else {
-              top3 = shopsWithCount.slice(0, 3);
-            }
-
-            // fill with placeholders if fewer than 3
-            while (top3.length < 3) {
-              top3.push({ id: `placeholder-${top3.length}`, name: "", logo_url: "/placeholder.svg", productsCount: 0 } as any);
-            }
-
-      if (mounted) setShops(top3 as unknown as Shop[]);
-          } catch (err) {
-            console.error("Error fetching popular shops:", err);
-            if (mounted) setShops([]);
-          } finally {
-            if (mounted) setLoading(false);
-          }
-        };
-
-        fetchShops();
-        return () => {
-          mounted = false;
-        };
-      }, []);
+    fetchShops();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
       const heroItems = useMemo(() => shops.slice(0, 3), [shops]);
       const len = heroItems.length;

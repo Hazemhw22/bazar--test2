@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { ProductCard } from "./ProductCard";
 import type { Product } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
+import { getProducts } from "@/lib/actions/products";
 import { ChevronRight } from "lucide-react";
 import { useI18n } from "../lib/i18n";
 
@@ -31,8 +32,8 @@ export default function MainProductSection({
     async function fetchProducts() {
       setLoading(true);
       try {
-        const { fetchProducts } = await import("@/lib/products");
-        const prods = await fetchProducts({ limit: 8, orderBy: { column: "created_at", ascending: false } });
+        // Use server action to bypass RLS
+        const prods = await getProducts({ limit: 8, orderBy: { column: "created_at", ascending: false } });
         setProducts(prods || []);
       } catch (err) {
         console.error('Unexpected error fetching products:', err);

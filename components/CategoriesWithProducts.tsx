@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Product, Category } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
+import { getCategoriesWithProducts } from "@/lib/actions/products";
 import { ProductCard } from "./ProductCard";
 import { useI18n } from "../lib/i18n";
 
@@ -20,37 +21,21 @@ export default function CategoriesWithProducts() {
     async function load() {
       setLoading(true);
 
-      // fetch product categories from Supabase table `products_categories`
-      // (note: table name is plural according to your schema)
-      const { data: cats } = await supabase
-        .from("products_categories")
-        .select("*")
-        .order("id", { ascending: true });
+      try {
+        // Use server action to bypass RLS
+        const { categories: categoriesList, productsMap } = await getCategoriesWithProducts();
+        
+        if (!mounted) return;
+        setCategories(categoriesList);
+        setProductsMap(productsMap);
+        setLoading(false);
 
-      const categoriesList = (cats || []) as Category[];
-      if (!mounted) return;
-      setCategories(categoriesList);
-
-      const promises = categoriesList.map(async (c: any) => {
-        // Fetch products for this product category directly
-        const selectFields =
-          "id, created_at, updated_at, shop_id, name, description, price, image_url, images, category_id, sale_price, onsale";
-
-        return supabase.from("products").select(selectFields).eq("category_id", c.id);
-      });
-
-      const results = await Promise.all(promises);
-      const map: Record<number, Product[]> = {};
-      // results may be array of promises resolved values
-      for (let i = 0; i < results.length; i++) {
-        const r = results[i];
-        map[Number(categoriesList[i].id)] = (r && r.data) ? (r.data as Product[]) : [];
+        if (categoriesList.length > 0) setSelected("all");
+      } catch (error) {
+        console.error('Error loading categories with products:', error);
+        if (!mounted) return;
+        setLoading(false);
       }
-      if (!mounted) return;
-      setProductsMap(map);
-      setLoading(false);
-
-      if (categoriesList.length > 0) setSelected("all");
     }
     load();
     return () => {

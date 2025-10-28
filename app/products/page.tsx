@@ -7,7 +7,11 @@ import Image from "next/image"
 import { HeroSales } from "../../components/hero-sales"
 import { Dialog } from "@headlessui/react"
 import { supabase } from "../../lib/supabase"
-import { fetchProducts } from "../../lib/products"
+import { 
+  getProducts, 
+  getCategories, 
+  getSubcategories 
+} from "../../lib/actions/products"
 import { ProductsList } from "../../components/product-list"
 import ProductRowCard from "../../components/ProductRowCard"
 import { DualRangeSlider } from "../../components/ui/dualrangeslider"
@@ -45,9 +49,11 @@ export default function Products() {
   useQuery({
     queryKey: ["categories-brands"],
     queryFn: async () => {
-  // fetch product categories (products_categories) to populate category pills
-  const { data: cats } = await supabase.from("products_categories").select("name, id, image_url, description, created_at, updated_at, shop_id")
-  const { data: shops } = await supabase.from("shops").select("name")
+  // fetch product categories and shops using server actions to bypass RLS
+  const [cats, shops] = await Promise.all([
+    getCategories(),
+    supabase.from("shops").select("name")
+  ]);
 
       setCategories([
         { id: 0, name: "All", description: "", shop_id: 0, created_at: "", updated_at: "" },
@@ -61,7 +67,7 @@ export default function Products() {
           shop_id: cat.shop_id ?? 0,
         })))
       ])
-      setBrands(["All", ...(shops?.map((s: any) => s.name).filter(Boolean) ?? [])])
+      setBrands(["All", ...(shops?.data?.map((s: any) => s.name).filter(Boolean) ?? [])])
 
       return null
     },
@@ -72,11 +78,9 @@ export default function Products() {
     if (selectedCategory !== "All") {
       const catObj = categories.find((cat) => cat.name === selectedCategory)
       if (catObj) {
-        supabase
-          .from("categories_sub")
-          .select("id, title")
-          .eq("category_id", catObj.id)
-          .then(({ data }) => setSubcategories(data ?? []))
+        getSubcategories(catObj.id)
+          .then((data) => setSubcategories(data ?? []))
+          .catch(console.error);
       }
     } else {
       setSubcategories([])
@@ -92,9 +96,8 @@ export default function Products() {
   } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      // Use centralized fetch that requests canonical columns and attaches shops safely.
-      const prods = await fetchProducts({ limit: 200, orderBy: { column: "created_at", ascending: false }, onlyActive: false, excludeShopCategoryId: 15 });
-      // fetchProducts returns normalized Product[] objects; we can apply additional client filters if needed
+      // Use server action to bypass RLS
+      const prods = await getProducts({ limit: 200, orderBy: { column: "created_at", ascending: false }, onlyActive: false, excludeShopCategoryId: 15 });
       return prods as any[];
     },
     refetchInterval: 5000,

@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { createServiceClient } from './supabase/service';
 
 export interface ShopsFetchResult {
   map: Record<string | number, any>;
@@ -13,6 +13,9 @@ export interface ShopsFetchResult {
 export async function fetchShopsMapAndFilter(ids: Array<string | number>, excludeCategoryId?: number): Promise<ShopsFetchResult> {
   const result: ShopsFetchResult = { map: {}, allowedIds: [], list: [] };
   if (!ids || ids.length === 0) return result;
+
+  // Use service client to bypass RLS
+  const supabase = createServiceClient();
 
   // select canonical and common legacy fields; avoid requesting columns that may not exist (e.g. category_shop_id)
   const { data, error } = await supabase
