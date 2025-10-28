@@ -129,14 +129,14 @@ function OrderConfirmationContent() {
         if (productId != null) {
           const { data: productData } = await supabase
             .from("products")
-            .select("id, title, price, images, shop")
+            .select("id, name, price, images, shop")
             .eq("id", productId)
             .maybeSingle();
 
           if (productData) {
             result.product = {
               id: productData.id,
-              title: productData.title,
+              title: productData.name,
               price: typeof productData.price === "number" ? productData.price : Number(productData.price) || 0,
               images: productData.images || [],
             };

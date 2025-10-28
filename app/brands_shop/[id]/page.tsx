@@ -28,7 +28,7 @@ export default function BrandDetail() {
         // fetch products by brand - assumption: products table has a `brand_id` or `brand` column
         const { data: prods } = await supabase
           .from("products")
-          .select("id, shop_id, title, desc, price, images, category, sale_price, active, brand_id, brand")
+          .select("id, shop_id, name, description, price, images, category, sale_price, active, brand_id, brand")
           .or(`brand_id.eq.${id},brand.eq.${b?.name ?? b?.brand ?? ''}`)
           .eq("active", true)
           .order("id", { ascending: false });

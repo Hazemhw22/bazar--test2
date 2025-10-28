@@ -103,7 +103,7 @@ export async function getSubcategories(categoryId: number) {
     
     const { data, error } = await supabase
       .from("categories_sub")
-      .select("id, title")
+      .select("id, name, title")
       .eq("category_id", categoryId);
     
     if (error) throw error;

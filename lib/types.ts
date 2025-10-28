@@ -447,6 +447,10 @@ export interface Product {
   images?: string[]; // JSONB for multiple images (array of URLs)
   created_at: string;
   updated_at: string;
+  view_count?: number;
+  cart_count?: number;
+  rating?: number;
+  reviews?: number;
   shops?: {
     id: number;
     name: string;

@@ -151,7 +151,7 @@ export default function CheckoutPage() {
       }
 
       if (categoryIds.length > 0) {
-        const { data: cats } = await supabase.from("categories").select("id, title").in("id", categoryIds as any[]);
+        const { data: cats } = await supabase.from("categories").select("id, name").in("id", categoryIds as any[]);
         cats?.forEach((c: any) => (categoryMap[Number(c.id)] = c));
       }
 

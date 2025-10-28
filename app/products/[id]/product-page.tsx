@@ -31,17 +31,22 @@ import { supabase } from "../../../lib/supabase";
 import { ProductViewCounter } from "@/components/ProductViewCounter";
 
 async function incrementProductCartCount(productId: string) {
-  const { data, error } = await supabase
-    .from("products")
-    .select("cart_count")
-    .eq("id", productId)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from("products")
+      .select("cart_count")
+      .eq("id", productId)
+      .single();
 
-  if (error || !data) return;
+    if (error || !data) return;
 
-  const newCount = (data.cart_count ?? 0) + 1;
+    const newCount = (data.cart_count ?? 0) + 1;
 
-  await supabase.from("products").update({ cart_count: newCount }).eq("id", productId);
+    await supabase.from("products").update({ cart_count: newCount }).eq("id", productId);
+  } catch (error) {
+    // Silently fail if cart_count column doesn't exist
+    console.warn("Could not increment cart count:", error);
+  }
 }
 
 type ProductDetailProps = {
@@ -188,6 +193,22 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
   if (!product)
     return <div className="p-4 text-red-500">المنتج غير موجود أو حدث خطأ.</div>;
+
+  /* Helper function to get the correct image based on priority */
+  const getProductImages = (product: Product) => {
+    // Main image: prioritize image_url, then first image from images array
+    const mainImage = product.image_url || (product.images && product.images[0]) || "/pngimg.com - sony_playstation_PNG17546.png";
+    
+    // Gallery images: use images array if available, otherwise create array with main image
+    const galleryImages = product.images && product.images.length > 0 
+      ? product.images 
+      : [mainImage];
+    
+    return { mainImage, galleryImages };
+  };
+
+  const { mainImage, galleryImages } = getProductImages(product);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1f1530] via-[#281a39] to-[#2a2340] text-white flex flex-col items-center py-6 px-4">
 
@@ -196,12 +217,12 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         {/* Main image */}
         <div className="relative ">
           <div className="rounded-xl ">
-            <img src={String(product.images?.[activeImage] ?? "/pngimg.com - sony_playstation_PNG17546.png")} alt={String(product.name ?? "")} className="w-full h-64 object-contain rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.6)]" />
+            <img src={String(galleryImages[activeImage] ?? mainImage)} alt={String(product.name ?? "")} className="w-full h-64 object-contain rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.6)]" />
           </div>
 
           {/* small thumbnails (moved below image) */}
           <div className="mt-3 flex justify-center gap-3">
-            {product.images?.slice(0,3).map((img: any, idx: number) => (
+            {galleryImages.slice(0,3).map((img: any, idx: number) => (
               <button key={idx} onClick={() => setActiveImage(idx)} className={`w-14 h-14 rounded-lg p-1 bg-[rgba(0,0,0,0.35)] border ${activeImage===idx? 'border-white':'border-[rgba(255,255,255,0.06)]'}`}>
                 <img src={String(img ?? '/placeholder.svg')} alt={`thumb-${idx}`} className="w-full h-full object-contain rounded-md" />
               </button>
@@ -239,7 +260,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 name: String(product.name ?? ""),
                 price: Number(product.price) || 0,
                 discountedPrice: Number(product.sale_price ?? product.price) || 0,
-                image: String(product.images?.[0] ?? ""),
+                image: mainImage,
                 store: String(product.shops?.name ?? ""),
                 rating: Number((product as any).rating ?? 0),
                 reviews: Number((product as any).reviews ?? 0),
@@ -327,7 +348,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       {/* Add to list button */}
         <div className="w-full max-w-md mb-6">
           <button onClick={async () => {
-            addToCart({ id: Number(product.id), name: String(product.name ?? ''), price: Number(product.sale_price ?? product.price), image: String(product.images?.[0] ?? ''), quantity });
+            addToCart({ id: Number(product.id), name: String(product.name ?? ''), price: Number(product.sale_price ?? product.price), image: mainImage, quantity });
               await incrementProductCartCount(String(product.id));
           }}
           className="w-full py-3 rounded-xl bg-gradient-to-r from-[#3b66ff] to-[#7c8ca2] text-white font-bold shadow-[0_10px_30px_rgba(59,102,255,0.3)]">

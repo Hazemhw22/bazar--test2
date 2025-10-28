@@ -34,14 +34,14 @@ export default function BreadcrumbsNav() {
         const parentSegment = segments[index - 1];
 
         if (parentSegment === "products") {
-          const { data } = await supabase.from("products").select("title").eq("id", segment).single();
-          if (data?.title) setDynamicLabels(prev => ({ ...prev, [segment]: data.title }));
+          const { data } = await supabase.from("products").select("name").eq("id", segment).single();
+          if (data?.name) setDynamicLabels(prev => ({ ...prev, [segment]: data.name }));
         } else if (parentSegment === "shops") {
           const { data } = await supabase.from("shops").select("name").eq("id", segment).single();
           if (data?.name) setDynamicLabels(prev => ({ ...prev, [segment]: data.name }));
         } else if (parentSegment === "categories") {
-          const { data } = await supabase.from("categories").select("title").eq("id", segment).single();
-          if (data?.title) setDynamicLabels(prev => ({ ...prev, [segment]: data.title }));
+          const { data } = await supabase.from("categories").select("name").eq("id", segment).single();
+          if (data?.name) setDynamicLabels(prev => ({ ...prev, [segment]: data.name }));
         }
       }
     });

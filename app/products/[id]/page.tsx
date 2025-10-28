@@ -23,7 +23,7 @@ export default function ProductPage() {
         setLoading(true);
         const { data, error } = await supabase
           .from("products")
-          .select("*, shops(*), category")
+          .select("*, shops(*), products_categories(*), image_url, images")
           .eq("id", productId)
           .single();
 
