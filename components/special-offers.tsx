@@ -28,8 +28,8 @@ export function SpecialOffers() {
     try {
       setLoading(true);
       setError(null);
-  const { fetchProducts } = await import("@/lib/products");
-  const prods = await fetchProducts({ limit: 12, orderBy: { column: "created_at", ascending: false } });
+      const { getProducts } = await import("@/lib/actions/products");
+      const prods = await getProducts({ limit: 12, orderBy: { column: "created_at", ascending: false } });
       setProducts(prods || []);
     } catch (err) {
       console.error("Error fetching special offers:", err);
