@@ -302,7 +302,7 @@ export default function TrackOrderPage() {
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('tracking.orderDate', { default: 'Order Date' })}</p>
                   <p className="font-medium">
-                    {new Date(order.created_at).toLocaleDateString()}
+                    {new Date(order.created_at).toLocaleDateString('en-GB')}
                   </p>
                 </div>
               </div>
@@ -339,7 +339,7 @@ export default function TrackOrderPage() {
                     <h3 className="text-sm">{step.label}</h3>
                     {step.completed && (
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {t('tracking.completed', { default: 'Completed' })} • {new Date().toLocaleDateString()}
+                        {t('tracking.completed', { default: 'Completed' })} • {new Date().toLocaleDateString('en-GB')}
                       </p>
                     )}
                   </div>

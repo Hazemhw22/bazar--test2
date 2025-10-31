@@ -89,7 +89,7 @@
   ,"menu.orders": "הזמנות"
   ,"account.title": "החשבון שלי"
   ,"account.subtitle": "ניהול הגדרות והעדפות החשבון שלך"
-  ,"account.memberSince": "חבר מאז {date}"
+  ,"account.memberSince": "חבר מאז"
   ,"account.orderHistory": "היסטוריית הזמנות"
   ,"account.noOrders": "אין הזמנות"
   ,"account.noOrdersHint": "טרם ביצעת הזמנות."

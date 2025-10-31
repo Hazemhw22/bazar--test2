@@ -39,7 +39,7 @@ import OrderDetailsModal from "@/components/OrderDetailsModal"
 
 
 export default function EnhancedProfilePage() {
-  const { t, direction } = useI18n()
+  const { t, direction, locale } = useI18n()
   const [isLoading, setIsLoading] = useState(true)
   const [profileData, setProfileData] = useState<Profile | null>(null)
   const [ordersData, setOrdersData] = useState<OrderData[]>([])
@@ -280,12 +280,39 @@ export default function EnhancedProfilePage() {
                         <Camera size={14} />
                       </Button>
                     </div>
-                    <div className="text-center sm:text-left">
+                    <div className={`text-center ${direction === "rtl" ? "sm:text-right" : "sm:text-left"}`}>
                       <h3 className="text-xl font-semibold">{profileData?.name || t("account.guest")}</h3>
                       <p className="text-gray-600 dark:text-gray-400">{profileData?.email}</p>
-                      <p className="text-sm text-gray-500">
-                        {t("account.memberSince")} {profileData?.created_at ? new Date(profileData.created_at).toLocaleDateString() : ''}
-                      </p>
+                      <div className={`text-sm text-gray-500 ${direction === "rtl" ? "" : "text-center"}`}>
+                        {profileData?.created_at && (
+                          <>
+                            {direction === "rtl" ? (
+                              <>
+                                {t("account.memberSince")} {(() => {
+                                  const date = new Date(profileData.created_at);
+                                  let localeCode = locale === 'he' ? 'he-IL' : 'ar-EG';
+                                  
+                                  return date.toLocaleDateString(localeCode, { 
+                                    weekday: 'long', 
+                                    year: 'numeric', 
+                                    month: '2-digit', 
+                                    day: '2-digit' 
+                                  });
+                                })()}
+                              </>
+                            ) : (
+                              <>
+                                {t("account.memberSince")} {new Date(profileData.created_at).toLocaleDateString('en-GB', { 
+                                  weekday: 'long', 
+                                  year: 'numeric', 
+                                  month: '2-digit', 
+                                  day: '2-digit' 
+                                })}
+                              </>
+                            )}
+                          </>
+                        )}
+                      </div>
                       {profileData?.role && (
                         <span className="inline-block mt-1 px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full">
                           {typeof profileData.role === 'string' ? profileData.role : profileData.role.name}
@@ -379,7 +406,7 @@ export default function EnhancedProfilePage() {
                                 {productCount} {productCount === 1 ? t('tracking.product.item', { default: 'item' }) : t('tracking.product.items', { default: 'items' })}
                               </span>
                               <span className="text-xs text-gray-500 dark:text-gray-500">
-                                {new Date(String(order.created_at ?? "")).toLocaleDateString()}
+                                {new Date(String(order.created_at ?? "")).toLocaleDateString('en-GB')}
                               </span>
                             </div>
                             <div className={`flex items-center gap-3 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>

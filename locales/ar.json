@@ -90,7 +90,7 @@
   ,"menu.orders": "الطلبات"
   ,"account.title": "حسابي"
   ,"account.subtitle": "إدارة إعدادات وتفضيلات حسابك"
-  ,"account.memberSince": "عضو منذ {date}"
+  ,"account.memberSince": "عضو منذ"
   ,"account.orderHistory": "سجل الطلبات"
   ,"account.noOrders": "لا توجد طلبات"
   ,"account.noOrdersHint": "لم تقم بأي طلبات بعد."

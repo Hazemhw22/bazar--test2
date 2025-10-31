@@ -97,7 +97,7 @@
   ,"menu.help": "Help center"
   ,"account.title": "My Account"
   ,"account.subtitle": "Manage your account settings and preferences"
-  ,"account.memberSince": "Member since {date}"
+  ,"account.memberSince": "Member since"
   ,"account.orderHistory": "Order History"
   ,"account.noOrders": "No Orders Yet"
   ,"account.noOrdersHint": "You haven't placed any orders yet."

@@ -86,7 +86,7 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
               {t('tracking.orderNumber', { default: 'Order' })} #{order.id}
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              {new Date(order.created_at).toLocaleDateString()}
+              {new Date(order.created_at).toLocaleDateString('en-GB')}
             </p>
           </div>
           <div className={`flex items-center gap-3 ${direction === 'rtl' ? 'flex-row-reverse' : ''}`}>
@@ -195,7 +195,7 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
                 <div className={direction === 'rtl' ? 'text-right' : ''}>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('tracking.orderDate', { default: 'Order Date' })}</p>
                   <p className="font-medium">
-                    {new Date(order.created_at).toLocaleDateString()}
+                    {new Date(order.created_at).toLocaleDateString('en-GB')}
                   </p>
                 </div>
               </div>

@@ -217,7 +217,7 @@ export default function OrdersPage() {
                         {order.orders_products?.length || 0} {(order.orders_products?.length || 0) === 1 ? t('tracking.product.item', { default: 'item' }) : t('tracking.product.items', { default: 'items' })}
                       </span>
                       <span className="text-xs text-gray-500 dark:text-gray-500">
-                        {new Date(order.created_at).toLocaleDateString()}
+                        {new Date(order.created_at).toLocaleDateString('en-GB')}
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
