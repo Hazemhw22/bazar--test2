@@ -17,23 +17,32 @@ import { supabase } from "@/lib/supabase";
 import { useI18n } from "@/lib/i18n";
 
 interface OrderData {
-  id: string;
-  total: number;
+  id: number;
+  order_number: string;
+  total_amount: number;
+  subtotal: number;
+  delivery_cost: number;
   estimatedTime: string;
   deliveryAddress: string;
-  number?: string | number;
-  createdAt?: string;
-  shipping?: any;
-  paymentMethod?: string;
-  product?: {
-    id: number | string;
-    title?: string;
-    price?: number;
-    images?: string[];
-  };
+  createdAt: string;
+  order_type: string;
+  payment_method: string;
+  status: string;
+  products?: Array<{
+    id: number;
+    product_name: string;
+    final_unit_price: number;
+    item_total: number;
+    products?: {
+      id: number;
+      name: string;
+      image_url?: string;
+    };
+  }>;
   shop?: {
-    id?: number | string;
-    shop_name?: string;
+    id: number;
+    name: string;
+    logo_url?: string;
   };
 }
 
@@ -53,28 +62,21 @@ function OrderConfirmationContent() {
         let order: any = null;
 
         if (orderId) {
-          const { data, error } = await supabase
-            .from("orders")
-            .select("id, total, shipping_address, shipping_method, payment_method, created_at, product_id")
-            .eq("id", orderId)
-            .single();
-          if (error || !data) {
-            console.warn("Order not found by id, will try latest order for user", { orderId, error });
+          // Fetch order by ID using API route (bypasses RLS)
+          const response = await fetch(`/api/orders/${orderId}`);
+          
+          if (!response.ok) {
+            console.warn("Order not found by id, will try latest order for user", { orderId });
             // fallback: try latest order for current user
             const { data: sessionData } = await supabase.auth.getSession();
             const userId = sessionData?.session?.user?.id;
             if (userId) {
-              const { data: latest, error: latestErr } = await supabase
-                .from("orders")
-                .select("id, number, total, shipping_address, shipping_method, payment_method, created_at, product_id")
-                .eq("buyer_id", userId)
-                .order("created_at", { ascending: false })
-                .limit(1)
-                .maybeSingle();
-              if (!latestErr && latest) {
-                order = latest;
+              const latestResponse = await fetch(`/api/orders/latest?userId=${userId}`);
+              if (latestResponse.ok) {
+                const latestData = await latestResponse.json();
+                order = latestData.order;
               } else {
-                console.warn("No latest order found for user", { userId, latestErr });
+                console.warn("No latest order found for user", { userId });
               }
             }
             if (!order) {
@@ -84,7 +86,8 @@ function OrderConfirmationContent() {
               return;
             }
           } else {
-            order = data;
+            const responseData = await response.json();
+            order = responseData.order;
           }
         } else {
           // No orderId: fetch latest order for current user
@@ -92,72 +95,73 @@ function OrderConfirmationContent() {
           const userId = sessionData?.session?.user?.id;
           if (!userId) {
             // no user session – fallback to mock
-            setOrderData({ id: "", total: 0, estimatedTime: "30mins", deliveryAddress: "Home" });
+            setOrderData({
+              id: 0,
+              order_number: "N/A",
+              total_amount: 0,
+              subtotal: 0,
+              delivery_cost: 0,
+              estimatedTime: "30mins",
+              deliveryAddress: "Home",
+              createdAt: new Date().toISOString(),
+              order_type: "delivery",
+              payment_method: "cash",
+              status: "pending"
+            });
             setLoading(false);
             return;
           }
 
-          const { data, error } = await supabase
-            .from("orders")
-            .select("id, total, shipping_address, shipping_method, payment_method, created_at, product_id")
-            .eq("buyer_id", userId)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (error || !data) throw new Error("Latest order not found");
-          order = data;
+          const response = await fetch(`/api/orders/latest?userId=${userId}`);
+          if (!response.ok) throw new Error("Latest order not found");
+          const responseData = await response.json();
+          order = responseData.order;
         }
 
-        // normalize total
-        const total = typeof order.total === "number" ? order.total : Number(order.total) || 0;
+        // Debug: Log the raw order data
+        console.log("Raw order data from API:", order);
+        console.log("orders_products:", order.orders_products);
+        if (order.orders_products && order.orders_products.length > 0) {
+          console.log("First product:", order.orders_products[0]);
+          console.log("First product.products:", order.orders_products[0].products);
+        }
 
-        // Prepare result object
+        // Prepare result object with new schema
         const result: OrderData = {
           id: order.id,
-          total,
-          estimatedTime: "30mins",
-          deliveryAddress: order.shipping_address?.address || order.shipping_address?.city || "Home",
-          number: order.number ?? order.id,
+          order_number: order.order_number,
+          total_amount: order.total_amount,
+          subtotal: order.subtotal,
+          delivery_cost: order.delivery_cost,
+          estimatedTime: order.order_type === "delivery" ? "30-45 mins" : "15-20 mins",
+          deliveryAddress: order.customer_address || (order.order_type === "pickup" ? "Pickup at store" : "Home"),
           createdAt: order.created_at,
-          shipping: order.shipping_address,
-          paymentMethod: order.payment_method?.type || (order.payment_method && typeof order.payment_method === "string" ? order.payment_method : "unknown"),
+          order_type: order.order_type,
+          payment_method: order.payment_method,
+          status: order.status,
+          products: order.orders_products || [],
+          shop: order.shops || undefined,
         };
 
-        // Fetch product and shop details if we have product_id
-        const productId = order.product_id ?? null;
-        if (productId != null) {
-          const { data: productData } = await supabase
-            .from("products")
-            .select("id, name, price, images, shop")
-            .eq("id", productId)
-            .maybeSingle();
-
-          if (productData) {
-            result.product = {
-              id: productData.id,
-              title: productData.name,
-              price: typeof productData.price === "number" ? productData.price : Number(productData.price) || 0,
-              images: productData.images || [],
-            };
-
-            // fetch shop
-            const shopId = productData.shop;
-            if (shopId) {
-              const { data: shopData } = await supabase
-                .from("shops")
-                .select("id, shop_name, logo_url, address")
-                .eq("id", shopId)
-                .maybeSingle();
-              if (shopData) result.shop = { id: shopData.id, shop_name: shopData.shop_name };
-            }
-          }
-        }
+        console.log("Mapped result:", result);
+        console.log("Result products:", result.products);
 
         setOrderData(result);
       } catch (error) {
         console.error("Failed to fetch order:", error);
-        setOrderData({ id: orderId || "", total: 32.12, estimatedTime: "30mins", deliveryAddress: "Home" });
+        setOrderData({
+          id: Number(orderId) || 0,
+          order_number: "N/A",
+          total_amount: 0,
+          subtotal: 0,
+          delivery_cost: 0,
+          estimatedTime: "30mins",
+          deliveryAddress: "Home",
+          createdAt: new Date().toISOString(),
+          order_type: "delivery",
+          payment_method: "cash",
+          status: "pending"
+        });
       } finally {
         setLoading(false);
       }
@@ -215,8 +219,8 @@ function OrderConfirmationContent() {
 
         <h1 className="text-3xl font-bold mb-2">{t("orderConfirmation.title.line1")}</h1>
         <h1 className="text-3xl font-bold mb-4">{t("orderConfirmation.title.line2")}</h1>
-        {orderData?.number && (
-          <div className="text-sm text-muted-foreground mb-2">{t("orderConfirmation.labels.orderNumber")} <span className="font-semibold">{orderData.number}</span></div>
+        {orderData?.order_number && (
+          <div className="text-sm text-muted-foreground mb-2">{t("orderConfirmation.labels.orderNumber")} <span className="font-semibold">{orderData.order_number}</span></div>
         )}
         {orderData?.createdAt && (
           <div className="text-sm text-muted-foreground mb-4">{t("orderConfirmation.labels.placedOn")} <span className="font-semibold">{new Date(orderData.createdAt).toLocaleString()}</span></div>
@@ -234,19 +238,60 @@ function OrderConfirmationContent() {
             </div>
             <span className="font-semibold">{orderData?.estimatedTime}</span>
           </div>
-          <div className="flex items-start gap-4">
-            {orderData?.product?.images?.[0] ? (
-              <div className="w-20 h-20 rounded-md overflow-hidden bg-white/5 flex-shrink-0">
-                <img src={orderData.product.images[0]} alt={orderData.product.title} className="w-full h-full object-cover" />
-              </div>
+          {/* Products List */}
+          <div className="space-y-3">
+            {orderData?.products && orderData.products.length > 0 ? (
+              orderData.products.map((item, index) => (
+                <div key={item.id || `product-${index}`} className="p-3 bg-white/5 rounded-lg flex items-center gap-4 border border-[#666665]">
+                  <div className="w-16 h-16 rounded-md bg-white/10 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                    {item.products?.image_url ? (
+                      <img 
+                        src={item.products.image_url} 
+                        alt={item.product_name} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <ShoppingCart size={24} className="text-gray-500" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">{item.product_name}</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {orderData?.shop?.name && (
+                        <span className="text-xs px-2 py-1 rounded border border-blue-400 bg-blue-400/10 text-blue-300">
+                          {orderData.shop.name}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-semibold">₪{item.item_total.toFixed(2)}</div>
+                  </div>
+                </div>
+              ))
             ) : (
-              <div className="w-20 h-20 rounded-md bg-white/5 flex items-center justify-center text-muted-foreground">{t("orderConfirmation.product.noImage")}</div>
+              <div className="text-sm text-muted-foreground">{t("orderConfirmation.product.fallback")}</div>
             )}
+          </div>
 
-            <div className="flex-1">
-              <div className="font-semibold">{orderData?.product?.title || t("orderConfirmation.product.fallback")}</div>
-              <div className="text-sm text-muted-foreground">{orderData?.shop?.shop_name || t("orderConfirmation.product.storeFallback")}</div>
-              <div className="mt-2 font-semibold">₪{orderData?.product?.price?.toFixed ? orderData.product.price.toFixed(2) : orderData?.total.toFixed(2)}</div>
+          {/* Order Summary */}
+          <div className="border-t border-white/10 pt-3 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-400">Subtotal</span>
+              <span>₪{orderData?.subtotal.toFixed(2)}</span>
+            </div>
+            {orderData?.delivery_cost && orderData.delivery_cost > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Delivery</span>
+                <span>₪{orderData.delivery_cost.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-bold text-lg border-t border-white/10 pt-2">
+              <span>Total</span>
+              <span>₪{orderData?.total_amount.toFixed(2)}</span>
             </div>
           </div>
 
@@ -263,7 +308,7 @@ function OrderConfirmationContent() {
               <Wallet size={20} />
               <span>{t("orderConfirmation.payment.label")}</span>
             </div>
-            <span className="font-semibold">{orderData?.paymentMethod || "—"}</span>
+            <span className="font-semibold capitalize">{orderData?.payment_method || "—"}</span>
           </div>
         </div>
       </main>

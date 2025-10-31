@@ -97,17 +97,48 @@ export default function AuthPage() {
           password: formData.password,
         })
 
-        if (error) setGeneralError(error.message)
-        else if (data.session) {
+        if (error) {
+          setGeneralError(error.message)
+        } else if (data.session && data.user) {
+          // Check if user profile exists, create if not
+          try {
+            const profileCheckResponse = await fetch('/api/users/create-profile-service', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                userId: data.user.id,
+                email: data.user.email,
+                name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0],
+                roleId: 7, // Customer role
+              }),
+            });
+
+            if (!profileCheckResponse.ok) {
+              console.error('Failed to ensure user profile exists');
+            }
+          } catch (error) {
+            console.error('Error checking/creating profile on login:', error);
+          }
+
           setSuccessMessage("Login successful! Redirecting...")
           setTimeout(() => router.push("/account"), 500)
-        } else setGeneralError("Login failed. Please try again.")
+        } else {
+          setGeneralError("Login failed. Please try again.")
+        }
       } else {
         // Sign Up
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
-        })
+          options: {
+            data: {
+              full_name: formData.fullName,
+            },
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
+        });
 
         if (signUpError || !signUpData.user?.id) {
           setGeneralError(signUpError?.message || "Failed to create user.")
@@ -115,23 +146,45 @@ export default function AuthPage() {
           return
         }
 
-        // إضافة البيانات في جدول profiles
-        const { error: profileError } = await supabase.from("profiles").upsert({
-          id: signUpData.user.id,
-          full_name: formData.fullName,
-          email: formData.email,
-          registration_date: new Date().toISOString(),
-        })
+        // Create user profile immediately using service role
+        // This ensures the profile exists even before email verification
+        try {
+          const profileResponse = await fetch('/api/users/create-profile-service', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: signUpData.user.id,
+              email: formData.email,
+              name: formData.fullName,
+              roleId: 7, // Customer role
+            }),
+          });
 
-        if (profileError) {
-          setGeneralError(profileError.message)
-          setIsLoading(false)
-          return
+          const profileResult = await profileResponse.json();
+
+          if (!profileResponse.ok) {
+            console.error('Error creating user profile:', profileResult);
+            setGeneralError('Account created, but there was an error setting up your profile. Please contact support.');
+            setIsLoading(false);
+            return;
+          }
+
+          console.log('User profile created successfully:', profileResult);
+        } catch (error) {
+          console.error('Error in profile creation:', error);
+          setGeneralError('Account created, but there was an error setting up your profile. Please contact support.');
+          setIsLoading(false);
+          return;
         }
 
-        setSuccessMessage("Account created! Check your email for verification.")
-        setIsSignUp(false)
-        setFormData((prev) => ({ ...prev, password: "", confirmPassword: "" }))
+        // Show success message
+        setSuccessMessage(t("auth.signUpSuccess") || "Account created successfully! Please check your email to verify your account.");
+        
+        // Reset form
+        setIsSignUp(false);
+        setFormData((prev) => ({ ...prev, password: "", confirmPassword: "" }));
       }
     } catch {
       setGeneralError("An unexpected error occurred. Please try again.")

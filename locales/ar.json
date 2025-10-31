@@ -122,7 +122,6 @@
   ,"account.outOfStock": "غير متوفر"
   ,"account.product": "المنتج"
   ,"account.order": "الطلب #{id}"
-  ,"account.payment": "الدفع"
   ,"account.delivery": "التوصيل"
   ,"account.date": "التاريخ"
   ,"account.totalAmount": "المبلغ الإجمالي"
@@ -363,7 +362,6 @@
   ,"shops.loading": "جارٍ تحميل بيانات المتاجر..."
   ,"shops.notFound": "المتجر غير موجود"
   ,"shops.deliveryAria": "خيارات التوصيل"
-
   ,"auth.createYour": "أنشئ"
   ,"auth.loginToYour": "سجّل الدخول إلى"
   ,"auth.account": "حساب"
@@ -401,5 +399,8 @@
   ,"auth.error.failedToCreateUser": "فشل في إنشاء المستخدم."
   ,"auth.error.unexpected": "حدث خطأ غير متوقع. حاول مرة أخرى."
   ,"auth.error.google": "حدث خطأ غير متوقع في تسجيل الدخول عبر جوجل. حاول مرة أخرى."
+  ,"account.viewDetails" : "عرض التفاصيل"
+  ,"account.payment": "الدفع"
+  ,"account.type": "النوع"
 }
 

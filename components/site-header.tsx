@@ -43,19 +43,29 @@ export function SiteHeader() {
   useEffect(() => {
     setMounted(true);
     
-    // Fetch user profile data
+    // Fetch user profile data from user_profiles table using API route
     const fetchUserProfile = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
+        try {
+          const response = await fetch(`/api/users/profile?userId=${session.user.id}`);
           
-        if (profileData) {
-          setUser(profileData);
+          if (response.ok) {
+            const { profile } = await response.json();
+            
+            if (profile) {
+              // Transform to match Profile type
+              const transformedProfile = {
+                ...profile,
+                full_name: profile.name,
+                avatar_url: profile.image_url
+              };
+              setUser(transformedProfile);
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
         }
       }
     };

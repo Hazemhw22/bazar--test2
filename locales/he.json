@@ -121,7 +121,6 @@
   ,"account.outOfStock": "אזל מהמלאי"
   ,"account.product": "מוצר"
   ,"account.order": "הזמנה #{id}"
-  ,"account.payment": "תשלום"
   ,"account.delivery": "משלוח"
   ,"account.date": "תאריך"
   ,"account.totalAmount": "סכום כולל"
@@ -362,7 +361,6 @@
   ,"shops.loading": "טוען נתוני חנות..."
   ,"shops.notFound": "החנות לא נמצאה"
   ,"shops.deliveryAria": "אפשרויות משלוח"
-
   ,"auth.createYour": "צור את ה"
   ,"auth.loginToYour": "התחבר אל ה"
   ,"auth.account": "חשבון"
@@ -400,4 +398,7 @@
   ,"auth.error.failedToCreateUser": "נכשל יצירת משתמש."
   ,"auth.error.unexpected": "אירעה שגיאה בלתי צפויה. אנא נסה שוב."
   ,"auth.error.google": "אירעה שגיאה עם ההתחברות דרך גוגל. אנא נסה שוב."
+  ,"account.viewDetails":"הצג פרטים"
+  ,"account.payment": "תשלום"
+  ,"account.type": "סוג"
 }

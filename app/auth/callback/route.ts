@@ -27,7 +27,34 @@ export async function GET(request: NextRequest) {
         },
       }
     )
-    await supabase.auth.exchangeCodeForSession(code)
+    
+    const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code)
+    
+    // If session exists, ensure user profile is created
+    if (session?.user && !error) {
+      try {
+        const profileResponse = await fetch(`${requestUrl.origin}/api/users/create-profile-service`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: session.user.id,
+            email: session.user.email,
+            name: session.user.user_metadata?.full_name || 
+                  session.user.user_metadata?.name || 
+                  session.user.email?.split('@')[0],
+            roleId: 7, // Customer role
+          }),
+        });
+
+        if (!profileResponse.ok) {
+          console.error('Failed to create/check user profile in callback');
+        }
+      } catch (error) {
+        console.error('Error creating profile in callback:', error);
+      }
+    }
   }
 
   // URL to redirect to after sign in process completes

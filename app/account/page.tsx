@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
 import {
   User,
@@ -38,14 +39,72 @@ import { useI18n } from "@/lib/i18n"
 
 export default function EnhancedProfilePage() {
   const { t, direction } = useI18n()
+  const [isLoading, setIsLoading] = useState(true)
   const [profileData, setProfileData] = useState<Profile | null>(null)
   const [ordersData, setOrdersData] = useState<OrderData[]>([])
   const [addressesData, setAddressesData] = useState<Profile[]>([])
   const [tabNav, setTabNav] = useState<'account' | 'orders' | 'addresses' | 'wishlist' | 'settings'>('account')
-    const { favorites, removeFromFavorites } = useFavorites()
-      const { addItem } = useCart()
+  const { favorites, removeFromFavorites } = useFavorites()
+  const { addItem } = useCart()
+  const router = useRouter()
 
-    const [notifications, setNotifications] = useState({
+    useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session) {
+        router.push('/auth')
+        return
+      }
+      
+      // Fetch user profile and other data
+      await fetchProfileData(session.user.id)
+      setIsLoading(false)
+    }
+    
+    checkSession()
+  }, [router])
+  
+  const fetchProfileData = async (userId: string) => {
+    try {
+      console.log('Fetching profile for user:', userId)
+      
+      // Use API route to bypass RLS
+      const response = await fetch(`/api/users/profile?userId=${userId}`)
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Error fetching profile:', errorData)
+        return
+      }
+      
+      const { profile } = await response.json()
+      
+      console.log('Profile data:', profile)
+      
+      if (!profile) {
+        console.error('No profile data returned')
+        return
+      }
+      
+      // Transform the data to match the expected Profile type
+      const transformedProfile = {
+        ...profile,
+        full_name: profile.name,
+        avatar_url: profile.image_url,
+        registration_date: new Date(profile.created_at).toLocaleDateString(),
+      }
+      
+      console.log('Transformed profile:', transformedProfile)
+      setProfileData(transformedProfile)
+      
+    } catch (error) {
+      console.error('Error fetching profile data:', error)
+    }
+  }
+
+  // Move notifications state up to avoid duplicate state
+  const [notifications, setNotifications] = useState({
     email: true,
     sms: false,
     push: true,
@@ -54,9 +113,13 @@ export default function EnhancedProfilePage() {
 
   // ألوان وأيقونات الحالة
   const getStatusColor = (status: string) => {
-    switch (status) {
+    const normalizedStatus = (status || '').toLowerCase().trim()
+    switch (normalizedStatus) {
+      case "completed": return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
       case "delivered": return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+      case "on the way": return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
       case "shipped": return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
+      case "pending": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
       case "processing": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
       case "cancelled": return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
       default: return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
@@ -64,37 +127,42 @@ export default function EnhancedProfilePage() {
   }
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
+    const normalizedStatus = (status || '').toLowerCase().trim()
+    switch (normalizedStatus) {
+      case "completed": return <CheckCircle size={16} className="text-green-600" />
       case "delivered": return <CheckCircle size={16} className="text-green-600" />
+      case "on the way": return <Truck size={16} className="text-blue-600" />
       case "shipped": return <Truck size={16} className="text-blue-600" />
+      case "pending": return <Clock size={16} className="text-yellow-600" />
       case "processing": return <Clock size={16} className="text-yellow-600" />
       case "cancelled": return <XCircle size={16} className="text-red-600" />
       default: return <AlertCircle size={16} className="text-gray-600" />
     }
   }
 
-  // جلب البيانات
+  // Fetch orders data
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchOrders = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.user) return
-      const userId = session.user.id
-
-      const { data: profile } = await supabase.from("profiles").select("*").eq("id", userId).single()
-      setProfileData(profile || null)
-
-      const { data: orders } = await supabase
-        .from("orders")
-        .select(`*, products:product_id (*), profiles:buyer_id (*)`)
-        .eq("buyer_id", userId)
-        .order("created_at", { ascending: false })
-      setOrdersData(orders || [])
-
-      const { data: addresses } = await supabase.from("profiles").select("*").eq("id", userId)
-      setAddressesData(addresses || [])
+      
+      try {
+        // Fetch orders using API route (customer_id matches auth user_id directly)
+        const response = await fetch(`/api/orders/user?userId=${session.user.id}`)
+        if (response.ok) {
+          const { orders } = await response.json()
+          console.log('Orders fetched successfully:', orders?.length || 0, 'orders')
+          setOrdersData(orders || [])
+        } else {
+          const errorData = await response.json().catch(() => ({}))
+          console.error('Failed to fetch orders. Status:', response.status, 'Error:', errorData)
+        }
+      } catch (error) {
+        console.error('Error fetching orders:', error)
+      }
     }
 
-    fetchData()
+    fetchOrders()
   }, [])
   const handleAddToCart = (item: any) => {
       addItem({
@@ -105,6 +173,20 @@ export default function EnhancedProfilePage() {
         quantity: 1,
       })
     }
+  // Show loading state
+  if (isLoading) {
+    return (
+      <AccountPageWrapper>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">{t("account.loading") || "Loading..."}</p>
+          </div>
+        </div>
+      </AccountPageWrapper>
+    )
+  }
+
   return (
     <AccountPageWrapper>
       <div className="min-h-screen">
@@ -114,6 +196,15 @@ export default function EnhancedProfilePage() {
             <h1 className="text-3xl font-bold mb-2">{t("account.title")}</h1>
             <p className="text-gray-600 dark:text-gray-400">{t("account.subtitle")}</p>
           </div>
+          
+          {/* Show error if no profile data */}
+          {!profileData && !isLoading && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6">
+              <p className="text-yellow-800 dark:text-yellow-200">
+                {t("account.noProfile") || "Unable to load profile data. Please try refreshing the page or contact support."}
+              </p>
+            </div>
+          )}
 
           <Tabs value={tabNav} onValueChange={(v) => setTabNav(v as any)} className="space-y-6">
             {/* Tabs Navigation - contact page style (buttons) */}
@@ -177,9 +268,16 @@ export default function EnhancedProfilePage() {
                       </Button>
                     </div>
                     <div className="text-center sm:text-left">
-                      <h3 className="text-xl font-semibold">{profileData?.full_name}</h3>
+                      <h3 className="text-xl font-semibold">{profileData?.name || t("account.guest")}</h3>
                       <p className="text-gray-600 dark:text-gray-400">{profileData?.email}</p>
-                      <p className="text-sm text-gray-500">{t("account.memberSince", { date: profileData?.registration_date ?? "" })}</p>
+                      <p className="text-sm text-gray-500">
+                        {t("account.memberSince")} {profileData?.created_at ? new Date(profileData.created_at).toLocaleDateString() : ''}
+                      </p>
+                      {profileData?.role && (
+                        <span className="inline-block mt-1 px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full">
+                          {typeof profileData.role === 'string' ? profileData.role : profileData.role.name}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -196,89 +294,117 @@ export default function EnhancedProfilePage() {
               </CardHeader>
               <CardContent className={`${direction === "rtl" ? "text-right" : ""} space-y-4`}>
                 {ordersData && ordersData.length > 0 ? (
-                  ordersData.map((order: OrderData) => (
-                    <div key={order.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="flex flex-col sm:flex-row gap-4">
-                        {/* Product Image */}
-                        <div className="flex-shrink-0">
-                          <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-                            {order.products?.images && order.products.images.length > 0 ? (
-                              <Image
-                                src={order.products.images[0]}
-                                alt={order.products.title || "Product"}
-                                width={80}
-                                height={80}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <Package size={24} className="text-gray-400" />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Order Details */}
-                        <div className="flex-1 space-y-3">
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                            <div className={`${direction === "rtl" ? "text-right" : ""}`}>
-                              <h4 className="font-semibold text-lg">{order.products?.title || "Product"}</h4>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">{t("account.order", { id: order.id })}</p>
-                            </div>
-                            <Badge className={`${getStatusColor(String(order.status ?? ""))} flex items-center gap-1 w-fit`}>
-                              {getStatusIcon(String(order.status ?? ""))}
-                              {String(order.status ?? "")}
-                            </Badge>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-                            {/* Payment Method */}
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                              <div>
-                                <p className="font-medium">Payment</p>
-                                <p className="text-gray-600 dark:text-gray-400">
-                                  {order.payment_method ?? "Credit Card"}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Delivery Info */}
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                              <div>
-                                <p className="font-medium">Delivery</p>
-                                <p className="text-gray-600 dark:text-gray-400">
-                                  {order.shipping_method ?? "Standard"}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Order Date */}
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                              <div>
-                                <p className="font-medium">{t("account.date")}</p>
-                                <p className="text-gray-600 dark:text-gray-400">
-                                  {new Date(String(order.created_at ?? "")).toLocaleDateString()}
-                                </p>
-                              </div>
+                  ordersData.map((order: any) => {
+                    const firstProduct = order.orders_products?.[0];
+                    const productCount = order.orders_products?.length || 0;
+                    
+                    return (
+                      <div key={order.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div className={`flex flex-col sm:flex-row gap-4 ${direction === "rtl" ? "sm:flex-row-reverse" : ""}`}>
+                          {/* Product Image */}
+                          <div className={`flex-shrink-0 ${direction === "rtl" ? "self-end" : "self-start"} sm:self-auto`}>
+                            <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+                              {firstProduct?.products?.image_url ? (
+                                <Image
+                                  src={firstProduct.products.image_url}
+                                  alt={firstProduct.product_name || "Product"}
+                                  width={80}
+                                  height={80}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Package size={24} className="text-gray-400" />
+                                </div>
+                              )}
                             </div>
                           </div>
 
-                          {/* Price */}
-                          <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700">
-                            <span className="text-sm text-gray-600 dark:text-gray-400">{t("account.totalAmount")}</span>
-                            <span className="font-bold text-lg">
-                              ₪{order.products?.price || "0.00"}
-                            </span>
+                          {/* Order Details */}
+                          <div className="flex-1 space-y-3">
+                            <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 ${direction === "rtl" ? "sm:flex-row-reverse" : ""}`}>
+                              <div className={`${direction === "rtl" ? "text-right" : ""}`}>
+                                <h4 className="font-semibold text-lg">
+                                  {firstProduct?.product_name || firstProduct?.products?.name || "Product"}
+                                  {productCount > 1 && (
+                                    <span className={`text-sm text-gray-500 ${direction === "rtl" ? "mr-2" : "ml-2"}`}>
+                                      +{productCount - 1} {t("account.moreItems") || "more"}
+                                    </span>
+                                  )}
+                                </h4>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  {t("account.order", { id: order.order_number || order.id })}
+                                </p>
+                                {order.shops?.name && (
+                                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                    {order.shops.name}
+                                  </p>
+                                )}
+                              </div>
+                              <Badge className={`${getStatusColor(String(order.status ?? ""))} flex items-center gap-1 w-fit ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                                {getStatusIcon(String(order.status ?? ""))}
+                                {String(order.status ?? "").replace(/_/g, ' ')}
+                              </Badge>
+                            </div>
+
+                            <div className={`grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm ${direction === "rtl" ? "text-right" : ""}`}>
+                              {/* Payment Method */}
+                              <div className={`flex items-center gap-2 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <div>
+                                  <p className="font-medium">{t("account.payment")}</p>
+                                  <p className="text-gray-600 dark:text-gray-400 capitalize">
+                                    {order.payment_method ?? "Cash"}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Order Type */}
+                              <div className={`flex items-center gap-2 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <div>
+                                  <p className="font-medium">{t("account.type")}</p>
+                                  <p className="text-gray-600 dark:text-gray-400 capitalize">
+                                    {order.order_type ?? "Delivery"}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Order Date */}
+                              <div className={`flex items-center gap-2 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                <div>
+                                  <p className="font-medium">{t("account.date")}</p>
+                                  <p className="text-gray-600 dark:text-gray-400">
+                                    {new Date(String(order.created_at ?? "")).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Price and Actions */}
+                            <div className={`flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                              <div className="flex items-center gap-4">
+                                <div className={direction === "rtl" ? "text-right" : ""}>
+                                  <span className="text-sm text-gray-600 dark:text-gray-400">{t("account.totalAmount")}</span>
+                                  <span className={`font-bold text-lg ${direction === "rtl" ? "mr-2" : "ml-2"}`}>
+                                    ₪{order.total_amount?.toFixed(2) || "0.00"}
+                                  </span>
+                                </div>
+                              </div>
+                              <Link href={`/orders/track/${order.id}`}>
+                                <Button variant="outline" size="sm">
+                                  {t("account.viewDetails") || "View Details"}
+                                </Button>
+                              </Link>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
-                    <div className="text-center py-12">
+                  <div className="text-center py-12">
                     <Package size={48} className="mx-auto text-gray-400 mb-4" />
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t("account.noOrders")}</h3>
                     <p className="text-gray-600 dark:text-gray-400">{t("account.noOrdersHint")}</p>
@@ -291,7 +417,9 @@ export default function EnhancedProfilePage() {
             <TabsContent value="addresses" className="space-y-6">
               <Card>
                 <CardHeader>
-                <CardTitle className={`flex items-center gap-2 ${direction === "rtl" ? "flex-row-reverse text-right" : ""}`}><MapPin size={24} /> {t("account.savedAddresses")}</CardTitle>
+                  <CardTitle className={`flex items-center gap-2 ${direction === "rtl" ? "flex-row-reverse text-right" : ""}`}>
+                    <MapPin size={24} /> {t("account.savedAddresses")}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className={direction === "rtl" ? "text-right" : ""}>
                   {addressesData.length > 0 ? (

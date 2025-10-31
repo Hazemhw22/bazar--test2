@@ -3,12 +3,17 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 import { useToast } from "@/hooks/use-toast"
 
-interface CartItem {
+export interface CartItem {
   id: number
   name: string
   price: number
+  salePrice?: number
   image: string
   quantity: number
+  features?: Array<{
+    feature_id: number
+    value_id: number
+  }>
 }
 
 interface CartContextType {

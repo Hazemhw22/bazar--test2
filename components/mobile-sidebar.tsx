@@ -51,11 +51,11 @@ export default function MobileSidebar({ open, onClose, user }: MobileSidebarProp
         <div className="px-4 pt-6 pb-4 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full overflow-hidden ring-1 ring-border">
-              <img src={user?.avatar_url || "/AVATAR1.png"} alt="User" className="w-full h-full object-cover" />
+              <img src={user?.image_url || "/AVATAR1.png"} alt="User" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">
-              <div className="text-sm font-semibold">{user?.full_name || "Guest"}</div>
-              <div className="text-xs text-primary">View profile</div>
+              <div className="text-sm font-semibold">{user?.name || user?.full_name || t("guest")}</div>
+              <div className="text-xs text-primary">{t("viewProfile")}</div>
             </div>
             <button onClick={onClose} className="p-2 rounded-full hover:bg-accent">
               <X size={18} />

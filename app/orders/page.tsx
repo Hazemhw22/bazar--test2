@@ -19,15 +19,16 @@ export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<'ongoing' | 'completed'>('ongoing');
 
   const getStatusColor = (status: string) => {
-    const s = (status || '').toString().toLowerCase().replace(/[_-]/g, ' ').trim();
+    const s = (status || '').toString().toLowerCase().trim();
     switch (s) {
+      case 'completed':
       case 'delivered':
         return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
-      case 'shipped':
       case 'on the way':
+      case 'shipped':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
       case 'pending':
-        return 'bg-yellow-50 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
       case 'processing':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
       case 'ready for pickup':
@@ -35,21 +36,19 @@ export default function OrdersPage() {
       case 'cancelled':
       case 'rejected':
         return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
-      case 'complete':
-      case 'completed':
-        return 'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-400';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
     }
   };
 
   const getStatusIcon = (status: string) => {
-    const s = (status || '').toString().toLowerCase().replace(/[_-]/g, ' ').trim();
+    const s = (status || '').toString().toLowerCase().trim();
     switch (s) {
+      case 'completed':
       case 'delivered':
         return <CheckCircle size={16} className="text-green-600" />;
-      case 'shipped':
       case 'on the way':
+      case 'shipped':
         return <Truck size={16} className="text-blue-600" />;
       case 'pending':
         return <Clock size={16} className="text-yellow-600" />;
@@ -60,9 +59,6 @@ export default function OrdersPage() {
       case 'cancelled':
       case 'rejected':
         return <XCircle size={16} className="text-red-600" />;
-      case 'complete':
-      case 'completed':
-        return <CheckCircle size={16} className="text-green-600" />;
       default:
         return <AlertCircle size={16} className="text-gray-600" />;
     }
@@ -72,18 +68,31 @@ export default function OrdersPage() {
     const fetchOrders = async () => {
       setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) return setLoading(false);
+      if (!session?.user) {
+        setLoading(false);
+        return;
+      }
 
       const userId = session.user.id;
 
-      const { data, error } = await supabase
-        .from("orders")
-        .select(`*, products:product_id (*)`)
-        .eq("buyer_id", userId)
-        .order("created_at", { ascending: false });
-
-      if (error) console.error("Supabase Error:", error);
-      else setOrdersData(data || []);
+      try {
+        // Use API route to fetch orders (bypasses RLS)
+        const response = await fetch(`/api/orders/user?userId=${userId}`);
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Failed to fetch orders. Status:", response.status, "Error:", errorData);
+          setOrdersData([]);
+        } else {
+          const { orders } = await response.json();
+          console.log("Orders fetched successfully:", orders?.length || 0, "orders");
+          setOrdersData(orders || []);
+        }
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        setOrdersData([]);
+      }
+      
       setLoading(false);
     };
 
@@ -145,10 +154,10 @@ export default function OrdersPage() {
                 <div className="flex p-4 gap-4">
                   {/* Product Image */}
                   <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 flex-shrink-0">
-                    {order.products?.images?.length > 0 ? (
+                    {order.orders_products?.[0]?.products?.image_url ? (
                       <Image
-                        src={order.products.images[0]}
-                        alt={order.products.title || "Product"}
+                        src={order.orders_products[0].products.image_url}
+                        alt={order.orders_products[0].product_name || "Product"}
                         fill
                         className="object-cover"
                       />
@@ -162,16 +171,27 @@ export default function OrdersPage() {
                   {/* Order Details */}
                   <div className="flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="font-medium text-base">{order.products?.title || t("orders.product.fallback")}</h3>
+                      <h3 className="font-medium text-base">
+                        {order.orders_products?.[0]?.product_name || order.orders_products?.[0]?.products?.name || t("orders.product.fallback")}
+                      </h3>
                       <div className="flex items-center gap-2 mt-1">
-                        <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: order.products?.color || '#8B4513' }}></div>
-                        </div>
-                        <span className="text-xs text-gray-600 dark:text-gray-400">{t("orders.product.color")}</span>
-                        <span className="text-xs">|</span>
-                        <span className="text-xs text-gray-600 dark:text-gray-400">{t("orders.product.size", { size: order.products?.size || '40' })}</span>
-                        <span className="text-xs">|</span>
-                        <span className="text-xs text-gray-600 dark:text-gray-400">{t("orders.product.qty", { qty: 1 })}</span>
+                        {order.shops?.name && (
+                          <>
+                            <span className="text-xs text-gray-600 dark:text-gray-400">{order.shops.name}</span>
+                            <span className="text-xs">|</span>
+                          </>
+                        )}
+                        <span className="text-xs text-gray-600 dark:text-gray-400">
+                          {order.orders_products?.length || 1} {t("orders.product.items", { default: "items" })}
+                        </span>
+                        {order.orders_products && order.orders_products.length > 1 && (
+                          <>
+                            <span className="text-xs">|</span>
+                            <span className="text-xs text-gray-600 dark:text-gray-400">
+                              +{order.orders_products.length - 1} {t("orders.product.moreItems", { default: "more" })}
+                            </span>
+                          </>
+                        )}
                       </div>
                       <div className="mt-2">
                         <Badge className={`${getStatusColor(order.status)} font-normal text-xs px-2 py-1 inline-flex items-center gap-2`}>
@@ -181,7 +201,7 @@ export default function OrdersPage() {
                       </div>
                     </div>
                       <div className="flex justify-between items-center mt-2">
-                      <span className="font-bold">₪{order.products?.price || "0.00"}</span>
+                      <span className="font-bold">₪{order.total_amount?.toFixed(2) || "0.00"}</span>
                       <Link href={`/orders/track/${order.id}`}>
                         <Button variant="secondary" size="sm" className="text-xs rounded-full px-4">
                           {t("orders.trackButton")}

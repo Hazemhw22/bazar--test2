@@ -129,7 +129,6 @@
   ,"account.outOfStock": "Out of Stock"
   ,"account.product": "Product"
   ,"account.order": "Order #{id}"
-  ,"account.payment": "Payment"
   ,"account.delivery": "Delivery"
   ,"account.date": "Date"
   ,"account.totalAmount": "Total Amount"
@@ -398,7 +397,11 @@
   "auth.error.loginFailed": "Login failed. Please try again.",
   "auth.error.failedToCreateUser": "Failed to create user.",
   "auth.error.unexpected": "An unexpected error occurred. Please try again.",
-  "auth.error.google": "An unexpected error occurred with Google sign-in. Please try again."
+  "auth.error.google": "An unexpected error occurred with Google sign-in. Please try again.",
+  "checkout.delivery.button": "Delivery",
+  "account.viewDetails":"View Details",
+  "account.payment": "Payment",
+  "account.type": "Type"
 }
 
 

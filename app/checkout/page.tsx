@@ -98,20 +98,21 @@ export default function CheckoutPage() {
       } = await supabase.auth.getSession();
       if (session?.user) {
         const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name, address")
-          .eq("id", session.user.id)
+          .from("user_profiles")
+          .select("name, address, phone")
+          .eq("user_id", session.user.id)
           .single();
         if (profile) {
           setUser({
-            name: profile.full_name || "Name Last name",
+            name: profile.name || "Name Last name",
             address: profile.address || "address",
             deliveryNote: "Add delivery note",
           });
           // prefill name/phone/address
-          setFirstName(profile.full_name ? profile.full_name.split(" ")[0] : "");
-          setLastName(profile.full_name ? profile.full_name.split(" ").slice(1).join(" ") : "");
+          setFirstName(profile.name ? profile.name.split(" ")[0] : "");
+          setLastName(profile.name ? profile.name.split(" ").slice(1).join(" ") : "");
           setAddressInput(profile.address || "");
+          setPhone(profile.phone || "");
           // prefill email from session when available
           setEmail(session?.user?.email || "");
         }
@@ -135,148 +136,195 @@ export default function CheckoutPage() {
     async function fetchProducts() {
       if (!items || items.length === 0) return;
       const ids = items.map((i) => i.id);
-      const { data: products } = await supabase.from("products").select("*").in("id", ids as any[]);
+      
+      // Fetch products with related shop and category data using Supabase joins
+      const { data: products } = await supabase
+        .from("products")
+        .select(`
+          *,
+          shops:shop_id (
+            id,
+            name,
+            logo_url,
+            address
+          ),
+          products_categories:category_id (
+            id,
+            name
+          )
+        `)
+        .in("id", ids as any[]);
+      
       if (!products) return;
-
-      // collect shop and category ids
-      const shopIds = Array.from(new Set(products.map((p: any) => Number(p.shop)).filter(Boolean)));
-      const categoryIds = Array.from(new Set(products.map((p: any) => Number(p.category)).filter(Boolean)));
-
-      const shopMap: Record<number, any> = {};
-      const categoryMap: Record<number, any> = {};
-
-      if (shopIds.length > 0) {
-        const { data: shops } = await supabase.from("shops").select("id, shop_name, address").in("id", shopIds as any[]);
-        shops?.forEach((s: any) => (shopMap[Number(s.id)] = s));
-      }
-
-      if (categoryIds.length > 0) {
-        const { data: cats } = await supabase.from("categories").select("id, name").in("id", categoryIds as any[]);
-        cats?.forEach((c: any) => (categoryMap[Number(c.id)] = c));
-      }
 
       const map: Record<number, any> = {};
       products.forEach((p: any) => {
-        const prod = { ...p };
-        // attach resolved shop and category objects when possible
-        const shopId = Number(p.shop);
-        const catId = Number(p.category);
-        if (shopMap[shopId]) prod.shops = shopMap[shopId];
-        if (categoryMap[catId]) prod.categories = categoryMap[catId];
-        map[Number(p.id)] = prod;
+        map[Number(p.id)] = p;
       });
       setProductsMap(map);
     }
     fetchProducts();
   }, [items]);
 
-  const deliveryFee =
-    deliveryOptions.find((opt) => opt.id === selectedDelivery)?.price || 0;
+  // Calculate delivery fee based on selected option
+  const deliveryFee = deliveryType === 'delivery' ? 
+    (deliveryOptions.find((opt) => opt.id === selectedDelivery)?.price || 0) : 0;
+  
+  // For now, use the cart total + delivery fee
+  // This will be updated after calculating the actual total from the API
   const total = totalPrice + deliveryFee;
 
   const handlePlaceOrder = async () => {
-    // Simplified order placement logic
     setIsLoading(true);
     setErrorMsg(null);
+    
     try {
-      // In a real app, you would save the order to the database here
-      // prepare payload
       const { data: { session } } = await supabase.auth.getSession();
-      const buyerId = session?.user?.id || null;
+      const userId = session?.user?.id || null;
+      
+      // Get user role if authenticated (optional, don't fail if it errors)
+      let userRole = null;
+      if (userId) {
+        try {
+          const roleResponse = await fetch('/api/users/get-role', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ user_id: userId })
+          });
+          
+          if (roleResponse.ok) {
+            const roleData = await roleResponse.json();
+            if (roleData.success && roleData.data) {
+              userRole = roleData.data.role_id;
+            }
+          }
+        } catch (err) {
+          console.log('Could not fetch user role:', err);
+          // Continue without role - it's not critical
+        }
+      }
 
-      const shippingAddress = deliveryType === "pickup" ? {
-        type: "pickup",
-        store: "Selected Store",
-        address: null
-      } : {
-        type: "delivery",
-        name: firstName,
-        last_name: lastName,
-        phone: phone,
-        email: email,
-        address: addressInput
+      // Get shop_id from the first product in cart
+      const firstProductShopId = items[0] && productsMap[items[0].id] 
+        ? (productsMap[items[0].id].shop_id || productsMap[items[0].id].shop)
+        : null;
+      
+      const shopId = selectedStore?.id || firstProductShopId;
+      
+      if (!shopId) {
+        throw new Error('Unable to determine shop for this order. Please try again.');
+      }
+
+      // Prepare order payload according to the API contract
+      const orderPayload: any = {
+        shop_id: shopId,
+        customer_name: `${firstName} ${lastName}`.trim(),
+        customer_phone: phone,
+        customer_email: email,
+        customer_address: deliveryType === 'delivery' ? addressInput : null,
+        order_type: deliveryType,
+        payment_method: deliveryType === 'pickup' ? 'cash' : paymentMethod === 'cash' ? 'cash' : 'card',
+        discount_percentage: 0, // Can be updated based on user role or promotions
+        delivery_notes: '', // Can be added from UI if needed
+        products: items.map(item => ({
+          product_id: item.id,
+          selected_features: item.features?.map(f => ({
+            feature_id: f.feature_id,
+            value_id: f.value_id
+          })) || []
+        }))
       };
 
-      let paymentPayload: any = {};
-      if (deliveryType === "pickup") {
-        paymentPayload = { type: "in_store", note: "Pay at store" };
-      } else {
-        paymentPayload = paymentMethod === "cash" ? { type: "cash", note: "Pay on delivery" } : { type: paymentMethod, details: cardDetails };
-      }
-
-      // Build shipping_method object to satisfy DB NOT NULL constraint
-      const selectedDeliveryOption = deliveryOptions.find((o) => o.id === selectedDelivery) || null;
-      const shippingMethod = deliveryType === "pickup"
-        ? { type: "pickup", id: "pickup", name: "In-store pickup", cost: 0 }
-        : selectedDeliveryOption
-          ? { type: "delivery", id: selectedDeliveryOption.id, name: selectedDeliveryOption.title, cost: selectedDeliveryOption.price }
-          : { type: "delivery", id: "standard", name: "Standard", cost: 0 };
-
-      // Some DB schemas require a product_id on orders (not ideal for multi-item carts).
-      // Use the first cart item's id to satisfy a NOT NULL constraint if present.
-      const primaryProductIdRaw = items && items.length > 0 ? items[0].id : null;
-      const primaryProductId = primaryProductIdRaw != null ? Number(primaryProductIdRaw) : null;
-      if (primaryProductIdRaw != null && Number.isNaN(primaryProductId)) {
-        console.warn("Unable to coerce primary product id to number:", primaryProductIdRaw);
-      }
-
-      // Try to resolve delivery_method_id from the DB to satisfy FK constraint.
-      // We attempt to find a delivery_methods row by a slug-like column or title.
-      let delivery_method_id: number | null = null;
-      try {
-        // try slug/identifier first
-        const { data: dmBySlug } = await supabase
-          .from("delivery_methods")
-          .select("id")
-          .eq("slug", selectedDelivery)
-          .maybeSingle();
-        if (dmBySlug && (dmBySlug as any).id) {
-          delivery_method_id = (dmBySlug as any).id;
-        } else if (selectedDeliveryOption) {
-          // try matching by title/name (case-insensitive)
-          const { data: dmByName } = await supabase
-            .from("delivery_methods")
-            .select("id")
-            .ilike("title", `%${selectedDeliveryOption.title}%`)
-            .maybeSingle();
-          if (dmByName && (dmByName as any).id) {
-            delivery_method_id = (dmByName as any).id;
-          }
-        }
-      } catch (dmErr) {
-        console.warn("Failed to resolve delivery_method_id from delivery_methods table:", dmErr);
-        delivery_method_id = null;
-      }
-
-      const insertRes = await supabase.from("orders").insert([{ 
-        buyer_id: buyerId,
-        status: "processing",
-        product_id: primaryProductId,
-        shipping_method: shippingMethod,
-        shipping_address: shippingAddress,
-        payment_method: paymentPayload,
-        assigned_driver_id: null,
-        confirmed: false,
-        total: total,
-        delivery_method_id,
-        selected_feature_value_ids: [],
-        delivery_location_method_id: null,
-      }]).select('id').single();
-
-      if (insertRes.error) throw insertRes.error;
-
-      const insertedId = (insertRes.data as any)?.id;
-      // set `number` column to the order id (as requested: number هو id order)
-      if (insertedId != null) {
+      // Only add customer_id if user is authenticated
+      if (userId) {
         try {
-          await supabase.from("orders").update({ number: insertedId }).eq("id", insertedId);
-        } catch (updateErr) {
-          console.warn("Failed to update order.number with inserted id:", updateErr);
+          // Use API route with service role to bypass RLS
+          const profileResponse = await fetch('/api/users/get-or-create-profile', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              user_id: userId,
+              email: email,
+              name: `${firstName} ${lastName}`.trim(),
+              phone: phone,
+              address: addressInput
+            })
+          });
+
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json();
+            if (profileData.success && profileData.data) {
+              orderPayload.customer_id = profileData.data.id;
+            }
+          } else {
+            console.error('Failed to get/create user profile');
+            // Continue without customer_id - order can still be created
+          }
+        } catch (err) {
+          console.error('Error handling user profile:', err);
+          // Continue without customer_id - order can still be created
         }
       }
 
+
+      // Don't include delivery_company_id, delivery_method_id, or delivery_location_method_id
+      // They will be added later when you have actual delivery companies in the database
+
+      // If user has role 7, apply special handling
+      if (userRole === 7) {
+        // Apply any special discount or handling for role 7
+        orderPayload.discount_percentage = 10; // Example: 10% discount for role 7
+      }
+
+      // First, calculate pricing to get accurate totals
+      console.log('Calculating pricing with payload:', orderPayload);
+      const calculateResponse = await fetch('/api/orders/calculate-pricing', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderPayload)
+      });
+
+      if (!calculateResponse.ok) {
+        const errorData = await calculateResponse.json();
+        console.error('Pricing calculation failed:', errorData);
+        throw new Error(errorData.error || errorData.message || 'Failed to calculate order total');
+      }
+
+      const { data: pricingData } = await calculateResponse.json();
+      console.log('Pricing calculated:', pricingData);
+      
+      // Now create the order with the calculated pricing
+      const createResponse = await fetch('/api/orders/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...orderPayload,
+          subtotal: pricingData.subtotal,
+          delivery_cost: pricingData.delivery_cost,
+          total_amount: pricingData.total_amount
+        })
+      });
+
+      const responseData = await createResponse.json();
+      
+      if (!createResponse.ok) {
+        console.error('Order creation failed:', responseData);
+        const errorMsg = responseData.error || responseData.message || 'Failed to create order';
+        const missingFields = responseData.missing ? ` Missing fields: ${responseData.missing.join(', ')}` : '';
+        throw new Error(errorMsg + missingFields);
+      }
+
+      // Clear cart and redirect to confirmation
       clearCart();
-      router.push("/order-confirmation?orderId=" + insertedId);
+      router.push(`/order-confirmation?orderId=${responseData.data.id}`);
     } catch (e: any) {
       setErrorMsg(e.message || "Failed to place order");
     } finally {
@@ -578,19 +626,29 @@ export default function CheckoutPage() {
                 <div key={item.id} className="p-3 bg-white/5 rounded-lg flex items-center gap-4 border border-[#666665]">
                   <div className="w-16 h-16 rounded-md bg-white/10 overflow-hidden flex-shrink-0">
                     <img
-                      src={(p?.images?.[0] || item.image) as string}
+                      src={(p?.image_url || item.image) as string}
                       alt={p?.title || item.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
                   <div className="flex-1">
-                    <p className="font-semibold">{p?.title || item.name}</p>
-                    <p className="text-sm text-muted-foreground">{p?.shops?.shop_name || p?.shop || "Store"}</p>
-                    <p className="text-xs text-muted-foreground">{p?.categories?.title || p?.category || ""}</p>
+                    <p className="font-semibold">{p?.name || p?.title || item.name}</p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {p?.shops && (
+                        <span className="text-xs px-2 py-1 rounded border border-blue-400 bg-blue-400/10 text-blue-300">
+                          {p.shops.name || p.shops.shop_name}
+                        </span>
+                      )}
+                      {(p?.products_categories || p?.categories) && (
+                        <span className="text-xs px-2 py-1 rounded border border-green-400 bg-green-400/10 text-green-300">
+                          {p.products_categories?.name || p.categories?.name}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="text-right">
                     <div className="font-semibold">x{item.quantity}</div>
-                    <div className="text-sm">₪{(item.price * item.quantity).toFixed(2)}</div>
+                    <div className="text-sm">₪{((item.salePrice || item.price) * item.quantity).toFixed(2)}</div>
                   </div>
                 </div>
               );

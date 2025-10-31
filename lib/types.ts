@@ -1,42 +1,79 @@
-// (file replaced with user-provided schema) -- kept exact content from the user's attachment
 // ========================================
 // USER TYPES
 // ========================================
 
+/**
+ * Represents a user role in the system
+ */
 export interface UserRole {
+  /** Unique identifier for the role */
   id: number;
+  /** Name of the role (e.g., 'admin', 'customer') */
   name: string;
+  /** When the role was created */
   created_at: string;
+  /** When the role was last updated */
   updated_at: string;
 }
 
+/** Type alias for UserRole ID */
 export type UserRoleId = UserRole["id"];
 
+/**
+ * Represents a user profile in the system
+ */
 export interface UserProfile {
+  /** Unique identifier for the profile */
   id: string;
+  /** Reference to the auth user */
   user_id: string;
+  /** Role ID (references user_roles.id) */
   role_id: number;
+  /** User's email address */
   email: string;
+  /** User's full name */
   name?: string;
+  /** User's phone number */
   phone?: string;
+  /** URL to the user's profile image */
   image_url?: string;
+  /** Whether the user account is active */
   is_active: boolean;
+  /** When the profile was created */
   created_at: string;
+  /** When the profile was last updated */
   updated_at: string;
-  // Legacy / compatibility
-  avatar_url?: string;
-  full_name?: string;
-  registration_date?: string;
+  /** User's physical address */
   address?: string;
+  
+  // For backward compatibility
+  /** @deprecated Use image_url instead */
+  avatar_url?: string;
+  /** @deprecated Use name instead */
+  full_name?: string;
+  /** @deprecated Use created_at instead */
+  registration_date?: string;
+  /** Role name (populated from role_id lookup) - can be string or full UserRole object */
+  role?: string | UserRole;
 }
 
+/**
+ * Extended user profile that includes the full role object
+ */
 export interface UserProfileWithRole extends UserProfile {
+  /** The full role object */
   role: UserRole;
 }
 
+/**
+ * Data required to create a new user profile
+ */
 export interface CreateUserProfileData {
+  /** Reference to the auth user */
   user_id: string;
+  /** Role ID (references user_roles.id) */
   role_id: number;
+  /** User's email address */
   email: string;
   name?: string;
   phone?: string;
