@@ -151,57 +151,79 @@ export default function OrdersPage() {
           {filteredOrders.map((order) => (
             <Card key={order.id} className="overflow-hidden rounded-xl">
               <div className="flex flex-col">
-                <div className="flex p-4 gap-4">
-                  {/* Product Image */}
-                  <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-800 flex-shrink-0">
-                    {order.orders_products?.[0]?.products?.image_url ? (
-                      <Image
-                        src={order.orders_products[0].products.image_url}
-                        alt={order.orders_products[0].product_name || "Product"}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center w-full h-full bg-gray-100 dark:bg-gray-800">
-                        <Package size={24} className="text-gray-400" />
-                      </div>
-                    )}
-                  </div>
+                {/* Order Header with Order Number and Status */}
+                <div className="flex justify-between items-center p-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="font-medium text-base">
+                    {t('tracking.orderNumber', { default: 'Order' })} #{order.id}
+                  </h3>
+                  <Badge className={`${getStatusColor(order.status)} font-normal text-xs px-2 py-1 inline-flex items-center gap-2`}>
+                    {getStatusIcon(order.status)}
+                    <span className="capitalize">{(order.status || 'unknown').toString().replace(/_/g, ' ')}</span>
+                  </Badge>
+                </div>
 
-                  {/* Order Details */}
-                  <div className="flex-1 flex flex-col justify-between">
-                    <div>
-                      <h3 className="font-medium text-base">
-                        {order.orders_products?.[0]?.product_name || order.orders_products?.[0]?.products?.name || t("orders.product.fallback")}
-                      </h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        {order.shops?.name && (
-                          <>
-                            <span className="text-xs text-gray-600 dark:text-gray-400">{order.shops.name}</span>
-                            <span className="text-xs">|</span>
-                          </>
-                        )}
-                        <span className="text-xs text-gray-600 dark:text-gray-400">
-                          {order.orders_products?.length || 1} {t("orders.product.items", { default: "items" })}
-                        </span>
-                        {order.orders_products && order.orders_products.length > 1 && (
-                          <>
-                            <span className="text-xs">|</span>
-                            <span className="text-xs text-gray-600 dark:text-gray-400">
-                              +{order.orders_products.length - 1} {t("orders.product.moreItems", { default: "more" })}
-                            </span>
-                          </>
-                        )}
+                {/* Products List */}
+                <div className="p-4">
+                  {order.orders_products?.map((product: any, index: number) => (
+                    <div key={product.id || index}>
+                      <div className="flex items-start gap-4 py-3">
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                          {product.products?.image_url ? (
+                            <Image
+                              src={product.products.image_url}
+                              alt={product.product_name || 'Product'}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center w-full h-full">
+                              <Package size={20} className="text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                            {product.product_name || product.products?.name || t('tracking.product.unknown', { default: 'Product' })}
+                          </h4>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 mt-1">
+                            ₪{product.final_unit_price?.toFixed(2) || product.item_total?.toFixed(2) || '0.00'}
+                          </p>
+                          {product.selected_features && Object.keys(product.selected_features).length > 0 && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              {Object.entries(product.selected_features).map(([key, value]) => `${key}: ${value}`).join(', ')}
+                            </p>
+                          )}
+                          {order.shops?.name && (
+                            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                              {order.shops.name}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div className="mt-2">
-                        <Badge className={`${getStatusColor(order.status)} font-normal text-xs px-2 py-1 inline-flex items-center gap-2`}>
-                          {getStatusIcon(order.status)}
-                          <span className="capitalize">{(order.status || 'unknown').toString().replace(/_/g, ' ')}</span>
-                        </Badge>
-                      </div>
+                      {/* Divider line between products */}
+                      {index < order.orders_products.length - 1 && (
+                        <div className="border-b border-gray-200 dark:border-gray-700"></div>
+                      )}
                     </div>
-                      <div className="flex justify-between items-center mt-2">
-                      <span className="font-bold">₪{order.total_amount?.toFixed(2) || "0.00"}</span>
+                  ))}
+                  
+                  {/* Final divider line after last product */}
+                  <div className="border-b border-gray-200 dark:border-gray-700 mt-3"></div>
+                  
+                  {/* Order Summary */}
+                  <div className="flex justify-between items-center pt-4">
+                    <div className="flex flex-col">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {order.orders_products?.length || 0} {(order.orders_products?.length || 0) === 1 ? t('tracking.product.item', { default: 'item' }) : t('tracking.product.items', { default: 'items' })}
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-500">
+                        {new Date(order.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                        ₪{order.total_amount?.toFixed(2) || '0.00'}
+                      </span>
                       <Link href={`/orders/track/${order.id}`}>
                         <Button variant="secondary" size="sm" className="text-xs rounded-full px-4">
                           {t("orders.trackButton")}

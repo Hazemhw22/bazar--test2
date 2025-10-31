@@ -35,6 +35,7 @@ import { useCart } from "@/components/cart-provider"
 import { useFavorites } from "@/components/favourite-items"
 import Link from "next/link"
 import { useI18n } from "@/lib/i18n"
+import OrderDetailsModal from "@/components/OrderDetailsModal"
 
 
 export default function EnhancedProfilePage() {
@@ -44,9 +45,21 @@ export default function EnhancedProfilePage() {
   const [ordersData, setOrdersData] = useState<OrderData[]>([])
   const [addressesData, setAddressesData] = useState<Profile[]>([])
   const [tabNav, setTabNav] = useState<'account' | 'orders' | 'addresses' | 'wishlist' | 'settings'>('account')
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const { favorites, removeFromFavorites } = useFavorites()
   const { addItem } = useCart()
   const router = useRouter()
+
+  const handleViewOrderDetails = (order: any) => {
+    setSelectedOrder(order)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setSelectedOrder(null)
+  }
 
     useEffect(() => {
     const checkSession = async () => {
@@ -295,108 +308,91 @@ export default function EnhancedProfilePage() {
               <CardContent className={`${direction === "rtl" ? "text-right" : ""} space-y-4`}>
                 {ordersData && ordersData.length > 0 ? (
                   ordersData.map((order: any) => {
-                    const firstProduct = order.orders_products?.[0];
                     const productCount = order.orders_products?.length || 0;
                     
                     return (
-                      <div key={order.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div className={`flex flex-col sm:flex-row gap-4 ${direction === "rtl" ? "sm:flex-row-reverse" : ""}`}>
-                          {/* Product Image */}
-                          <div className={`flex-shrink-0 ${direction === "rtl" ? "self-end" : "self-start"} sm:self-auto`}>
-                            <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-                              {firstProduct?.products?.image_url ? (
-                                <Image
-                                  src={firstProduct.products.image_url}
-                                  alt={firstProduct.product_name || "Product"}
-                                  width={80}
-                                  height={80}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <Package size={24} className="text-gray-400" />
+                      <div key={order.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                        {/* Order Header with Order Number and Status */}
+                        <div className={`flex justify-between items-center p-4 pb-2 border-b border-gray-200 dark:border-gray-700 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                          <h3 className="font-medium text-base">
+                            {t('tracking.orderNumber', { default: 'Order' })} #{order.id}
+                          </h3>
+                          <Badge className={`${getStatusColor(String(order.status ?? ""))} flex items-center gap-1 w-fit ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                            {getStatusIcon(String(order.status ?? ""))}
+                            <span className="capitalize">{String(order.status ?? "").replace(/_/g, ' ')}</span>
+                          </Badge>
+                        </div>
+
+                        {/* Products List */}
+                        <div className="p-4">
+                          {order.orders_products?.map((product: any, index: number) => (
+                            <div key={product.id || index}>
+                              <div className={`flex items-start gap-4 py-3 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                                <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                                  {product.products?.image_url ? (
+                                    <Image
+                                      src={product.products.image_url}
+                                      alt={product.product_name || 'Product'}
+                                      width={64}
+                                      height={64}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="flex items-center justify-center w-full h-full">
+                                      <Package size={20} className="text-gray-400" />
+                                    </div>
+                                  )}
                                 </div>
+                                <div className={`flex-1 ${direction === "rtl" ? "text-right" : ""}`}>
+                                  <h4 className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                                    {product.product_name || product.products?.name || t('tracking.product.unknown', { default: 'Product' })}
+                                  </h4>
+                                  <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 mt-1">
+                                    ₪{product.final_unit_price?.toFixed(2) || product.item_total?.toFixed(2) || '0.00'}
+                                  </p>
+                                  {product.selected_features && Object.keys(product.selected_features).length > 0 && (
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                      {Object.entries(product.selected_features).map(([key, value]) => `${key}: ${value}`).join(', ')}
+                                    </p>
+                                  )}
+                                  {order.shops?.name && (
+                                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                      {order.shops.name}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              {/* Divider line between products */}
+                              {index < order.orders_products.length - 1 && (
+                                <div className="border-b border-gray-200 dark:border-gray-700"></div>
                               )}
                             </div>
-                          </div>
-
-                          {/* Order Details */}
-                          <div className="flex-1 space-y-3">
-                            <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 ${direction === "rtl" ? "sm:flex-row-reverse" : ""}`}>
-                              <div className={`${direction === "rtl" ? "text-right" : ""}`}>
-                                <h4 className="font-semibold text-lg">
-                                  {firstProduct?.product_name || firstProduct?.products?.name || "Product"}
-                                  {productCount > 1 && (
-                                    <span className={`text-sm text-gray-500 ${direction === "rtl" ? "mr-2" : "ml-2"}`}>
-                                      +{productCount - 1} {t("account.moreItems") || "more"}
-                                    </span>
-                                  )}
-                                </h4>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">
-                                  {t("account.order", { id: order.order_number || order.id })}
-                                </p>
-                                {order.shops?.name && (
-                                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                                    {order.shops.name}
-                                  </p>
-                                )}
-                              </div>
-                              <Badge className={`${getStatusColor(String(order.status ?? ""))} flex items-center gap-1 w-fit ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
-                                {getStatusIcon(String(order.status ?? ""))}
-                                {String(order.status ?? "").replace(/_/g, ' ')}
-                              </Badge>
+                          ))}
+                          
+                          {/* Final divider line after last product */}
+                          <div className="border-b border-gray-200 dark:border-gray-700 mt-3"></div>
+                          
+                          {/* Order Summary */}
+                          <div className={`flex justify-between items-center pt-4 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                            <div className={`flex flex-col ${direction === "rtl" ? "items-end" : ""}`}>
+                              <span className="text-sm text-gray-600 dark:text-gray-400">
+                                {productCount} {productCount === 1 ? t('tracking.product.item', { default: 'item' }) : t('tracking.product.items', { default: 'items' })}
+                              </span>
+                              <span className="text-xs text-gray-500 dark:text-gray-500">
+                                {new Date(String(order.created_at ?? "")).toLocaleDateString()}
+                              </span>
                             </div>
-
-                            <div className={`grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm ${direction === "rtl" ? "text-right" : ""}`}>
-                              {/* Payment Method */}
-                              <div className={`flex items-center gap-2 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
-                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                <div>
-                                  <p className="font-medium">{t("account.payment")}</p>
-                                  <p className="text-gray-600 dark:text-gray-400 capitalize">
-                                    {order.payment_method ?? "Cash"}
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Order Type */}
-                              <div className={`flex items-center gap-2 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
-                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <div>
-                                  <p className="font-medium">{t("account.type")}</p>
-                                  <p className="text-gray-600 dark:text-gray-400 capitalize">
-                                    {order.order_type ?? "Delivery"}
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Order Date */}
-                              <div className={`flex items-center gap-2 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
-                                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                <div>
-                                  <p className="font-medium">{t("account.date")}</p>
-                                  <p className="text-gray-600 dark:text-gray-400">
-                                    {new Date(String(order.created_at ?? "")).toLocaleDateString()}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Price and Actions */}
-                            <div className={`flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
-                              <div className="flex items-center gap-4">
-                                <div className={direction === "rtl" ? "text-right" : ""}>
-                                  <span className="text-sm text-gray-600 dark:text-gray-400">{t("account.totalAmount")}</span>
-                                  <span className={`font-bold text-lg ${direction === "rtl" ? "mr-2" : "ml-2"}`}>
-                                    ₪{order.total_amount?.toFixed(2) || "0.00"}
-                                  </span>
-                                </div>
-                              </div>
-                              <Link href={`/orders/track/${order.id}`}>
-                                <Button variant="outline" size="sm">
-                                  {t("account.viewDetails") || "View Details"}
-                                </Button>
-                              </Link>
+                            <div className={`flex items-center gap-3 ${direction === "rtl" ? "flex-row-reverse" : ""}`}>
+                              <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                                ₪{order.total_amount?.toFixed(2) || '0.00'}
+                              </span>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleViewOrderDetails(order)}
+                              >
+                                {t("account.viewDetails") || "View Details"}
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -717,6 +713,13 @@ export default function EnhancedProfilePage() {
           </Tabs>
         </div>
       </div>
+
+      {/* Order Details Modal */}
+      <OrderDetailsModal 
+        order={selectedOrder}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </AccountPageWrapper>
   )
 }
