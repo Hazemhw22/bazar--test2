@@ -436,7 +436,8 @@
   "tracking.table.finalPrice": "Final Price",
   "tracking.table.total": "Total",
   "tracking.orderDetails": "Order Details",
-  "tracking.orderType": "Order Type"
+  "tracking.orderType": "Order Type",
+  "views":"Views"
 }
 
 

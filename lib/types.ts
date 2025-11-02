@@ -545,8 +545,33 @@ export type CategoryShop = ShopCategory;
 export type CategorySubShop = ShopSubCategory;
 export type Category = ProductCategory;
 export type CategoryBrand = ProductBrand;
-export type ProductFeatureLabel = { id: number; name?: string; label?: string; values?: ProductFeatureValue[] };
-export type ProductFeatureValue = { id: number; name?: string; label?: string; price_addition?: number };
+// Updated types to match new database schema
+export interface ProductFeature {
+  id: number;
+  product_id: number;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductFeatureValue {
+  id: number;
+  feature_id: number;
+  name: string;
+  price_addition: number;
+  image_url?: string;
+  created_at: string;
+  updated_at: string;
+  // Compatibility fields for existing UI
+  value?: string;
+  image?: string;
+}
+
+// Compatibility type aliases for existing components
+export type ProductFeatureLabel = ProductFeature & { 
+  label?: string; 
+  values?: ProductFeatureValue[] 
+};
 export type WorkHours = any;
 
 

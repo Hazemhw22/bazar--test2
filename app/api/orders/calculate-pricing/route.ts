@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
         // Fetch feature value price addition
         const { data: featureValue, error: featureError } = await supabase
-          .from("products_features_values")
+          .from("products_feature_values")
           .select("price_addition")
           .eq("id", value_id)
           .eq("feature_id", feature_id)

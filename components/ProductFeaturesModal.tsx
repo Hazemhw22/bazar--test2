@@ -74,7 +74,7 @@ export default function ProductFeaturesModal({
     async function fetchFeatures() {
       if (!product.id) return;
       const { data: labels } = await supabase
-        .from("products_features_labels")
+        .from("products_features")
         .select("*")
         .eq("product_id", product.id);
 
@@ -82,7 +82,7 @@ export default function ProductFeaturesModal({
           const labelsWithValues = await Promise.all(
             labels.map(async (label: ProductFeatureLabel) => {
               const { data: values } = await supabase
-                .from("products_features_values")
+                .from("products_feature_values")
                 .select("*")
                 // new schema uses `feature_id`
                 .eq("feature_id", label.id);
@@ -184,24 +184,15 @@ export default function ProductFeaturesModal({
               </div>
 
               {/* overlapping header panel like the screenshot */}
-              <div className="absolute left-4 right-4 -bottom-1 gap-6 bg-white dark:bg-gray-900 rounded-t-3xl p-6 shadow-lg flex items-center justify-between z-20">
+              <div className="absolute left-2 right-0 -bottom-1 gap-2 bg-white dark:bg-gray-900 rounded-t-3xl p-4 shadow-lg flex items-center justify-between z-20">
                 <div className="text-left">
                   <div className="text-2xl font-extrabold text-yellow-500">{Math.round(totalPrice)}₪</div>
                 </div>
 
                 <div className="flex-1 text-right mr-6">
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
                       <div className="text-lg font-bold text-foreground min-w-0 truncate">{product.name}</div>
-                      <button
-                        aria-label="View product page"
-                        onClick={() => {
-                          if (product.id) router.push(`/products/${product.id}`);
-                        }}
-                        className="p-1 rounded-full bg-transparent hover:bg-[rgba(0,0,0,0.04)]"
-                      >
-                        <Eye size={16} />
-                      </button>
                     </div>
                     <div className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-sm font-medium flex-shrink-0">
                       {currentUnitIndex + 1} / {Math.max(1, quantity)}
@@ -250,9 +241,9 @@ export default function ProductFeaturesModal({
                           >
                             <div className="flex items-center justify-center w-24 gap-2" onClick={() => value.available !== false && label.id != null && value.id != null && handleSelectFeature(label.id, value.id, isMultiSelect)}>
                               <Checkbox checked={isSelected} className="w-6 h-6" />
-                              {value.price_addition ? (
-                                <div className="text-sm font-semibold">{value.price_addition}₪</div>
-                              ) : null}
+                              <div className="text-sm font-semibold">
+                                {value.price_addition ? `${value.price_addition} ₪` : '0.00 ₪'}
+                              </div>
                             </div>
 
                             <div className="flex-1 text-right pr-3" onClick={() => value.available !== false && label.id != null && value.id != null && handleSelectFeature(label.id, value.id, isMultiSelect)}>

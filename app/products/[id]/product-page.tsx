@@ -99,7 +99,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   useEffect(() => {
     async function fetchFeatures() {
       const { data: labels } = await supabase
-        .from("products_features_labels")
+        .from("products_features")
         .select("*")
         .eq("product_id", product.id);
 
@@ -107,7 +107,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
         const labelsWithValues = await Promise.all(
           labels.map(async (label: ProductFeatureLabel) => {
             const { data: values } = await supabase
-              .from("products_features_values")
+              .from("products_feature_values")
               .select("*")
               // DB column is `feature_id` in the new schema
               .eq("feature_id", label.id);
@@ -294,7 +294,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
             <span className="font-medium text-xl">{label.label}</span>
           </div>
 
-          <div className="flex gap-3 flex-wrap items-center">
+          <div className="flex gap-3 flex-wrap items-start">
             {(label.values || []).map((v: any) => {
               const active = (selectedFeatures[label.id] || []).includes(v.id);
               const isNumber = /^\d+$/.test(String(v.value));
@@ -302,39 +302,46 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               // Numeric values: render as size-like square buttons
               if (isNumber) {
                 return (
-                  <button
-                    key={v.id}
-                    onClick={() => handleSelectFeature(label.id, v.id)}
-                    className={`relative w-14 h-14 rounded-lg flex items-center justify-center text-white text-lg font-medium transition-all ${active ? 'bg-[rgba(59,52,112,0.18)] border-2 border-[#5a4aa3] shadow-[0_6px_20px_rgba(90,74,163,0.12)]' : 'bg-transparent border border-[rgba(255,255,255,0.06)]'}`}
-                  >
-                    <span>{v.value}</span>
-                    {active && (v.price_addition ?? 0) > 0 && (
-                      <span className="absolute -bottom-4 right-0 translate-y-1/2 bg-[#2f2f33] text-green-600 text-xs px-2 py-0.5 rounded">+{v.price_addition}₪</span>
+                  <div key={v.id} className="flex flex-col items-center gap-1">
+                    <button
+                      onClick={() => handleSelectFeature(label.id, v.id)}
+                      className={`w-14 h-14 rounded-lg flex items-center justify-center text-white text-lg font-medium transition-all ${active ? 'bg-[rgba(59,52,112,0.18)] border-2 border-[#5a4aa3] shadow-[0_6px_20px_rgba(90,74,163,0.12)]' : 'bg-transparent border border-[rgba(255,255,255,0.06)]'}`}
+                    >
+                      <span>{v.value}</span>
+                    </button>
+                    {active && Number(v.price_addition || 0) > 0 && (
+                      <div className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 border border-green-200">
+                        +{v.price_addition} ₪
+                      </div>
                     )}
-                  </button>
+                  </div>
                 );
               }
 
               // Non-numeric values: render as pill (color/option) buttons
               return (
-                <button
-                  key={v.id}
-                  onClick={() => handleSelectFeature(label.id, v.id)}
-                  className={`flex items-center gap-3 px-4 py-2 rounded-full transition-all ${active ? 'bg-[rgba(255,255,255,0.03)] ring-1 ring-[rgba(90,74,163,0.28)] border border-[rgba(255,255,255,0.06)]' : 'bg-transparent border border-[rgba(255,255,255,0.06)]'}`}
-                >
-                  {v.image || /^#([A-Fa-f0-9]{3,6})$/.test(String(v.value)) ? (
-                    <span className="w-4 h-4 rounded-full overflow-hidden" style={/^#([A-Fa-f0-9]{3,6})$/.test(String(v.value)) ? { background: String(v.value) } : undefined}>
-                      {v.image ? <img src={v.image as string} alt={String(v.value)} className="w-full h-full object-cover" /> : null}
-                    </span>
-                  ) : (
-                    <span className="w-4 h-4 rounded-full bg-[rgba(255,255,255,0.06)]" />
+                <div key={v.id} className="flex flex-col items-center gap-1 ">
+                  <button
+                    onClick={() => handleSelectFeature(label.id, v.id)}
+                    className={`flex items-center gap-3 px-4 py-2 rounded-full transition-all ${active ? 'bg-[rgba(255,255,255,0.03)] ring-1 ring-[rgba(90,74,163,0.28)] border border-[rgba(255,255,255,0.06)]' : 'bg-transparent border border-[rgba(255,255,255,0.06)]'}`}
+                  >
+                    {v.image || /^#([A-Fa-f0-9]{3,6})$/.test(String(v.value)) ? (
+                      <span className="w-6 h-6 rounded-full overflow-hidden border border-[rgba(255,255,255,0.2)]" style={/^#([A-Fa-f0-9]{3,6})$/.test(String(v.value)) ? { background: String(v.value) } : undefined}>
+                        {v.image ? <img src={v.image as string} alt={String(v.value)} className="w-full h-full object-cover" /> : null}
+                      </span>
+                    ) : (
+                      <>
+                        <span className="w-4 h-4 rounded-full bg-[rgba(255,255,255,0.06)]" />
+                        <span className={`text-sm ${active ? 'text-white' : 'text-[rgba(255,255,255,0.85)]'}`}>{v.value}</span>
+                      </>
+                    )}
+                  </button>
+                  {active && Number(v.price_addition || 0) > 0 && (
+                    <div className="text-xs px-2 py-1 rounded bg-green-100 text-green-700 border border-green-200">
+                      +{v.price_addition} ₪
+                    </div>
                   )}
-
-                  <span className={`text-sm ${active ? 'text-white' : 'text-[rgba(255,255,255,0.85)]'}`}>{v.value}</span>
-                  {active && (v.price_addition ?? 0) > 0 && (
-                    <span className="ml-2 inline-flex items-center bg-[#2f2f33] text-white text-xs px-2 py-0.5 rounded">₪{v.price_addition}</span>
-                  )}
-                </button>
+                </div>
               );
             })}
           </div>

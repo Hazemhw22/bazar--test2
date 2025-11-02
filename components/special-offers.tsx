@@ -182,7 +182,7 @@ export function SpecialOffers() {
                   </Link>
 
                   <div className="flex items-center mb-1">
-                    <div className="flex items-center gap-1"><Eye size={14} /><span className="ml-1 text-xs text-gray-600 dark:text-gray-400">{t("special.views")}</span></div>
+                    <div className="flex items-center gap-1"><Eye size={14} /><span className="ml-1 text-xs text-gray-600 dark:text-gray-400">{t("views")}</span></div>
                     <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({Number((product as any).view_count || 0)})</span>
                   </div>
 
