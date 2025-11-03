@@ -648,7 +648,7 @@ function StoreCard({ shop }: { shop: LibShop }) {
         {/* Category badge */}
         <div className="absolute top-3 left-3 z-10">
           <span className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-xs font-semibold shadow">
-            {shop.categoryName ?? t("shops.uncategorized")}
+            {shop.categoryTitle ?? t("shops.uncategorized")}
           </span>
         </div>
 
@@ -784,7 +784,7 @@ function ListRow({ shop }: { shop: LibShop }) {
             {renderOpenBadge(shop.work_hours, t)}
           </div>
         </div>
-  <p className="text-sm text-gray-300 truncate">{shop.categoryTitle ?? t("shops.uncategorized")}</p>
+        <p className="text-sm text-gray-300 truncate">{shop.categoryTitle ?? t("shops.uncategorized")}</p>
         <div className="text-xs text-muted-foreground mt-1 flex items-center justify-between">
           <div>
             <div className="flex items-center gap-3">

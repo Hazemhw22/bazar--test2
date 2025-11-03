@@ -43,6 +43,7 @@ import type { Shop, Category, Product, WorkHours, CategoryShop, CategorySubShop 
 import { ProductCard } from "../../../components/ProductCard";
 import AdBanner from "@/components/AdBanner";
 import BrandsStrip from "@/components/BrandsStrip";
+import ShopCategoryDisplay from "@/components/ShopCategoryDisplay";
 import { useI18n } from "@/lib/i18n";
 
 export default function ShopDetailPage() {
@@ -64,6 +65,7 @@ export default function ShopDetailPage() {
   const [selectedBrand, setSelectedBrand] = useState<number | null>(null);
   const [productsSort, setProductsSort] = useState("newest");
   const [productsSearch, setProductsSearch] = useState("");
+  const [productSubcategories, setProductSubcategories] = useState<any[]>([]);
 
   // Function to render shop content based on type
   const renderShopContent = () => {
@@ -88,12 +90,101 @@ export default function ShopDetailPage() {
     },
   });
 
-  // جلب التصنيفات
+  // جلب كاتيجوري المنتجات المربوطة بالمتجر
   useEffect(() => {
-    supabase.from("categories").select("*").then(({ data }) => setCategories(data ?? []));
-  }, []);
+    if (!shop?.id) return;
+    
+    const fetchProductCategories = async () => {
+      try {
+        // جلب كاتيجوري المنتجات المربوطة بهذا المتجر
+        const { data, error } = await supabase
+          .from("products")
+          .select(`
+            category_id,
+            products_categories(
+              id,
+              name,
+              image_url
+            )
+          `)
+          .eq("shop_id", shop.id);
+          
+        if (error) throw error;
+        
+        if (data) {
+          // استخراج الكاتيجوريات الفريدة
+          const uniqueCats = data
+            .map((item: any) => item.products_categories)
+            .filter((cat: any) => cat && cat.id)
+            .filter((cat: any, index: number, arr: any[]) => 
+              arr.findIndex((c: any) => c?.id === cat.id) === index
+            );
+          setCategories(uniqueCats as Category[]);
+        }
+      } catch (error: any) {
+        console.error('Error fetching product categories:', error);
+        // fallback إلى جلب جميع الكاتيجوريات
+        try {
+          const { data } = await supabase.from("products_categories").select("*");
+          setCategories(data ?? []);
+        } catch (fallbackError: any) {
+          console.error('Error fetching fallback categories:', fallbackError);
+          // إذا فشل جلب products_categories أيضاً، جرب categories
+          try {
+            const { data: categoriesData } = await supabase.from("categories").select("*");
+            setCategories(categoriesData ?? []);
+          } catch (finalError) {
+            console.error('Error fetching categories table:', finalError);
+            setCategories([]);
+          }
+        }
+      }
+    };
+    
+    fetchProductCategories();
+  }, [shop?.id]);
 
-  
+  // جلب سوب كاتيجوري المنتجات عند اختيار كاتيجوري
+  useEffect(() => {
+    if (!selectedCategory || !shop?.id) {
+      setProductSubcategories([]);
+      return;
+    }
+    
+    const fetchProductSubcategories = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("products")
+          .select(`
+            sub_category_id,
+            products_sub_categories(
+              id,
+              name,
+              image_url
+            )
+          `)
+          .eq("shop_id", shop.id)
+          .eq("category_id", selectedCategory);
+          
+        if (error) throw error;
+        
+        if (data) {
+          const uniqueSubcats = data
+            .map((item: any) => item.products_sub_categories)
+            .filter((subcat: any) => subcat && subcat.id)
+            .filter((subcat: any, index: number, arr: any[]) => 
+              arr.findIndex((s: any) => s?.id === subcat.id) === index
+            );
+          setProductSubcategories(uniqueSubcats);
+        }
+      } catch (error: any) {
+        console.error('Error fetching product subcategories:', error);
+        setProductSubcategories([]);
+      }
+    };
+    
+    fetchProductSubcategories();
+  }, [selectedCategory, shop?.id]);
 
   // If the shop record declares a shop-category (category_shop_id), prefer loading that
   useEffect(() => {
@@ -293,14 +384,8 @@ export default function ShopDetailPage() {
     else displayTodayHours = todayWork.open ? t("shops.open") : t("shops.closed");
   }
 
-  // استخدم categories_shop المسترجعة كتصنيفات المتجر (fallback: استخراج من products إذا لم تتوفر)
-  const uniqueCategories: Category[] = (shopCategories.length > 0
-    ? shopCategories
-    : products
-        .map((p: any) => p.products_categories)
-        .filter((cat) => cat && cat.id)
-        .filter((cat, idx, arr) => arr.findIndex((c) => c.id === cat.id) === idx)
-  ) as any;
+  // استخدام كاتيجوري المنتجات المربوطة بالمتجر
+  const uniqueCategories: Category[] = categories.length > 0 ? categories : [];
 
   // عدد المنتجات وعدد التصنيفات
   const productsCount = products.length;
@@ -392,9 +477,10 @@ export default function ShopDetailPage() {
               <Link href="#" className="text-sm text-muted-foreground hover:text-primary flex items-center gap-1 mt-1">
                 {shop.address} <ChevronRight size={16} />
               </Link>
-              {/* Rating on the opposite side under the address */}
+              
+              {/* عرض كاتيجوري المتجر والتقييم في نفس السطر */}
               <div className="mt-2 flex items-center justify-between">
-                <div />
+                <ShopCategoryDisplay shopCategoryId={shop.category_id} />
                 <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                   <Star size={16} className="text-yellow-400" fill="currentColor" />
                   <span>4.8</span>
@@ -538,56 +624,100 @@ export default function ShopDetailPage() {
           `}</style>
         </div>
 
-        {/* Subcategory Pills for selected category */}
-        {selectedCategory !== null && (
-          (() => {
-            const subs = shopSubcategories.filter((s) => Number(s.category_id) === Number(selectedCategory));
-            if (subs.length === 0) return null;
+        {/* Subcategory Pills for selected category - سوب كاتيجوري المنتجات */}
+        {selectedCategory !== null && productSubcategories.length > 0 && (
+          <div className="mt-6 p-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">{t("subcategories.title")}</h3>
+            <div className="relative">
+              {/* Left Arrow */}
+              <button
+                className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => {
+                  const el = document.getElementById("product-subcategory-scroll");
+                  if (el) el.scrollBy({ left: -150, behavior: "smooth" });
+                }}
+                aria-label="Scroll Left"
+              >
+                <ChevronDown className="rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
+              </button>
 
-            return (
-              <div className="flex overflow-x-auto gap-3 mt-1 pb-2 px-4 scrollbar-hide scroll-smooth" id="shop-subcategory-scroll">
+              {/* Scrollable Pills */}
+              <div
+                id="product-subcategory-scroll"
+                className="flex overflow-x-auto gap-3 scrollbar-hide pb-2 scroll-smooth"
+              >
                 {/* All subcategory pill */}
                 <button
                   onClick={() => setSelectedSubcategory(null)}
-                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
-                    selectedSubcategory === null ? "text-blue-600" : "text-gray-700 dark:text-gray-200"
-                  }`}
+                  className="flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all"
                 >
                   <div
                     className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
-                      selectedSubcategory === null ? "border-blue-600" : "border-transparent bg-gray-300 dark:bg-gray-700"
+                      selectedSubcategory === null ? "border-blue-600" : "border-transparent"
                     }`}
                   >
-                    <div className="w-full h-full flex items-center justify-center text-white font-bold">{allInitial}</div>
+                    <div className="w-full h-full bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold">
+                      {allInitial}
+                    </div>
                   </div>
-                  <span className="text-sm font-medium mt-1">{t("common.all")}</span>
+                  <span
+                    className={`text-sm font-medium mt-1 ${
+                      selectedSubcategory === null ? "text-blue-600" : ""
+                    }`}
+                  >
+                    {t("common.all")}
+                  </span>
                 </button>
 
-                {subs.map((sub) => (
+                {/* سوب كاتيجوري المنتجات */}
+                {productSubcategories.map((sub: any) => (
                   <button
                     key={sub.id}
                     onClick={() => setSelectedSubcategory(Number(sub.id))}
-                    className={`flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all ${
-                      selectedSubcategory === Number(sub.id) ? "text-blue-600" : "text-gray-700 dark:text-gray-200"
-                    }`}
+                    className="flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all"
                   >
                     <div
                       className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
-                        selectedSubcategory === Number(sub.id) ? "bg-blue-600 border-blue-600" : "border-transparent bg-card"
+                        selectedSubcategory === Number(sub.id) ? "border-blue-600" : "border-transparent"
                       }`}
                     >
                       {sub.image_url ? (
-                        <Image src={String(sub.image_url ?? "/placeholder.svg")} alt={String(sub.title ?? "")} fill className="object-cover" />
+                        <Image
+                          src={String(sub.image_url ?? "/placeholder.svg")}
+                          alt={String(sub.name ?? "")}
+                          fill
+                          className="object-cover rounded-full"
+                        />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-white font-bold">{String(sub.title ?? "").charAt(0)}</div>
+                        <div className="w-full h-full bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold">
+                          {String(sub.name ?? "").charAt(0)}
+                        </div>
                       )}
                     </div>
-                    <span className="text-sm font-medium mt-1">{String(sub.title ?? "")}</span>
+                    <span
+                      className={`text-sm font-medium mt-1 ${
+                        selectedSubcategory === Number(sub.id) ? "text-blue-600" : ""
+                      }`}
+                    >
+                      {String(sub.name ?? "")}
+                    </span>
                   </button>
                 ))}
               </div>
-            );
-          })()
+
+              {/* Right Arrow */}
+              <button
+                className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => {
+                  const el = document.getElementById("product-subcategory-scroll");
+                  if (el) el.scrollBy({ left: 150, behavior: "smooth" });
+                }}
+                aria-label="Scroll Right"
+              >
+                <ChevronDown className="-rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
+              </button>
+            </div>
+          </div>
         )}
 
         {/* Brands associated with shop (or general brands) */}
@@ -595,91 +725,66 @@ export default function ShopDetailPage() {
           <BrandsStrip selectedBrand={selectedBrand} setSelectedBrand={setSelectedBrand} shopId={shop ? Number(shop.id) : null} />
         </div>
 
-        {/* فلترة المنتجات حسب التصنيف المختار - عرض مجموعات أفقية كل 5 */}
+        {/* فلترة المنتجات حسب التصنيف المختار - عرض جميع العروض */}
         <div className="space-y-6">
-                {productsLoading ? (
+          {productsLoading ? (
             <div className="text-center text-gray-400 py-8">{t("products.loading", { default: "Loading products..." })}</div>
           ) : productsError ? (
             <div className="text-center text-red-500 py-8">{t("products.error", { message: productsError?.message ?? t("common.unexpectedError") })}</div>
           ) : (
             (() => {
-              const list = filteredSortedProducts.filter((product: Product) => {
+              const filteredProducts = filteredSortedProducts.filter((product: Product) => {
                 // match category if selected
-                const matchCat = selectedCategory === null ? true : (product as any).products_categories?.id === selectedCategory || Number(product.category_id) === Number(selectedCategory);
-                // match subcategory if selected
-                const matchSub = selectedSubcategory === null ? true : Number((product as any).subcategory_id || (product as any).subcategory || 0) === Number(selectedSubcategory);
+                const matchCat = selectedCategory === null ? true : Number(product.category_id) === Number(selectedCategory);
+                // match subcategory if selected  
+                const matchSub = selectedSubcategory === null ? true : Number((product as any).sub_category_id || 0) === Number(selectedSubcategory);
                 // match brand if selected (check common product fields)
                 const productBrandId = Number((product as any).brand_id || (product as any).brand?.id || (product as any).brand || 0);
                 const matchBrand = selectedBrand === null ? true : productBrandId === Number(selectedBrand);
                 return matchCat && matchSub && matchBrand;
               });
 
-              if (list.length === 0) {
+              if (filteredProducts.length === 0) {
                 return <div className="text-center text-gray-400 py-8">{t("common.noProducts")}</div>;
               }
 
-              // chunk into groups of 5
-              const chunks: Product[][] = [];
-              for (let i = 0; i < list.length; i += 5) {
-                chunks.push(list.slice(i, i + 5));
-              }
-
-              return chunks.map((chunk, idx) => (
-                <section key={idx} className="relative">
-                  {/* Group title */}
-                  <div className="flex items-center justify-between mb-3 px-2 sm:px-6">
+              // عرض جميع المنتجات في شبكة واحدة بدلاً من تجميعها
+              return (
+                <div className="space-y-6">
+                  {/* عنوان القسم */}
+                  <div className="flex items-center justify-between mb-6 px-2 sm:px-6">
                     <div className="flex items-center gap-2">
                       <div className="w-1 h-4 sm:w-1.5 sm:h-6 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
-                      <h3 className="text-base sm:text-lg font-bold">{t("shops.featuredGroup", { index: idx + 1 })}</h3>
+                      <h3 className="text-base sm:text-lg font-bold">
+                        {selectedCategory || selectedSubcategory || selectedBrand 
+                          ? t("shops.filteredProducts") 
+                          : t("shops.allProducts")}
+                        <span className="text-sm text-gray-500 ml-2">({filteredProducts.length})</span>
+                      </h3>
                     </div>
-                    <Link href="/products" className="text-sm text-blue-600 hover:text-blue-800">{t("common.viewAll")}</Link>
                   </div>
-                  {/* arrows for desktop */}
-                  <button
-                    className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
-                    onClick={() => {
-                      const el = document.getElementById(`shop-product-scroll-${idx}`);
-                      if (el) el.scrollBy({ left: -400, behavior: "smooth" });
-                    }}
-                    aria-label={t("common.scrollLeft")}
-                  >
-                    <ChevronDown className="rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
-                  </button>
 
-                  <div id={`shop-product-scroll-${idx}`} className="flex gap-3 overflow-x-auto snap-x snap-mandatory py-2 px-2 scroll-smooth">
-                    {chunk.map((product) => (
-                      <div key={product.id} className="snap-center flex-shrink-0 w-44 sm:w-52 md:w-56">
+                  {/* شبكة المنتجات */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 px-2 sm:px-6">
+                    {filteredProducts.map((product) => (
+                      <div key={product.id} className="w-full">
                         <ProductCard product={product as any} />
                       </div>
                     ))}
                   </div>
 
-                  <button
-                    className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
-                    onClick={() => {
-                      const el = document.getElementById(`shop-product-scroll-${idx}`);
-                      if (el) el.scrollBy({ left: 400, behavior: "smooth" });
-                    }}
-                    aria-label={t("common.scrollRight")}
-                  >
-                    <ChevronDown className="-rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
-                  </button>
-                </section>
-              )).reduce((acc: any[], el, i, arr) => {
-                // interleave AdBanner between groups
-                acc.push(el);
-                if (i < arr.length - 1) {
-                  acc.push(
-                    <AdBanner
-                      key={`ad-between-${i}`}
-                      imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
-                      title={t("ad.freshDeals.title", { default: "Fresh Deals" })}
-                      subtitle={t("ad.freshDeals.subtitle", { default: "Save more on your favorites" })}
-                    />
-                  );
-                }
-                return acc;
-              }, [] as any[]);
+                  {/* إعلان في النهاية إذا كان هناك منتجات كثيرة */}
+                  {filteredProducts.length > 12 && (
+                    <div className="mt-8">
+                      <AdBanner
+                        imageSrc="/shopping-concept-close-up-portrait-young-beautiful-attractive-redhair-girl-smiling-looking-camera.jpg"
+                        title={t("ad.freshDeals.title", { default: "Fresh Deals" })}
+                        subtitle={t("ad.freshDeals.subtitle", { default: "Save more on your favorites" })}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
             })()
           )}
         </div>
