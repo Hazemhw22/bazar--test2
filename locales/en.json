@@ -437,7 +437,12 @@
   "tracking.table.total": "Total",
   "tracking.orderDetails": "Order Details",
   "tracking.orderType": "Order Type",
-  "views":"Views"
+  "views":"Views",
+  "subcategories.title": "Subcategories",
+  "shops.categories.title": "Shop Categories",
+  "shops.subcategories.title": "Shop Subcategories",
+  "shops.filter.category": "Filter by Category",
+  "shops.filter.subcategory": "Filter by Subcategory"
 }
 
 

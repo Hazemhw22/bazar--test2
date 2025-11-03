@@ -102,12 +102,19 @@ export async function getSubcategories(categoryId: number) {
     const supabase = createServiceClient();
     
     const { data, error } = await supabase
-      .from("categories_sub")
-      .select("id, name, title")
-      .eq("category_id", categoryId);
+      .from("products_sub_categories")
+      .select("id, name, description, shop_id, product_category_id, image_url")
+      .eq("product_category_id", categoryId);
     
     if (error) throw error;
-    return data || [];
+    // تحويل البيانات لتتوافق مع الواجهة الحالية
+    return (data || []).map(item => ({
+      id: item.id,
+      title: item.name,
+      name: item.name,
+      description: item.description,
+      image_url: item.image_url
+    }));
   } catch (error) {
     console.error('Error fetching subcategories:', error);
     throw error;

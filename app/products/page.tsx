@@ -139,15 +139,22 @@ export default function Products() {
       })
       .filter((product: any) => {
         if (!selectedSubcategory) return true
-        // Try several common join names for product subcategory
+        // فلترة حسب السوب كاتيجوري الجديد
+        if (product.sub_category_id) {
+          // البحث عن السوب كاتيجوري المحدد في قائمة السوب كاتيجوريز
+          const selectedSubcategoryObj = subcategories.find(sub => sub.title === selectedSubcategory)
+          if (selectedSubcategoryObj) {
+            return Number(product.sub_category_id) === Number(selectedSubcategoryObj.id)
+          }
+        }
+        // التحقق من الجوين إذا كان موجود
         if (product.products_sub_categories) {
           if (Array.isArray(product.products_sub_categories)) {
             return product.products_sub_categories.some((sc: any) => String(sc.name) === String(selectedSubcategory))
           }
           return String(product.products_sub_categories.name) === String(selectedSubcategory)
         }
-        if (product.categories_sub) return String(product.categories_sub.name) === String(selectedSubcategory)
-        return true
+        return false
       })
       .filter((product: any) => (selectedBrand !== "All" ? product.shops?.name === selectedBrand : true))
       .filter((product: any) => Number(product.price) >= minPrice && Number(product.price) <= maxPrice)
@@ -246,32 +253,99 @@ export default function Products() {
           </button>
         </div>
 
-        {/* Subcategory Pills */}
+        {/* Subcategory Pills - نفس تصميم الكاتيجوري */}
         {subcategories.length > 0 && (
-          <div className="flex overflow-x-auto gap-2 mt-3 pb-2 scrollbar-hide">
-            <button
-              onClick={() => setSelectedSubcategory(null)}
-              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-                !selectedSubcategory
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700"
-              }`}
-            >
-              {t("common.all")}
-            </button>
-            {subcategories.map((sub) => (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">{t("subcategories.title")}</h3>
+            <div className="relative">
+              {/* Left Arrow */}
               <button
-                key={sub.id}
-                onClick={() => setSelectedSubcategory(sub.title)}
-                className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-                  selectedSubcategory === sub.title
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700"
-                }`}
+                className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => {
+                  const el = document.getElementById("subcategory-scroll")
+                  if (el) el.scrollBy({ left: -150, behavior: "smooth" })
+                }}
+                aria-label="Scroll Left"
               >
-                {sub.title}
+                <ChevronDown className="rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
               </button>
-            ))}
+
+              {/* Scrollable Pills */}
+              <div
+                id="subcategory-scroll"
+                className="flex overflow-x-auto gap-3 scrollbar-hide pb-2 scroll-smooth"
+              >
+                {/* زر الكل */}
+                <button
+                  onClick={() => setSelectedSubcategory(null)}
+                  className="flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all"
+                >
+                  <div
+                    className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
+                      !selectedSubcategory ? "border-blue-600" : "border-transparent"
+                    }`}
+                  >
+                    <div className="w-full h-full bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold">
+                      A
+                    </div>
+                  </div>
+                  <span
+                    className={`text-sm font-medium mt-1 ${
+                      !selectedSubcategory ? "text-blue-600" : ""
+                    }`}
+                  >
+                    {t("common.all")}
+                  </span>
+                </button>
+
+                {/* السوب كاتيجوريز */}
+                {subcategories.map((sub) => (
+                  <button
+                    key={sub.id}
+                    onClick={() => setSelectedSubcategory(sub.title)}
+                    className="flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all"
+                  >
+                    <div
+                      className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
+                        selectedSubcategory === sub.title ? "border-blue-600" : "border-transparent"
+                      }`}
+                    >
+                      {(sub as any).image_url ? (
+                        <Image
+                          src={(sub as any).image_url}
+                          alt={sub.title}
+                          fill
+                          className="object-cover rounded-full"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold">
+                          {sub.title.charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    <span
+                      className={`text-sm font-medium mt-1 ${
+                        selectedSubcategory === sub.title ? "text-blue-600" : ""
+                      }`}
+                    >
+                      {sub.title}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Right Arrow */}
+              <button
+                className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => {
+                  const el = document.getElementById("subcategory-scroll")
+                  if (el) el.scrollBy({ left: 150, behavior: "smooth" })
+                }}
+                aria-label="Scroll Right"
+              >
+                <ChevronDown className="-rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
+              </button>
+            </div>
           </div>
         )}
 

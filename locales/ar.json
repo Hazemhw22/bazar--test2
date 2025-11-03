@@ -438,5 +438,9 @@
   ,"tracking.orderDetails": "تفاصيل الطلب"
   ,"tracking.orderType": "نوع الطلب"
   ,"views": "المشاهدات"
+  ,"subcategories.title": "الفئات الفرعية",
+  "shops.categories.title": "فئات المتاجر",
+  "shops.subcategories.title": "الفئات الفرعية للمتاجر",
+  "shops.filter.category": "تصفية حسب الفئة",
+  "shops.filter.subcategory": "تصفية حسب الفئة الفرعية"
 }
-

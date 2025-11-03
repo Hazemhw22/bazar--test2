@@ -38,8 +38,11 @@ export async function fetchProducts(options: FetchProductsOptions = {}) {
       onsale,
       shop_id,
       category_id,
+      sub_category_id,
       created_at,
-      updated_at
+      updated_at,
+      products_categories(id, name),
+      products_sub_categories(id, name)
     `)
     .limit(limit);
   if (onlyActive) query = query.eq('active', true);

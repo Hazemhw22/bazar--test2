@@ -118,14 +118,18 @@ export default function ShopsPage({
     fetchShopCategories();
   }, []);
 
-  // جلب سوب كاتيجوري عند اختيار كاتيجوري (قاعدة البيانات الجديدة: `shops_sub_categories`)
+  // جلب سوب كاتيجوري عند اختيار كاتيجوري
   useEffect(() => {
     if (selectedShopCategory) {
+      console.log('Fetching subcategories for category:', selectedShopCategory);
       supabase
         .from("shops_sub_categories")
         .select("*")
         .eq("category_id", selectedShopCategory)
-        .then(({ data }) => setShopSubCategories(data || []));
+        .then(({ data, error }) => {
+          console.log('Subcategories fetched:', { data, error });
+          setShopSubCategories(data || []);
+        });
     } else {
       setShopSubCategories([]);
     }
@@ -136,42 +140,81 @@ export default function ShopsPage({
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      const { data: shops, error: shopsError } = await supabase.from("shops").select("*");
-      const { data: cats } = await supabase.from("shops_categories").select("*");
-
-      // Try to fetch products' shop foreign key in a resilient way:
-      // prefer `shop_id` (newer schema) and fall back to legacy `shop` column.
-      let products: any[] | null = null;
+      console.log('Fetching shops data...');
+      
       try {
-        const { data } = await supabase.from("products").select("shop_id");
-        if (data) products = data;
-      } catch (err) {
-        // ignore and try fallback
-      }
-      if (!products) {
+        const { data: shops, error: shopsError } = await supabase.from("shops").select("*");
+        const { data: cats, error: catsError } = await supabase.from("shops_categories").select("*");
+        const { data: subCats, error: subCatsError } = await supabase.from("shops_sub_categories").select("*");
+
+        console.log('Fetched data:', { 
+          shops: shops?.length || 0, 
+          categories: cats?.length || 0, 
+          subcategories: subCats?.length || 0,
+          shopsError,
+          catsError,
+          subCatsError
+        });
+
+        // Try to fetch products' shop foreign key in a resilient way:
+        // prefer `shop_id` (newer schema) and fall back to legacy `shop` column.
+        let products: any[] | null = null;
         try {
-          const { data } = await supabase.from("products").select("shop");
+          const { data } = await supabase.from("products").select("shop_id");
           if (data) products = data;
         } catch (err) {
-          products = null;
+          console.log('Failed to fetch products with shop_id, trying shop column...');
         }
-      }
+        if (!products) {
+          try {
+            const { data } = await supabase.from("products").select("shop");
+            if (data) products = data;
+          } catch (err) {
+            console.log('Failed to fetch products with shop column');
+            products = null;
+          }
+        }
 
-      if (!shopsError && shops && cats) {
-        const shopsWithCount = shops.map((shop) => {
-          const count = products
-            ? products.filter((p) => (p.shop_id ?? p.shop) === shop.id).length
-            : 0;
-          return {
-            ...shop,
-            // don't resolve translations during fetch; store actual name or null
-            categoryTitle:
-              cats.find((cat) => cat.id === shop.category_shop_id)?.name || null,
-            productsCount: count,
-          };
-        });
-        setShopsData(shopsWithCount);
+        if (!shopsError && shops) {
+          const shopsWithCount = shops.map((shop) => {
+            const count = products
+              ? products.filter((p) => (p.shop_id ?? p.shop) === shop.id).length
+              : 0;
+            
+            // استخدام أسماء الحقول الفعلية في قاعدة البيانات
+            const categoryId = shop.category_id;
+            const subCategoryId = shop.sub_category_id;
+            
+            const category = cats?.find((cat) => cat.id === categoryId);
+            const subCategory = subCats?.find((sub) => sub.id === subCategoryId);
+            
+            console.log(`Shop ${shop.name}: category_id=${categoryId}, sub_category_id=${subCategoryId}`);
+            
+            return {
+              ...shop,
+              // استخدام أسماء الحقول الصحيحة
+              category_id: categoryId || null,
+              sub_category_id: subCategoryId || null,
+              categoryTitle: category?.name || null,
+              subCategoryTitle: subCategory?.name || null,
+              productsCount: count,
+            };
+          });
+          
+          console.log('Processed shops:', shopsWithCount.map(s => ({
+            name: s.name,
+            category_id: s.category_id,
+            sub_category_id: s.sub_category_id
+          })));
+          
+          setShopsData(shopsWithCount);
+        } else {
+          console.error('Error fetching shops:', shopsError);
+        }
+      } catch (error) {
+        console.error('Error in fetchData:', error);
       }
+      
       setLoading(false);
     }
     fetchData();
@@ -181,17 +224,48 @@ export default function ShopsPage({
   const filteredAndSortedShops = useMemo(() => {
     let filtered = shopsData;
 
+    // تسجيل للتشخيص
+    console.log('Filtering shops:', {
+      totalShops: shopsData.length,
+      selectedCategory: selectedShopCategory,
+      selectedSubCategory: selectedShopSubCategory,
+      sampleShop: shopsData[0],
+      availableCategories: [...new Set(shopsData.map(s => s.category_id).filter(Boolean))],
+      availableSubCategories: [...new Set(shopsData.map(s => s.sub_category_id).filter(Boolean))]
+    });
+
     // فلترة حسب كاتيجوري المتاجر
     if (selectedShopCategory) {
-      filtered = filtered.filter(
-        (shop) => shop.category_shop_id === selectedShopCategory
-      );
+      const beforeCount = filtered.length;
+      filtered = filtered.filter((shop) => {
+        // تحويل إلى رقم للمقارنة
+        const shopCategoryId = Number(shop.category_id);
+        const selectedCategoryId = Number(selectedShopCategory);
+        const matches = shopCategoryId === selectedCategoryId;
+        
+        if (shop.category_id) {
+          console.log(`Shop "${shop.name}": category_id=${shopCategoryId}, selected=${selectedCategoryId}, matches=${matches}`);
+        }
+        return matches;
+      });
+      console.log(`Category filter: ${beforeCount} -> ${filtered.length} shops`);
     }
+    
     // فلترة حسب سوب كاتيجوري المتاجر
     if (selectedShopSubCategory) {
-      filtered = filtered.filter(
-        (shop) => shop.category_sub_shop_id === selectedShopSubCategory
-      );
+      const beforeCount = filtered.length;
+      filtered = filtered.filter((shop) => {
+        // تحويل إلى رقم للمقارنة
+        const shopSubCategoryId = Number(shop.sub_category_id);
+        const selectedSubCategoryId = Number(selectedShopSubCategory);
+        const matches = shopSubCategoryId === selectedSubCategoryId;
+        
+        if (shop.sub_category_id) {
+          console.log(`Shop "${shop.name}": sub_category_id=${shopSubCategoryId}, selected=${selectedSubCategoryId}, matches=${matches}`);
+        }
+        return matches;
+      });
+      console.log(`Subcategory filter: ${beforeCount} -> ${filtered.length} shops`);
     }
 
     return filtered;
@@ -280,74 +354,192 @@ export default function ShopsPage({
         </div>
       </div>
       
-      {/* Categories */}
+      {/* Categories - نفس تصميم المنتجات */}
       <div className="mb-8">
-  <h2 className="text-lg font-semibold text-pazar-dark dark:text-white mb-3">{t("shops.categories")}</h2>
-        <div 
-          ref={scrollRef} 
-          className="flex overflow-x-auto pb-4 gap-3 cursor-grab scrollbar-hide"
-        >
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">{t("shops.categories")}</h2>
+        <div className="relative">
+          {/* Left Arrow */}
           <button
-            onClick={() => setSelectedShopCategory(null)}
-            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              selectedShopCategory === null
-                ? "bg-pazar-primary text-white"
-                : "bg-gray-100 dark:bg-pazar-dark-accent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-pazar-dark-accent/80"
-            }`}
+            className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+            onClick={() => {
+              const el = document.getElementById("shop-category-scroll")
+              if (el) el.scrollBy({ left: -150, behavior: "smooth" })
+            }}
+            aria-label="Scroll Left"
           >
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 relative rounded-full overflow-hidden bg-gray-100">
-                <Image src="/placeholder.svg" alt="All" fill className="object-cover" />
-              </div>
-              <span>{t("common.all")}</span>
-            </div>
+            <ChevronDown className="rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
           </button>
-          {shopCategories.map((category) => (
+
+          {/* Scrollable Categories */}
+          <div
+            id="shop-category-scroll"
+            className="flex overflow-x-auto gap-3 scrollbar-hide pb-2 scroll-smooth"
+          >
+            {/* زر الكل */}
             <button
-              key={category.id}
-              onClick={() => setSelectedShopCategory(category.id)}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                selectedShopCategory === category.id
-                  ? "bg-pazar-primary text-white"
-                  : "bg-gray-100 dark:bg-pazar-dark-accent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-pazar-dark-accent/80"
-              }`}
+              onClick={() => setSelectedShopCategory(null)}
+              className="flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all"
             >
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 relative rounded-full overflow-hidden bg-gray-100">
+              <div
+                className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
+                  selectedShopCategory === null ? "border-blue-600" : "border-transparent"
+                }`}
+              >
+                <div className="w-full h-full bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold">
+                  الكل
+                </div>
+              </div>
+              <span
+                className={`text-sm font-medium mt-1 ${
+                  selectedShopCategory === null ? "text-blue-600" : ""
+                }`}
+              >
+                {t("common.all")}
+              </span>
+            </button>
+
+            {/* كاتيجوري المتاجر */}
+            {shopCategories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => setSelectedShopCategory(category.id)}
+                className="flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all"
+              >
+                <div
+                  className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
+                    selectedShopCategory === category.id ? "border-blue-600" : "border-transparent"
+                  }`}
+                >
+                  {category.image_url ? (
                     <Image
                       src={resolveImage(category.image_url, "/placeholder.svg", "shop_categories")}
                       alt={String(category.name ?? "")}
                       fill
-                      className="object-cover"
+                      className="object-cover rounded-full"
                     />
+                  ) : (
+                    <div className="w-full h-full bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold">
+                      {String(category.name ?? "").charAt(0)}
+                    </div>
+                  )}
                 </div>
-                <span>{category.name}</span>
-              </div>
-            </button>
-          ))}
-        </div>
-        {/* subcategory كبطاقات أو pills واضحة */}
-        {selectedShopCategory && shopSubCategories.length > 0 && (
-          <div className="flex gap-2 mt-4">
-            {shopSubCategories.map((sub) => (
-              <button
-                key={sub.id}
-                onClick={() => setSelectedShopSubCategory(sub.id)}
-                className={`
-                  px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800
-                  hover:bg-blue-600 hover:text-white transition-colors shadow-sm border
-                  border-gray-200 dark:border-gray-700 text-xs font-medium
-                  ${selectedShopSubCategory === sub.id ? "bg-blue-600 text-white" : ""}
-                `}
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 relative rounded-full overflow-hidden bg-gray-100">
-                    <Image src={resolveImage(sub.image_url, "/placeholder.svg", "shop_categories")} alt={String(sub.name ?? "")} fill className="object-cover" />
-                  </div>
-                  <span>{sub.name}</span>
-                </div>
+                <span
+                  className={`text-sm font-medium mt-1 ${
+                    selectedShopCategory === category.id ? "text-blue-600" : ""
+                  }`}
+                >
+                  {category.name}
+                </span>
               </button>
             ))}
+          </div>
+
+          {/* Right Arrow */}
+          <button
+            className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+            onClick={() => {
+              const el = document.getElementById("shop-category-scroll")
+              if (el) el.scrollBy({ left: 150, behavior: "smooth" })
+            }}
+            aria-label="Scroll Right"
+          >
+            <ChevronDown className="-rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
+          </button>
+        </div>
+
+        {/* Subcategory Pills - نفس تصميم الكاتيجوري */}
+        {selectedShopCategory && shopSubCategories.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">{t("subcategories.title")}</h3>
+            <div className="relative">
+              {/* Left Arrow */}
+              <button
+                className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => {
+                  const el = document.getElementById("shop-subcategory-scroll")
+                  if (el) el.scrollBy({ left: -150, behavior: "smooth" })
+                }}
+                aria-label="Scroll Left"
+              >
+                <ChevronDown className="rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
+              </button>
+
+              {/* Scrollable Pills */}
+              <div
+                id="shop-subcategory-scroll"
+                className="flex overflow-x-auto gap-3 scrollbar-hide pb-2 scroll-smooth"
+              >
+                {/* زر الكل */}
+                <button
+                  onClick={() => setSelectedShopSubCategory(null)}
+                  className="flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all"
+                >
+                  <div
+                    className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
+                      !selectedShopSubCategory ? "border-blue-600" : "border-transparent"
+                    }`}
+                  >
+                    <div className="w-full h-full bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold">
+                      الكل
+                    </div>
+                  </div>
+                  <span
+                    className={`text-sm font-medium mt-1 ${
+                      !selectedShopSubCategory ? "text-blue-600" : ""
+                    }`}
+                  >
+                    {t("common.all")}
+                  </span>
+                </button>
+
+                {/* سوب كاتيجوري المتاجر */}
+                {shopSubCategories.map((sub) => (
+                  <button
+                    key={sub.id}
+                    onClick={() => setSelectedShopSubCategory(sub.id)}
+                    className="flex flex-col items-center gap-1 px-4 py-3 rounded-2xl whitespace-nowrap transition-all"
+                  >
+                    <div
+                      className={`w-10 h-10 sm:w-12 sm:h-12 relative rounded-full overflow-hidden border-2 transition-colors ${
+                        selectedShopSubCategory === sub.id ? "border-blue-600" : "border-transparent"
+                      }`}
+                    >
+                      {sub.image_url ? (
+                        <Image
+                          src={resolveImage(sub.image_url, "/placeholder.svg", "shop_categories")}
+                          alt={String(sub.name ?? "")}
+                          fill
+                          className="object-cover rounded-full"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold">
+                          {String(sub.name ?? "").charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    <span
+                      className={`text-sm font-medium mt-1 ${
+                        selectedShopSubCategory === sub.id ? "text-blue-600" : ""
+                      }`}
+                    >
+                      {sub.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Right Arrow */}
+              <button
+                className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 rounded-full shadow-md items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => {
+                  const el = document.getElementById("shop-subcategory-scroll")
+                  if (el) el.scrollBy({ left: 150, behavior: "smooth" })
+                }}
+                aria-label="Scroll Right"
+              >
+                <ChevronDown className="-rotate-90 h-4 w-4 text-gray-700 dark:text-gray-300" />
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -379,7 +571,18 @@ export default function ShopsPage({
             <div className="col-span-full text-center py-12">
             <div className="text-5xl mb-4">🔍</div>
             <h3 className="text-xl font-semibold text-pazar-dark dark:text-white mb-2">{t("shops.noResults.title")}</h3>
-            <p className="text-gray-500 dark:text-gray-400">{t("shops.noResults.description")}</p>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">{t("shops.noResults.description")}</p>
+            {(selectedShopCategory || selectedShopSubCategory) && (
+              <button
+                onClick={() => {
+                  setSelectedShopCategory(null);
+                  setSelectedShopSubCategory(null);
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                إزالة الفلاتر
+              </button>
+            )}
           </div>
           ) : (
             filteredAndSortedShops.map((shop) => (
@@ -396,10 +599,21 @@ export default function ShopsPage({
                 <div key={i} className="bg-white dark:bg-pazar-dark-card rounded-xl shadow-sm animate-pulse h-20" />
               ))
           ) : filteredAndSortedShops.length === 0 ? (
-            <div className="col-span-full text-center py-12">
+            <div className="text-center py-12">
               <div className="text-5xl mb-4">🔍</div>
               <h3 className="text-xl font-semibold text-pazar-dark dark:text-white mb-2">{t("shops.noResults.title")}</h3>
-              <p className="text-gray-500 dark:text-gray-400">{t("shops.noResults.description")}</p>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">{t("shops.noResults.description")}</p>
+              {(selectedShopCategory || selectedShopSubCategory) && (
+                <button
+                  onClick={() => {
+                    setSelectedShopCategory(null);
+                    setSelectedShopSubCategory(null);
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  إزالة الفلاتر
+                </button>
+              )}
             </div>
           ) : (
             filteredAndSortedShops.map((shop) => (

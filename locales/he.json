@@ -436,5 +436,10 @@
   ,"tracking.table.total": "סה״כ"
   ,"tracking.orderDetails": "פרטי ההזמנה"
   ,"tracking.orderType": "סוג הזמנה"
-  ,"views": "צפיות"
+  ,"views": "צפיות",
+  "subcategories.title": "תת-קטגוריות",
+  "shops.categories.title": "קטגוריות חנויות",
+  "shops.subcategories.title": "תת-קטגוריות חנויות",
+  "shops.filter.category": "סינון לפי קטגוריה",
+  "shops.filter.subcategory": "סינון לפי תת-קטגוריה"
 }
